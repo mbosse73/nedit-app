@@ -1025,7 +1025,7 @@ const KATALOG = [
   ["Inhaltsverzeichnis","",
    '<div style="font-size:13px;color:rgba(55,53,47,.6);line-height:1.7">1 Bestandsaufnahme'
    +'<br>&nbsp;&nbsp;Schnittstellen<br>2 Zielbild</div>',
-   "&lt;!-- inhalt --&gt;   ← oder beim Speichern erzeugt","dial"],
+   "- [1 Bestandsaufnahme](#1-bestandsaufnahme)\n  - [Schnittstellen](#schnittstellen)","ok"],
   ["Eigenschaften","---",
    '<div style="font-size:13px;color:rgba(55,53,47,.6);line-height:1.7">'
    +'<span style="color:rgba(55,53,47,.45)">status</span>&nbsp;&nbsp;laeuft<br>'
@@ -1361,7 +1361,8 @@ const URTEIL_TEXT = { ok:"rein", gfm:"GFM", html:"HTML", dial:"Dialekt", nein:"g
    den dieses Projekt hat. */
 const GEBAUT = ["Text","Überschrift 1–3","Aufzählung","Nummerierte Liste","To-do-Liste",
   "Zitat","Trennlinie","Codeblock","Text in Code","Fett, kursiv","Durchgestrichen",
-  "Markierter Text","Link","Tabelle","Callout","Toggle-Liste"];
+  "Markierter Text","Link","Tabelle","Callout","Toggle-Liste",
+  "Inhaltsverzeichnis","Bild"];
 
 /* Bewusst gestrichen. Sie bleiben in der Tabelle stehen, damit die
    Frage nicht alle drei Monate neu gestellt wird — die Begründungen

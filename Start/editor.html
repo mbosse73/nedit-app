@@ -235,6 +235,13 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 
 /* Auszeichnung im Text */
 .txt b{font-weight:600}
+.txt img{display:block;max-width:100%;height:auto;margin:6px 0;border-radius:var(--rad)}
+/* Ein Bild aus dem Netz wird **nicht** geladen: Die Anwendung greift
+   zu keinem Zeitpunkt auf das Internet zu (harte Regel 2). Der
+   Verweis bleibt in der Datei und wird hier benannt. */
+.txt .fern{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;
+  color:var(--tinte2);background:var(--rand);border:1px dashed var(--linie);
+  border-radius:var(--rad);padding:3px 8px;font-family:var(--fest)}
 .txt code{background:rgba(135,131,120,.15);color:var(--code-t);border-radius:3px;
   padding:1px 5px;font-family:var(--fest);font-size:.86em}
 .txt .verweis{color:var(--blau);border-bottom:1px solid var(--blau-s)}
@@ -474,6 +481,7 @@ function melde(text){
 let bewahrUhr = null;
 function bewahreSofort(){
   clearTimeout(bewahrUhr);
+  merken();
   try {
     localStorage.setItem(SCHLUESSEL, JSON.stringify(
       { format:1, name:Z.name, stufe:Z.stufe, text:schreibeMarkdown(Z.bloecke) }));
@@ -507,6 +515,54 @@ function lade(){
 
 /* Inhalt austauschen, ohne das Array selbst zu ersetzen. */
 function ersetze(ziel, neu){ ziel.length = 0; neu.forEach(x => ziel.push(x)); }
+
+/* ---------- Der Verlauf ----------
+   Das Textfeld kann nur innerhalb eines Blocks zurücknehmen. Ein
+   gelöschter, verschobener oder umgewandelter Block käme so nie
+   zurück — der einzige Punkt dieser Anwendung, an dem ohne ihn
+   Arbeit verloren geht.
+
+   Gemerkt wird der **ganze Markdown-Text**, nicht ein Unterschied.
+   Das ist grob und aus demselben Grund richtig wie `male()`: Jede
+   strukturelle Änderung verschiebt Indizes, und ein Verlauf aus
+   Teilschritten wäre die Quelle jedes zweiten Fehlers. Ein Stand von
+   hundert Blöcken sind ein paar Kilobyte.
+
+   Beim Tippen fällt kein Stand je Anschlag an: `merken()` hängt an
+   `bewahreSofort()` und damit an derselben Bündelung. */
+const VERLAUF = { staende:[], stelle:-1, sperre:false };
+const VERLAUF_TIEF = 120;
+
+function merken(){
+  if (VERLAUF.sperre) return;
+  const text = schreibeMarkdown(Z.bloecke);
+  if (VERLAUF.staende[VERLAUF.stelle] === text) return;
+  VERLAUF.staende.length = VERLAUF.stelle + 1;   /* was wiederholt werden konnte, gilt nicht mehr */
+  VERLAUF.staende.push(text);
+  if (VERLAUF.staende.length > VERLAUF_TIEF) VERLAUF.staende.shift();
+  VERLAUF.stelle = VERLAUF.staende.length - 1;
+}
+
+function verlaufAnwenden(){
+  VERLAUF.sperre = true;
+  ersetze(Z.bloecke, leseMarkdown(VERLAUF.staende[VERLAUF.stelle]));
+  aktiv = -1;
+  bewahreSofort();
+  male();
+  VERLAUF.sperre = false;
+}
+
+function zurueck(){
+  if (VERLAUF.stelle <= 0){ melde("Nichts mehr rückgängig zu machen."); return; }
+  VERLAUF.stelle--; verlaufAnwenden();
+  melde("Rückgängig");
+}
+
+function wieder(){
+  if (VERLAUF.stelle >= VERLAUF.staende.length - 1){ melde("Nichts zu wiederholen."); return; }
+  VERLAUF.stelle++; verlaufAnwenden();
+  melde("Wiederhergestellt");
+}
 
 /* ---------- Die Markdown-Stufe ----------
    Harte Regel 9: Alles, was über reines Markdown hinausgeht, hängt an
@@ -714,6 +770,15 @@ function inlineMalen(t){
   let s = esc(t).replace(/`([^`\n]+)`/g, (_, x) => {
     halter.push("<code>" + x + "</code>");
     return " " + (halter.length - 1) + " ";
+  });
+  /* Bilder **vor** den Verweisen: `![a](b)` enthält `[a](b)`, sonst
+     bliebe das Ausrufezeichen als Text vor einem Verweis stehen. */
+  s = s.replace(/!\[([^\]\n]*)\]\(([^)\s]+)\)/g, (_, titel, quelle) => {
+    const q = quelle.replace(/"/g, "%22");
+    /* Alles mit Schema ausser file: käme aus dem Netz. */
+    if (/^[a-z][a-z0-9+.-]*:/i.test(q) && !/^file:/i.test(q))
+      return '<span class="fern">' + esc(q) + "</span>";
+    return '<img src="' + q + '" alt="' + titel.replace(/"/g, "&quot;") + '" loading="lazy">';
   });
   s = s.replace(/\[([^\]\n]+)\]\(([^)\s]+)\)/g, '<span class="verweis">$1</span>');
   s = s.replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>");
@@ -1144,6 +1209,25 @@ function auszeichnen(zeichen){
   leistePruefen();
 }
 
+/* Als **Verweis**, nicht eingebettet: Ein Bild in der Datei wäre kein
+   lesbarer Text mehr, und die .md waere um ein Vielfaches groesser
+   als ihr Inhalt. */
+function bildEinfuegen(){
+  const quelle = prompt("Pfad zum Bild — neben der .md-Datei, z. B. ./bilder/raster.png");
+  if (!quelle) return;
+  const name = quelle.split(/[\\/]/).pop().replace(/\.[a-z0-9]+$/i, "").replace(/[-_]+/g, " ");
+  const md = "![" + name + "](" + quelle + ")";
+  const i = aktiv >= 0 && Z.bloecke[aktiv] ? aktiv : Z.bloecke.length - 1;
+  const b = Z.bloecke[i];
+  if (b.text){
+    Z.bloecke.splice(i + 1, 0, {art:"absatz", text:md});
+    bewahre(); male(i + 1, -1);
+  } else {
+    b.text = md;
+    bewahre(); male(i, -1);
+  }
+}
+
 function verweisSetzen(){
   const a = auswahlLesen();
   if (!a) return;
@@ -1234,7 +1318,13 @@ const ARTEN = [
   {art:"toggle",  name:"Toggle-Liste",     zeichen:"›",   kuerzel:"<details>",
    merkmal:"html", urteil:"HTML",
    probe:"<details>\n<summary>Entscheidungen</summary>\n\nDer Rumpf.\n\n</details>",
-   vorlage:(t) => "<details>\n<summary>" + (t || "Titel") + "</summary>\n\n\n\n</details>"}
+   vorlage:(t) => "<details>\n<summary>" + (t || "Titel") + "</summary>\n\n\n\n</details>"},
+  /* Kein Blockart, sondern ein Handgriff: Er fragt nach dem Pfad und
+     schreibt den Verweis. Deshalb steht er nur im Slash-Menü —
+     „Umwandeln in Bild" ergäbe keinen Sinn. */
+  {art:"bild",    name:"Bild",             zeichen:"[]",  kuerzel:"![ ]( )",
+   nurSlash:true, probe:"![Das Raster](./bilder/raster.png)",
+   tue:bildEinfuegen}
 ];
 
 /* Was die gewählte Stufe nicht kann, steht nicht im Menü — harte
@@ -1309,7 +1399,7 @@ function blockMenue(i, anker){
     }},
     "tr", "k:Umwandeln in"
   ];
-  arten().forEach(a => eintraege.push(
+  arten().filter(a => !a.nurSlash).forEach(a => eintraege.push(
     {ic:a.zeichen, nm:a.name + (a.urteil ? "  · " + a.urteil : ""),
      ta:a.kuerzel.trim(), tue:() => umwandeln(i, a.art)}));
   menueZeigen(eintraege, anker);
@@ -1402,6 +1492,7 @@ function slashWaehlen(k){
   slashSchliessen();
   const b = Z.bloecke[i];
   b.text = "";                       /* der Suchbegriff war nie Inhalt */
+  if (a.tue){ aktiv = i; male(i, 0); a.tue(i); return; }
   if (b.art === a.art){ bewahre(); male(i, -1); }
   else umwandeln(i, a.art);
 }
@@ -1859,6 +1950,11 @@ document.addEventListener("keydown", (ev) => {
   if (k === "o"){ ev.preventDefault(); $("#oeffnen").click(); }
   /* Ohne diese drei setzt das Textfeld von sich aus <b>, <i> und <u>
      in den Block — und schriebe damit HTML, wo Markdown stehen soll. */
+  /* Ohne preventDefault nimmt das Textfeld selbst zurück — und zwar
+     einen Stand, den es aus dem Neuzeichnen von `male()` nie richtig
+     mitbekommen hat. */
+  if (k === "z" && !ev.shiftKey){ ev.preventDefault(); zurueck(); return; }
+  if (k === "y" || (k === "z" && ev.shiftKey)){ ev.preventDefault(); wieder(); return; }
   if (k === "d" && aktiv >= 0 && Z.bloecke[aktiv]){
     ev.preventDefault();
     Z.bloecke.splice(aktiv + 1, 0, JSON.parse(JSON.stringify(Z.bloecke[aktiv])));
@@ -1924,6 +2020,7 @@ function start(){
   try { gemerkt = localStorage.getItem(SCHLUESSEL + "-ansicht") || "schreiben"; }
   catch (e) { /* egal */ }
   ansicht(gemerkt);
+  merken();                 /* der Anfangsstand, sonst führt das erste Rückgängig ins Leere */
   male();
 }
 start();

@@ -19,7 +19,7 @@ Für jeden Block, den Notion kann, muss dieser Editor entscheiden: weglassen, in
 | Durchgestrichen | ` ~~ ` | ` ~~verworfen~~ ` | GFM | gebaut |
 | Unterstrichen | — | ` <u>unterstrichen</u> ` | HTML | gestrichen |
 | Link | ` [ ]( ) ` | ` [Schnittstellen](./Schnittstellen.md) ` | rein | gebaut |
-| Bild | ` ![ ]( ) ` | ` ![Das Raster](./bilder/raster.png) ` | rein | offen |
+| Bild | ` ![ ]( ) ` | ` ![Das Raster](./bilder/raster.png) ` | rein | gebaut |
 | Tabelle | ` \| ` | ` \| Name \| Format \| `<br>` \| --- \| --- \| `<br>` \| Export \| CSV \| ` | GFM | gebaut |
 | Callout | ` 💡 ` | ` > [!TIP] `<br>` > Vier davon sind derselbe Export. ` | Dialekt | gebaut |
 | Toggle-Liste | ` › ` | ` <details> `<br>` <summary>Entscheidungen</summary> `<br><br>` … `<br><br>` </details> ` | HTML | gebaut |
@@ -27,7 +27,7 @@ Für jeden Block, den Notion kann, muss dieser Editor entscheiden: weglassen, in
 | Farbiger Text | — | ` <span style="color:#c0392b">dringend</span> ` | HTML | gestrichen |
 | Erwähnung | ` @ [[ ]] ` | ` [[Kai Richter]] ` | Dialekt | gestrichen |
 | Lesezeichen | — | ` [Handbuch](https://conf.firma.de/hb) ` | rein | offen |
-| Inhaltsverzeichnis | — | ` <!-- inhalt -->   ← oder beim Speichern erzeugt ` | Dialekt | offen |
+| Inhaltsverzeichnis | — | ` - [1 Bestandsaufnahme](#1-bestandsaufnahme) `<br>`   - [Schnittstellen](#schnittstellen) ` | rein | gebaut |
 | Eigenschaften | ` --- ` | ` --- `<br>` status: laeuft `<br>` datum: 2026-08-19 `<br>` --- ` | Dialekt | vertagt |
 | Spalten | — | — | geht nicht | gestrichen |
 | Kommentar am Text | — | — | geht nicht | gestrichen |
@@ -36,14 +36,14 @@ Für jeden Block, den Notion kann, muss dieser Editor entscheiden: weglassen, in
 
 ## Was die Urteile bedeuten
 
-* **rein** — läuft in jedem Werkzeug der Welt. 12 Blöcke.
+* **rein** — läuft in jedem Werkzeug der Welt. 13 Blöcke.
 * **GFM** — GitHub-Markdown, sehr verbreitet, aber eine Erweiterung. 3 Blöcke.
 * **HTML** — gültiges Markdown, im nächsten Editor aber rohes HTML statt eines Blocks. 3 Blöcke.
-* **Dialekt** — bindet die Datei an das Werkzeug, das ihn kennt. 5 Blöcke.
+* **Dialekt** — bindet die Datei an das Werkzeug, das ihn kennt. 4 Blöcke.
 * **geht nicht** — ohne eine zweite Datei nicht zu haben. 4 Blöcke. Siehe `doku/ENTSCHEIDUNGEN.md`, Punkt 1.
 
 ## Stand
 
-**16 von 27 Blöcken sind gebaut.** 7 sind gestrichen, 1 ist vertagt — übrig bleiben 3 offene.
+**18 von 27 Blöcken sind gebaut.** 7 sind gestrichen, 1 ist vertagt — übrig bleiben 1 offene.
 
 Welcher Schritt welchen bringt, steht in `doku/ROADMAP.md`. Was **gestrichen** heißt und warum, steht in `doku/ENTSCHEIDUNGEN.md`, Punkt 1 und 11; **vertagt** in Punkt 12.
