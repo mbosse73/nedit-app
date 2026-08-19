@@ -1,0 +1,12 @@
+# Bilder aus werkzeug/schau.mjs
+/schau/
+/tmp/
+
+# Betriebssystem
+.DS_Store
+Thumbs.db
+
+# Editoren
+.vscode/
+.idea/
+*.swp

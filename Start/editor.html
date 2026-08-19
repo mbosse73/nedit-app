@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Editor</title>
+<style>
+/* ============================================================
+   1 — GRUNDLAGEN
+
+   Alle Farb- und Formwerte stehen hier als Token. Weiter unten wird
+   nichts hart codiert — sonst lässt sich kein zweites Thema bauen,
+   ohne dreißig Stellen zu suchen.
+
+   `color-scheme: light` ist keine Kosmetik: Ohne diese Zeile färbt
+   Windows im Dunkelmodus Scrollbalken und Formularfelder selbst ein,
+   und zwar schwarz.
+   ============================================================ */
+:root{
+  color-scheme: light;
+
+  --grund:#ffffff;        /* das Blatt */
+  --rand:#f7f7f5;         /* Leisten, Fußzeile */
+  --tinte:rgb(55,53,47);  /* tragender Text */
+  /* Notions eigene Grauwerte liegen unter 4,5 : 1 — .62 ergibt auf
+     Weiß nur 3,86 : 1. Sie sind nachgedunkelt: Der Ton bleibt, die
+     Helligkeit nicht. `werkzeug/pruefen.mjs` rechnet das nach. */
+  --tinte2:rgba(55,53,47,.70);   /* 4,68 : 1 — tragender Nebentext */
+  --tinte3:rgba(55,53,47,.55);   /* 3,16 : 1 — Etiketten, Fußleiste */
+  --blass:rgba(55,53,47,.36);    /* 2,02 : 1 — nur Platzhalter */
+  --linie:rgba(55,53,47,.11);
+  --linie2:rgba(55,53,47,.07);
+  --strich:rgba(55,53,47,.06);   /* Fläche unter dem Zeiger */
+  --blau:rgb(35,131,226);
+  --blau-s:rgba(35,131,226,.28);
+  --code-g:rgb(247,246,243);
+  --code-t:rgb(186,67,63);
+  --marker:rgb(251,243,196);
+
+  --rad:5px;
+  --rad-gr:8px;
+  --spalte:708px;         /* Notions Schreibbreite. Nicht verhandelbar. */
+  --schrift:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",
+            Roboto,Helvetica,Arial,sans-serif;
+  --fest:ui-monospace,Consolas,"Courier New",monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* Jede Vollflächen-Komponente bemalt sich selbst. Sich auf `body` zu
+   verlassen genügt nicht — im Dunkelmodus bleibt sonst eine Fläche
+   schwarz, und der Prüflauf sieht davon nichts. */
+html,body{background:var(--grund)!important;color:var(--tinte)!important;height:100%}
+body{font-family:var(--schrift);font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased}
+
+.app{display:flex;flex-direction:column;height:100vh;background:var(--grund)}
+
+/* ---------- Kopfleiste ---------- */
+.kopf{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:9px 16px;
+  background:var(--grund);border-bottom:1px solid var(--linie2);font-size:13.5px}
+.kopf .name{display:flex;align-items:center;gap:7px;padding:4px 8px;border-radius:var(--rad);
+  color:var(--tinte2);cursor:pointer}
+.kopf .name:hover{background:var(--strich)}
+.kopf .name svg{color:var(--tinte3)}
+.kopf .sp{flex:1}
+.kopf button{font:inherit;font-size:13px;color:var(--tinte2);background:none;border:0;
+  padding:5px 10px;border-radius:var(--rad);cursor:pointer}
+.kopf button:hover{background:var(--strich)}
+.kopf .wechsel{display:flex;background:var(--strich);border-radius:6px;padding:2px}
+.kopf .wechsel button{padding:3px 11px;border-radius:4px;font-size:12.5px}
+.kopf .wechsel button[aria-current="true"]{background:var(--grund);color:var(--tinte);
+  font-weight:500;box-shadow:0 1px 2px rgba(15,15,15,.12)}
+.kopf .akt{border:1px solid var(--linie)}
+
+/* ---------- Rumpf ---------- */
+.rumpf{flex:1;min-height:0;display:flex;background:var(--grund)}
+.blatt{flex:1;min-width:0;overflow-y:auto;background:var(--grund);padding:44px 0 40vh}
+.blatt .spalte{max-width:var(--spalte);margin:0 auto;padding:0 60px}
+.quelle{width:46%;flex-shrink:0;background:var(--rand);border-left:1px solid var(--linie2);
+  display:flex;flex-direction:column}
+.quelle .qkopf{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:8px 16px;
+  font-size:11.5px;color:var(--tinte3);border-bottom:1px solid var(--linie2);
+  background:var(--rand)}
+.quelle .qkopf .sp{flex:1}
+.quelle textarea{flex:1;min-height:0;width:100%;resize:none;border:0;outline:none;
+  background:var(--rand);color:var(--tinte);font-family:var(--fest);font-size:13.5px;
+  line-height:1.7;padding:16px 18px 40vh;tab-size:2}
+.quelle textarea[readonly]{color:var(--tinte2)}
+
+/* Die drei Ansichten. `display` steht bewusst in keiner ID-Regel —
+   eine ID schlägt jede Klasse und bräche jedes Umschalten. */
+.app[data-ansicht="schreiben"] .quelle{display:none}
+.app[data-ansicht="quelltext"] .blatt{display:none}
+.app[data-ansicht="quelltext"] .quelle{width:100%;border-left:0}
+
+/* ---------- Fußleiste ---------- */
+.fuss{flex-shrink:0;display:flex;align-items:center;gap:16px;padding:6px 16px;
+  background:var(--rand);border-top:1px solid var(--linie2);font-size:11.5px;
+  color:var(--tinte3)}
+.fuss b{font-weight:600;color:var(--tinte2)}
+.fuss .sp{flex:1}
+.fuss .neu{color:var(--blau)}
+
+/* ============================================================
+   2 — DIE BLÖCKE
+   Ein Block ist eine Zeile Markdown, die aussieht wie das, was sie
+   bedeutet. Der Block unter der Schreibmarke zeigt seinen Rohtext,
+   alle anderen zeigen das Ergebnis.
+   ============================================================ */
+.blk{position:relative;display:flex;align-items:flex-start;gap:8px;
+  padding:2px 2px;border-radius:3px}
+.blk.ueber{background:rgba(55,53,47,.02)}
+.blk.zielvor{box-shadow:0 -2px 0 var(--blau)}
+.blk.zielnach{box-shadow:0 2px 0 var(--blau)}
+.blk .griff{position:absolute;left:-46px;top:1px;display:flex;gap:1px;opacity:0}
+.blk:hover .griff,.blk:focus-within .griff{opacity:1}
+.blk .griff button{background:none;border:0;padding:3px;border-radius:4px;cursor:grab;
+  color:var(--blass);display:flex}
+.blk .griff button:hover{background:var(--strich);color:var(--tinte2)}
+.blk .griff svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.7;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+
+.txt{flex:1;min-width:0;outline:none;white-space:pre-wrap;word-wrap:break-word}
+.txt:empty::before{content:attr(data-leer);color:var(--blass);pointer-events:none}
+
+/* Blockarten */
+.blk.h1 .txt{font-size:30px;font-weight:600;letter-spacing:-.01em;line-height:1.3}
+.blk.h2 .txt{font-size:24px;font-weight:600;line-height:1.3}
+.blk.h3 .txt{font-size:19px;font-weight:600;line-height:1.35}
+.blk.h1{margin-top:26px}
+.blk.h2{margin-top:20px}
+.blk.h3{margin-top:16px}
+.blk.zitat .txt{border-left:3px solid var(--tinte);padding-left:14px}
+.blk .marke{flex-shrink:0;width:22px;text-align:center;color:var(--tinte2);
+  line-height:1.5;user-select:none}
+.blk.nummer .marke{font-variant-numeric:tabular-nums;font-size:15px}
+.blk.todo .marke{padding-top:4px}
+.blk.todo .kasten{width:16px;height:16px;border-radius:3px;border:1.5px solid var(--tinte3);
+  background:none;padding:0;cursor:pointer;display:grid;place-items:center}
+.blk.todo .kasten svg{width:12px;height:12px;stroke:#fff;stroke-width:2.4;fill:none;
+  stroke-linecap:round;stroke-linejoin:round;visibility:hidden}
+.blk.todo.fertig .kasten{background:var(--blau);border-color:var(--blau)}
+.blk.todo.fertig .kasten svg{visibility:visible}
+.blk.todo.fertig .txt{color:var(--tinte3);text-decoration:line-through}
+.blk.code{margin:6px 0}
+.blk.code .txt{background:var(--code-g);border-radius:var(--rad);padding:26px 15px 15px;
+  font-family:var(--fest);font-size:13.5px;line-height:1.6}
+.blk.code .sprache{position:absolute;left:17px;top:7px;font-size:11.5px;color:var(--tinte3);
+  pointer-events:none}
+.blk.linie{padding:12px 2px}
+.blk.linie .strich{flex:1;height:1px;background:var(--linie)}
+
+/* Auszeichnung im Text */
+.txt b{font-weight:600}
+.txt code{background:rgba(135,131,120,.15);color:var(--code-t);border-radius:3px;
+  padding:1px 5px;font-family:var(--fest);font-size:.86em}
+.txt .verweis{color:var(--blau);border-bottom:1px solid var(--blau-s)}
+.txt mark{background:var(--marker);color:var(--tinte);border-radius:2px;padding:0 2px}
+
+/* ---------- Meldungszettel ----------
+   Hängt an body, nicht an .app: Er soll über allem liegen und von
+   keinem Umschalter erwischt werden. */
+.zettel{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(70px);
+  background:var(--tinte);color:#fff;padding:9px 18px;border-radius:var(--rad-gr);
+  font-size:13.5px;box-shadow:0 8px 26px rgba(15,15,15,.28);opacity:0;
+  pointer-events:none;z-index:60;max-width:70vw}
+.zettel.an{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-ansicht="schreiben">
+  <div class="kopf">
+    <span class="name" id="name" title="Dateinamen ändern">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+           stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5.4 2.8h6l3.6 3.6v10.8H5.4z"/><path d="M11.4 2.8v3.6h3.6"/></svg>
+      <span id="dateiname">unbenannt.md</span>
+    </span>
+    <span class="sp"></span>
+    <div class="wechsel" role="group" aria-label="Ansicht">
+      <button id="w-schreiben" aria-current="true">Schreiben</button>
+      <button id="w-geteilt"   aria-current="false">Geteilt</button>
+      <button id="w-quelltext" aria-current="false">Quelltext</button>
+    </div>
+    <button class="akt" id="oeffnen">Öffnen</button>
+    <button class="akt" id="sichern">Sichern</button>
+    <button class="akt" id="neu">Neu</button>
+    <!-- Edge erlaubt aus einer lokal geöffneten Datei keinen direkten
+         Dateizugriff. Öffnen geht deshalb über die Dateiauswahl,
+         Sichern über den Download. Siehe doku/ENTSCHEIDUNGEN.md. -->
+    <input type="file" id="datei" accept=".md,.markdown,.txt" hidden>
+  </div>
+
+  <div class="rumpf">
+    <div class="blatt" id="blatt"><div class="spalte" id="spalte"></div></div>
+    <div class="quelle">
+      <div class="qkopf"><span id="qname">unbenannt.md</span><span class="sp"></span>
+        <span id="qhinweis">nur lesen</span></div>
+      <textarea id="q" spellcheck="false" aria-label="Markdown-Quelltext"></textarea>
+    </div>
+  </div>
+
+  <div class="fuss">
+    <span><b id="f-woerter">0</b> Wörter</span>
+    <span><b id="f-zeichen">0</b> Zeichen</span>
+    <span><b id="f-bloecke">0</b> Blöcke</span>
+    <span class="sp"></span>
+    <span>Markdown · UTF-8</span>
+    <span class="neu" id="f-stand">bereit</span>
+  </div>
+</div>
+
+<div class="zettel" id="zettel" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   3 — DATEN: EINE EINZIGE QUELLE
+
+   `Z` hält alles Veränderliche. Nie neu zuweisen — immer an Ort und
+   Stelle ändern, sonst zeigen Verweise ins Leere. Nach jeder Änderung
+   `bewahre()`, sonst ist sie beim Neuladen weg.
+
+   Ein Block ist `{art, text}`, dazu je nach Art `fertig` (To-do) und
+   `sprache` (Codeblock). Der **Text ist immer Rohtext** — die Fläche
+   zeigt ihn gerendert, gespeichert wird nie etwas anderes als
+   Markdown. Das ist die tragende Entscheidung dieser Anwendung.
+   ============================================================ */
+const SCHLUESSEL = "notion-md-editor";
+const Z = { name:"unbenannt.md", bloecke:[] };
+
+const $  = (w) => document.querySelector(w);
+const el = (tag, klasse, html) => {
+  const n = document.createElement(tag);
+  if (klasse) n.className = klasse;
+  if (html !== undefined) n.innerHTML = html;
+  return n;
+};
+const esc = (s) => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+let zettelUhr = null;
+function melde(text){
+  const z = $("#zettel");
+  z.textContent = text; z.classList.add("an");
+  clearTimeout(zettelUhr);
+  zettelUhr = setTimeout(() => z.classList.remove("an"), 2600);
+}
+
+let bewahrUhr = null;
+function bewahre(){
+  clearTimeout(bewahrUhr);
+  bewahrUhr = setTimeout(() => {
+    try {
+      localStorage.setItem(SCHLUESSEL, JSON.stringify(
+        { format:1, name:Z.name, text:schreibeMarkdown(Z.bloecke) }));
+      $("#f-stand").textContent = "gespeichert";
+    } catch (e) {
+      $("#f-stand").textContent = "nicht gespeichert";
+      melde("Speichern ging nicht: " + e.message);
+    }
+  }, 400);
+}
+
+function lade(){
+  let roh = null;
+  try { roh = localStorage.getItem(SCHLUESSEL); } catch (e) { /* privater Modus */ }
+  if (!roh) return false;
+  try {
+    const d = JSON.parse(roh);
+    Z.name = d.name || "unbenannt.md";
+    ersetze(Z.bloecke, leseMarkdown(d.text || ""));
+    return true;
+  } catch (e) { melde("Der gespeicherte Stand ließ sich nicht lesen."); return false; }
+}
+
+/* Inhalt austauschen, ohne das Array selbst zu ersetzen. */
+function ersetze(ziel, neu){ ziel.length = 0; neu.forEach(x => ziel.push(x)); }
+
+/* ============================================================
+   4 — MARKDOWN LESEN UND SCHREIBEN
+
+   Beide Richtungen stehen hier nebeneinander und gehören zusammen
+   geändert. Die Regel dazu: **lesen(schreiben(x)) muss x ergeben.**
+   Was das nicht erfüllt, gehört nicht in den Umwandler.
+   ============================================================ */
+const GRUPPIERT = ["punkt","nummer","todo","zitat"];   /* stehen ohne Leerzeile untereinander */
+
+function leseMarkdown(text){
+  const zeilen = String(text || "").replace(/\r\n?/g, "\n").split("\n");
+  const aus = [];
+  let absatz = null;                       /* laufender Absatz aus mehreren Zeilen */
+  const schliesse = () => {
+    if (absatz !== null) { aus.push({art:"absatz", text:absatz}); absatz = null; }
+  };
+
+  for (let i = 0; i < zeilen.length; i++){
+    const z = zeilen[i];
+
+    /* Codeblock zuerst: Was zwischen den Zäunen steht, wird nicht gedeutet. */
+    const zaun = z.match(/^```(\S*)\s*$/);
+    if (zaun){
+      schliesse();
+      const rumpf = [];
+      i++;
+      while (i < zeilen.length && !/^```\s*$/.test(zeilen[i])) rumpf.push(zeilen[i++]);
+      aus.push({art:"code", sprache:zaun[1] || "", text:rumpf.join("\n")});
+      continue;
+    }
+    if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(z)){
+      schliesse(); aus.push({art:"linie", text:""}); continue; }
+
+    let m;
+    if ((m = z.match(/^(#{1,3})\s+(.*)$/))){
+      schliesse(); aus.push({art:"h" + m[1].length, text:m[2]}); continue; }
+    if ((m = z.match(/^\s*[-*]\s+\[([ xX])\]\s*(.*)$/))){
+      schliesse(); aus.push({art:"todo", fertig:m[1] !== " ", text:m[2]}); continue; }
+    if ((m = z.match(/^\s*[-*]\s+(.*)$/))){
+      schliesse(); aus.push({art:"punkt", text:m[1]}); continue; }
+    if ((m = z.match(/^\s*\d+[.)]\s+(.*)$/))){
+      schliesse(); aus.push({art:"nummer", text:m[1]}); continue; }
+    if ((m = z.match(/^>\s?(.*)$/))){
+      schliesse(); aus.push({art:"zitat", text:m[1]}); continue; }
+
+    if (!z.trim()){ schliesse(); continue; }
+    absatz = absatz === null ? z : absatz + "\n" + z;
+  }
+  schliesse();
+  if (!aus.length) aus.push({art:"absatz", text:""});
+  return aus;
+}
+
+function schreibeMarkdown(bloecke){
+  const aus = [];
+  let zahl = 1;                            /* laufende Nummer der aktuellen Liste */
+  bloecke.forEach((b, i) => {
+    const vor = bloecke[i-1];
+    const zusammen = vor && GRUPPIERT.indexOf(b.art) >= 0 && b.art === vor.art;
+    if (i && !zusammen) aus.push("");
+    zahl = (b.art === "nummer" && vor && vor.art === "nummer") ? zahl + 1 : 1;
+
+    if (b.art === "code")        aus.push("```" + (b.sprache || ""), b.text, "```");
+    else if (b.art === "linie")  aus.push("---");
+    else if (b.art === "h1")     aus.push("# "   + b.text);
+    else if (b.art === "h2")     aus.push("## "  + b.text);
+    else if (b.art === "h3")     aus.push("### " + b.text);
+    else if (b.art === "punkt")  aus.push("- "   + b.text);
+    else if (b.art === "nummer") aus.push(zahl + ". " + b.text);
+    else if (b.art === "todo")   aus.push("- [" + (b.fertig ? "x" : " ") + "] " + b.text);
+    else if (b.art === "zitat")  aus.push("> "   + b.text);
+    else                         aus.push(b.text);
+  });
+  return aus.join("\n") + "\n";
+}
+
+/* Auszeichnung im Text. Sie wird **nur zum Anzeigen** gerechnet; der
+   Rohtext bleibt unangetastet. Code kommt zuerst heraus, damit
+   Sternchen darin nicht als fett gelesen werden. */
+function inlineMalen(t){
+  if (!t) return "";
+  const halter = [];
+  let s = esc(t).replace(/`([^`\n]+)`/g, (_, x) => {
+    halter.push("<code>" + x + "</code>");
+    return " " + (halter.length - 1) + " ";
+  });
+  s = s.replace(/\[([^\]\n]+)\]\(([^)\s]+)\)/g, '<span class="verweis">$1</span>');
+  s = s.replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>");
+  s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<i>$2</i>");
+  s = s.replace(/~~([^~\n]+)~~/g, "<s>$1</s>");
+  s = s.replace(/==([^=\n]+)==/g, "<mark>$1</mark>");
+  return s.replace(/ (\d+) /g, (_, i) => halter[Number(i)]);
+}
+
+/* ============================================================
+   5 — DIE FLÄCHE
+
+   `male()` baut alles neu. Das ist grob, aber richtig: Jede
+   strukturelle Änderung — Enter, Backspace, Umwandeln, Ziehen —
+   verschiebt Blöcke, und Teilzeichnen wäre hier die Quelle jedes
+   zweiten Fehlers. Beim Tippen wird **nicht** gemalt; dort wandert
+   nur der Text ins Modell.
+   ============================================================ */
+const SVG = (d) => '<svg viewBox="0 0 20 20" aria-hidden="true">' + d + '</svg>';
+const IK_PLUS  = SVG('<path d="M10 4.2v11.6M4.2 10h11.6"/>');
+const IK_GRIFF = SVG('<circle cx="7.6" cy="5" r="1.05"/><circle cx="12.4" cy="5" r="1.05"/>'
+                   + '<circle cx="7.6" cy="10" r="1.05"/><circle cx="12.4" cy="10" r="1.05"/>'
+                   + '<circle cx="7.6" cy="15" r="1.05"/><circle cx="12.4" cy="15" r="1.05"/>');
+const IK_HAKEN = '<svg viewBox="0 0 20 20" aria-hidden="true">'
+               + '<path d="M4.6 10.4 8.2 14l7.2-8"/></svg>';
+
+let aktiv = -1;          /* Index des Blocks unter der Schreibmarke */
+let ziehtVon = -1;       /* Index des gezogenen Blocks */
+
+function nummerVon(i){
+  let n = 1;
+  for (let k = i - 1; k >= 0 && Z.bloecke[k].art === "nummer"; k--) n++;
+  return n;
+}
+
+function blockMalen(b, i){
+  const n = el("div", "blk " + b.art + (b.fertig ? " fertig" : ""));
+  n.dataset.i = String(i);
+
+  const griff = el("span", "griff");
+  const plus = el("button", null, IK_PLUS);
+  plus.type = "button"; plus.title = "Darüber einfügen";
+  plus.setAttribute("aria-label", "Block darüber einfügen");
+  plus.onclick = () => { Z.bloecke.splice(i, 0, {art:"absatz", text:""}); bewahre(); male(i, 0); };
+  const fass = el("button", null, IK_GRIFF);
+  fass.type = "button"; fass.title = "Ziehen zum Verschieben";
+  fass.setAttribute("aria-label", "Block verschieben");
+  /* Ziehen wird erst beim Anfassen erlaubt. Wäre der Block immer
+     `draggable`, ließe sich sein Text nicht mehr markieren. */
+  fass.addEventListener("mousedown", () => { n.draggable = true; });
+  fass.addEventListener("mouseup",   () => { n.draggable = false; });
+  griff.append(plus, fass);
+  n.appendChild(griff);
+
+  if (b.art === "punkt")  n.appendChild(el("span", "marke", "•"));
+  if (b.art === "nummer") n.appendChild(el("span", "marke", nummerVon(i) + "."));
+  if (b.art === "todo"){
+    const m = el("span", "marke");
+    const k = el("button", "kasten", IK_HAKEN);
+    k.type = "button";
+    k.setAttribute("aria-label",
+      (b.fertig ? "Wieder offen: " : "Erledigt: ") + (b.text || "Aufgabe"));
+    k.setAttribute("aria-pressed", String(!!b.fertig));
+    k.onclick = () => { b.fertig = !b.fertig; bewahre(); male(); };
+    m.appendChild(k); n.appendChild(m);
+  }
+  if (b.art === "code" && b.sprache) n.appendChild(el("span", "sprache", esc(b.sprache)));
+  if (b.art === "linie"){ n.appendChild(el("span", "strich")); return n; }
+
+  const t = el("div", "txt");
+  t.contentEditable = "true";
+  t.spellcheck = false;
+  t.dataset.leer = (i === 0 && Z.bloecke.length === 1)
+    ? "Beginne zu schreiben …"
+    : "Leerer Block";
+  if (i === aktiv) t.textContent = b.text; else t.innerHTML = inlineMalen(b.text);
+  n.appendChild(t);
+  return n;
+}
+
+function male(fokusIndex, fokusPos){
+  if (fokusIndex !== undefined) aktiv = fokusIndex;
+  const s = $("#spalte");
+  s.innerHTML = "";
+  Z.bloecke.forEach((b, i) => s.appendChild(blockMalen(b, i)));
+  quelleMalen();
+  fussMalen();
+  if (fokusIndex !== undefined) setzeFokus(fokusIndex, fokusPos === undefined ? 0 : fokusPos);
+}
+
+function textVon(i){ return $('.blk[data-i="' + i + '"] .txt'); }
+
+function setzeFokus(i, pos){
+  const n = textVon(i);
+  if (!n) return;
+  aktiv = i;
+  n.textContent = Z.bloecke[i].text;      /* Rohtext, solange die Marke hier steht */
+  n.focus();
+  setzePos(n, pos < 0 ? n.textContent.length : pos);
+}
+
+/* Position der Schreibmarke, gezählt in Zeichen ab Blockanfang. */
+function holePos(n){
+  const s = getSelection();
+  if (!s.rangeCount) return 0;
+  const r = s.getRangeAt(0);
+  const ganz = document.createRange();
+  ganz.selectNodeContents(n);
+  try { ganz.setEnd(r.endContainer, r.endOffset); } catch (e) { return 0; }
+  return ganz.toString().length;
+}
+function setzePos(n, pos){
+  const r = document.createRange();
+  const t = n.firstChild;
+  if (!t) r.setStart(n, 0);
+  else r.setStart(t, Math.max(0, Math.min(pos, t.textContent.length)));
+  r.collapse(true);
+  const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+}
+
+function quelleMalen(){
+  const q = $("#q");
+  if (document.activeElement === q) return;      /* nicht unter den Händen austauschen */
+  q.value = schreibeMarkdown(Z.bloecke);
+  q.readOnly = $("#app").dataset.ansicht !== "quelltext";
+  $("#qhinweis").textContent = q.readOnly
+    ? "nur lesen — zum Ändern auf „Quelltext“ umschalten"
+    : "schreibbar";
+  $("#qname").textContent = Z.name;
+}
+
+function fussMalen(){
+  const text = schreibeMarkdown(Z.bloecke);
+  const worte = text.trim() ? text.trim().split(/\s+/).length : 0;
+  $("#f-woerter").textContent = String(worte);
+  $("#f-zeichen").textContent = String(text.length);
+  $("#f-bloecke").textContent = String(Z.bloecke.length);
+  $("#dateiname").textContent = Z.name;
+}
+
+/* ============================================================
+   6 — TIPPEN
+
+   Die Eingabehilfen sind der Grund, warum dieser Editor ein
+   Markdown-Editor bleibt und keine zweite Auszeichnungssprache
+   erfindet: Wer `## ` tippt, bekommt eine Überschrift; wer sie über
+   ein Menü setzt, bekommt dasselbe `##` in der Datei.
+   ============================================================ */
+const HILFEN = [
+  [/^# $/,              () => ({art:"h1"})],
+  [/^## $/,             () => ({art:"h2"})],
+  [/^### $/,            () => ({art:"h3"})],
+  [/^[-*] \[[ xX]\] $/, (m) => ({art:"todo", fertig:/[xX]/.test(m[0])})],
+  [/^[-*] $/,           () => ({art:"punkt"})],
+  [/^\d+[.)] $/,        () => ({art:"nummer"})],
+  [/^> $/,              () => ({art:"zitat"})],
+  [/^```(\S*)$/,        (m) => ({art:"code", sprache:m[1] || ""})],
+  [/^(-{3,}|\*{3,})$/,  () => ({art:"linie"})]
+];
+
+function hilfePruefen(i, n){
+  const b = Z.bloecke[i];
+  if (b.art === "code") return false;             /* im Codeblock wird nichts gedeutet */
+  const roh = n.textContent;
+  for (let k = 0; k < HILFEN.length; k++){
+    const m = roh.match(HILFEN[k][0]);
+    if (!m) continue;
+    const neu = HILFEN[k][1](m);
+    if (b.art === neu.art && neu.art !== "linie") continue;
+    Object.assign(b, neu);
+    b.text = "";
+    if (neu.art === "linie"){
+      /* Nach einer Trennlinie geht es in einem neuen Absatz weiter. */
+      Z.bloecke.splice(i + 1, 0, {art:"absatz", text:""});
+      bewahre(); male(i + 1, 0);
+    } else {
+      bewahre(); male(i, 0);
+    }
+    return true;
+  }
+  return false;
+}
+
+function tasteImBlock(ev, i, n){
+  const b = Z.bloecke[i];
+  const pos = holePos(n);
+  const laenge = n.textContent.length;
+
+  if (ev.key === "Enter" && !ev.shiftKey){
+    if (b.art === "code") return;                 /* im Codeblock bricht Enter die Zeile */
+    ev.preventDefault();
+    const roh = n.textContent;
+    const davor = roh.slice(0, pos), danach = roh.slice(pos);
+    /* Leerer Listeneintrag: Enter verlässt die Liste, statt sie fortzusetzen. */
+    if (GRUPPIERT.indexOf(b.art) >= 0 && !roh.trim()){
+      b.art = "absatz"; delete b.fertig; b.text = "";
+      bewahre(); male(i, 0); return;
+    }
+    b.text = davor;
+    const folgt = GRUPPIERT.indexOf(b.art) >= 0
+      ? {art:b.art, text:danach, fertig:false}
+      : {art:"absatz", text:danach};
+    Z.bloecke.splice(i + 1, 0, folgt);
+    bewahre(); male(i + 1, 0);
+    return;
+  }
+
+  if (ev.key === "Backspace" && pos === 0 && getSelection().isCollapsed){
+    /* Erst die Art zurücknehmen, dann erst verschmelzen — so wie in
+       Notion: Ein Backspace am Anfang einer Überschrift macht sie zum
+       Absatz und löscht nichts. */
+    if (b.art !== "absatz"){
+      ev.preventDefault();
+      b.art = "absatz"; delete b.fertig; delete b.sprache;
+      bewahre(); male(i, 0); return;
+    }
+    if (i === 0) return;
+    ev.preventDefault();
+    const vor = Z.bloecke[i-1];
+    if (vor.art === "linie"){ Z.bloecke.splice(i-1, 1); bewahre(); male(i-1, 0); return; }
+    const stelle = vor.text.length;
+    vor.text += b.text;
+    Z.bloecke.splice(i, 1);
+    bewahre(); male(i-1, stelle);
+    return;
+  }
+
+  if (ev.key === "Delete" && pos === laenge && getSelection().isCollapsed
+      && i < Z.bloecke.length - 1){
+    ev.preventDefault();
+    const nach = Z.bloecke[i+1];
+    if (nach.art === "linie"){ Z.bloecke.splice(i+1, 1); bewahre(); male(i, pos); return; }
+    b.text += nach.text;
+    Z.bloecke.splice(i+1, 1);
+    bewahre(); male(i, pos);
+    return;
+  }
+
+  if (ev.key === "ArrowUp" && pos === 0 && i > 0){
+    ev.preventDefault(); setzeFokus(i-1, -1); return; }
+  if (ev.key === "ArrowDown" && pos === laenge && i < Z.bloecke.length - 1){
+    ev.preventDefault(); setzeFokus(i+1, 0); return; }
+
+  if (ev.key === "Tab") ev.preventDefault();      /* Einrücken kommt in Schritt 4 */
+}
+
+/* ---------- Ereignisse an der Fläche ---------- */
+function verdrahte(){
+  const spalte = $("#spalte");
+
+  /* Vor dem Klick auf den Rohtext umstellen: `mousedown` kommt vor dem
+     Setzen der Schreibmarke, `focus` erst danach. Andersherum spränge
+     die Marke bei jedem Klick an den Anfang. */
+  spalte.addEventListener("mousedown", (ev) => {
+    const blk = ev.target.closest(".blk");
+    if (!blk || ev.target.closest(".griff") || ev.target.closest(".kasten")) return;
+    const i = Number(blk.dataset.i);
+    if (i === aktiv) return;
+    if (aktiv >= 0 && Z.bloecke[aktiv]){
+      const alt = textVon(aktiv);
+      if (alt) alt.innerHTML = inlineMalen(Z.bloecke[aktiv].text);
+    }
+    aktiv = i;
+    const t = blk.querySelector(".txt");
+    if (t) t.textContent = Z.bloecke[i].text;
+  });
+
+  spalte.addEventListener("focusin", (ev) => {
+    const t = ev.target.closest(".txt"); if (!t) return;
+    const i = Number(t.closest(".blk").dataset.i);
+    if (aktiv !== i){
+      if (aktiv >= 0 && Z.bloecke[aktiv]){
+        const alt = textVon(aktiv);
+        if (alt) alt.innerHTML = inlineMalen(Z.bloecke[aktiv].text);
+      }
+      aktiv = i;
+      t.textContent = Z.bloecke[i].text;
+    }
+    t.closest(".blk").classList.add("ueber");
+  });
+
+  spalte.addEventListener("focusout", (ev) => {
+    const t = ev.target.closest(".txt"); if (!t) return;
+    const blk = t.closest(".blk"); if (!blk) return;
+    blk.classList.remove("ueber");
+    const i = Number(blk.dataset.i);
+    if (Z.bloecke[i]) t.innerHTML = inlineMalen(Z.bloecke[i].text);
+    if (aktiv === i) aktiv = -1;
+  });
+
+  spalte.addEventListener("input", (ev) => {
+    const t = ev.target.closest(".txt"); if (!t) return;
+    const i = Number(t.closest(".blk").dataset.i);
+    if (!Z.bloecke[i]) return;
+    Z.bloecke[i].text = t.textContent;
+    if (hilfePruefen(i, t)) return;
+    bewahre();
+    quelleMalen();
+    fussMalen();
+  });
+
+  spalte.addEventListener("keydown", (ev) => {
+    const t = ev.target.closest(".txt"); if (!t) return;
+    tasteImBlock(ev, Number(t.closest(".blk").dataset.i), t);
+  });
+
+  /* Eingefügter Text kommt als Markdown herein und wird gedeutet —
+     sonst landet eine kopierte Liste als ein einziger Absatz. */
+  spalte.addEventListener("paste", (ev) => {
+    const t = ev.target.closest(".txt"); if (!t) return;
+    const roh = (ev.clipboardData || window.clipboardData).getData("text/plain");
+    if (!roh || roh.indexOf("\n") < 0) return;            /* einzeilig: normal einfügen */
+    ev.preventDefault();
+    const i = Number(t.closest(".blk").dataset.i);
+    const neu = leseMarkdown(roh);
+    const pos = holePos(t);
+    const rest = Z.bloecke[i].text.slice(pos);
+    Z.bloecke[i].text = Z.bloecke[i].text.slice(0, pos);
+    const ab = i + 1;
+    Z.bloecke.splice(ab, 0, ...neu);
+    if (rest) Z.bloecke.splice(ab + neu.length, 0, {art:"absatz", text:rest});
+    bewahre(); male(ab + neu.length - 1, -1);
+    melde(neu.length + (neu.length === 1 ? " Block eingefügt" : " Blöcke eingefügt"));
+  });
+
+  /* ---------- Ziehen ---------- */
+  spalte.addEventListener("dragstart", (ev) => {
+    const blk = ev.target.closest(".blk"); if (!blk) return;
+    ziehtVon = Number(blk.dataset.i);
+    ev.dataTransfer.effectAllowed = "move";
+    ev.dataTransfer.setData("text/plain", String(ziehtVon));
+  });
+  spalte.addEventListener("dragover", (ev) => {
+    if (ziehtVon < 0) return;
+    const blk = ev.target.closest(".blk"); if (!blk) return;
+    ev.preventDefault();
+    const r = blk.getBoundingClientRect();
+    const unten = ev.clientY > r.top + r.height / 2;
+    spalte.querySelectorAll(".blk").forEach(x => x.classList.remove("zielvor","zielnach"));
+    blk.classList.add(unten ? "zielnach" : "zielvor");
+  });
+  spalte.addEventListener("drop", (ev) => {
+    if (ziehtVon < 0) return;
+    const blk = ev.target.closest(".blk"); if (!blk) return;
+    ev.preventDefault();
+    const r = blk.getBoundingClientRect();
+    const unten = ev.clientY > r.top + r.height / 2;
+    let ziel = Number(blk.dataset.i) + (unten ? 1 : 0);
+    const stueck = Z.bloecke[ziehtVon];
+    Z.bloecke.splice(ziehtVon, 1);
+    if (ziehtVon < ziel) ziel--;
+    Z.bloecke.splice(ziel, 0, stueck);
+    ziehtVon = -1;
+    bewahre(); male();
+    melde("Verschoben");
+  });
+  spalte.addEventListener("dragend", () => {
+    ziehtVon = -1;
+    spalte.querySelectorAll(".blk").forEach(x => {
+      x.classList.remove("zielvor","zielnach"); x.draggable = false; });
+  });
+
+  /* Ein Klick unter den letzten Block hängt einen neuen an — dieselbe
+     Erwartung wie in jedem Textfeld. */
+  $("#blatt").addEventListener("mousedown", (ev) => {
+    if (ev.target !== $("#blatt") && ev.target !== $("#spalte")) return;
+    const letzter = Z.bloecke[Z.bloecke.length-1];
+    if (letzter && letzter.art === "absatz" && !letzter.text){
+      setzeFokus(Z.bloecke.length-1, 0); return; }
+    Z.bloecke.push({art:"absatz", text:""});
+    bewahre(); male(Z.bloecke.length-1, 0);
+  });
+}
+
+/* ============================================================
+   7 — DER QUELLTEXT
+
+   In der geteilten Ansicht ist er nur zu lesen, in der Ansicht
+   „Quelltext" zu schreiben. Zwei schreibbare Stände nebeneinander
+   wären zwei Wahrheiten — die Begründung steht in
+   doku/ENTSCHEIDUNGEN.md, Punkt 3.
+   ============================================================ */
+function quelltextVerdrahten(){
+  const q = $("#q");
+  q.addEventListener("input", () => {
+    if (q.readOnly) return;
+    ersetze(Z.bloecke, leseMarkdown(q.value));
+    bewahre();
+    fussMalen();
+  });
+  q.addEventListener("blur", () => { if (!q.readOnly) male(); });
+}
+
+function ansicht(name){
+  $("#app").dataset.ansicht = name;
+  ["schreiben","geteilt","quelltext"].forEach(n =>
+    $("#w-" + n).setAttribute("aria-current", String(n === name)));
+  if (name !== "quelltext") male(); else quelleMalen();
+  try { localStorage.setItem(SCHLUESSEL + "-ansicht", name); } catch (e) { /* egal */ }
+}
+
+/* ============================================================
+   8 — DATEIEN
+
+   Edge erlaubt aus einer lokal geöffneten Datei **keinen** direkten
+   Dateizugriff; die File System Access API ist damit keine Option.
+   Geöffnet wird über die Dateiauswahl, gesichert über den Download.
+   Der Arbeitsstand liegt dazwischen in localStorage.
+   ============================================================ */
+function dateienVerdrahten(){
+  $("#oeffnen").onclick = () => $("#datei").click();
+  $("#datei").addEventListener("change", (ev) => {
+    const f = ev.target.files && ev.target.files[0];
+    if (!f) return;
+    const leser = new FileReader();
+    leser.onload = () => {
+      Z.name = f.name;
+      ersetze(Z.bloecke, leseMarkdown(String(leser.result)));
+      aktiv = -1;
+      bewahre(); male();
+      melde("Geöffnet: " + f.name + " — " + Z.bloecke.length + " Blöcke");
+    };
+    leser.onerror = () => melde("Die Datei ließ sich nicht lesen.");
+    leser.readAsText(f, "utf-8");
+    ev.target.value = "";                 /* dieselbe Datei nochmal öffnen können */
+  });
+
+  $("#sichern").onclick = () => {
+    const text = schreibeMarkdown(Z.bloecke);
+    const blob = new Blob([text], {type:"text/markdown;charset=utf-8"});
+    const a = el("a");
+    const adresse = URL.createObjectURL(blob);
+    a.href = adresse;
+    a.download = /\.(md|markdown|txt)$/i.test(Z.name) ? Z.name : Z.name + ".md";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(adresse), 4000);
+    melde("Gesichert: " + a.download);
+  };
+
+  $("#neu").onclick = () => {
+    if (schreibeMarkdown(Z.bloecke).trim()
+        && !confirm("Der jetzige Text geht verloren.\n\nOK = neu anfangen, Abbrechen = zurück"))
+      return;
+    Z.name = "unbenannt.md";
+    ersetze(Z.bloecke, [{art:"absatz", text:""}]);
+    aktiv = -1; bewahre(); male(0, 0);
+  };
+
+  $("#name").onclick = () => {
+    const n = prompt("Dateiname", Z.name);
+    if (!n) return;
+    Z.name = /\.(md|markdown|txt)$/i.test(n) ? n : n + ".md";
+    bewahre(); fussMalen(); quelleMalen();
+  };
+}
+
+/* ============================================================
+   9 — TASTATUR UND START
+   ============================================================ */
+document.addEventListener("keydown", (ev) => {
+  if (!(ev.ctrlKey || ev.metaKey)) return;
+  const k = ev.key.toLowerCase();
+  if (k === "s"){ ev.preventDefault(); $("#sichern").click(); }
+  if (k === "o"){ ev.preventDefault(); $("#oeffnen").click(); }
+  if (k === "e"){
+    ev.preventDefault();
+    ansicht($("#app").dataset.ansicht === "schreiben" ? "geteilt" : "schreiben");
+  }
+});
+
+const START = "# Willkommen\n\n"
+  + "Dies ist ein **Gerüst**, kein fertiger Editor. Was schon geht und was noch\n"
+  + "fehlt, steht in `STAND.md`; wie es aussehen soll, in `mockups/`.\n\n"
+  + "## Was hier schon funktioniert\n\n"
+  + "- [x] Blöcke aus Markdown lesen und wieder als Markdown schreiben\n"
+  + "- [x] Eingabehilfen: `# `, `- `, `1. `, `- [ ] `, `> ` und `---`\n"
+  + "- [x] Der Block unter der Schreibmarke zeigt seinen Rohtext\n"
+  + "- [ ] Slash-Menü, Auswahlleiste, Umwandeln — Schritt 2 und 3\n\n"
+  + "> Der Text ist immer Rohtext. Gespeichert wird nie etwas anderes als Markdown.\n\n"
+  + "```javascript\n"
+  + "const bloecke = leseMarkdown(text);\n"
+  + "console.assert(schreibeMarkdown(bloecke) === text);\n"
+  + "```\n\n"
+  + "---\n\n"
+  + "Ziehe einen Block am Griff links, um ihn zu verschieben.\n";
+
+function start(){
+  if (!lade()) ersetze(Z.bloecke, leseMarkdown(START));
+  verdrahte();
+  quelltextVerdrahten();
+  dateienVerdrahten();
+  ["schreiben","geteilt","quelltext"].forEach(n => {
+    $("#w-" + n).onclick = () => ansicht(n); });
+  let gemerkt = "schreiben";
+  try { gemerkt = localStorage.getItem(SCHLUESSEL + "-ansicht") || "schreiben"; }
+  catch (e) { /* egal */ }
+  ansicht(gemerkt);
+  male();
+}
+start();
+</script>
+</body>
+</html>

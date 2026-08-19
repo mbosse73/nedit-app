@@ -1,0 +1,470 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Markdown im Notion-Stil — Quelltext</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{color-scheme:light}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:#f2f1ee;color:#111}
+
+/* ---------- Rahmen: nicht Teil des Entwurfs ---------- */
+.meta{background:#1a1a18;color:#e7e5e0;padding:10px 22px;font-size:13px;
+  display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.meta b{color:#fff}
+.meta nav{display:flex;gap:12px;margin-left:auto;flex-wrap:wrap}
+.meta a{color:#b9b6ad;text-decoration:none;font-size:12.5px}
+.meta a.hier{color:#fff;font-weight:600}
+.meta a:hover{color:#fff}
+.rahmenhinweis{max-width:1480px;margin:14px auto 0;padding:0 22px;font-size:13.5px;
+  color:#57544c;line-height:1.55}
+.rahmenhinweis b{color:#1a1a18}
+.bilanz{max-width:1480px;margin:18px auto 60px;padding:0 22px;display:grid;
+  grid-template-columns:1fr 1fr;gap:16px}
+.bilanz section{background:#fff;border:1px solid #e2e0db;border-radius:10px;padding:14px 17px}
+.bilanz h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;
+  color:#8a857a}
+.bilanz section.gewinn h3{color:#2f7d4f}
+.bilanz section.verlust h3{color:#a63d2f}
+.bilanz li{font-size:13.5px;line-height:1.55;color:#4a473f;margin-left:17px;margin-bottom:5px}
+.bilanz b{color:#1a1a18}
+.bilanz code{background:#e9e7e2;border-radius:3px;padding:1px 5px;font-size:12.5px;
+  font-family:ui-monospace,Consolas,monospace}
+@media(max-width:900px){.bilanz{grid-template-columns:1fr}}
+.blocktext{max-width:1480px;margin:22px auto;padding:0 22px;font-size:14px;line-height:1.65;
+  color:#3d3a34}
+.blocktext h2{font-size:19px;margin:26px 0 8px;color:#1a1a18}
+.blocktext p{margin-bottom:10px;max-width:74ch}
+.blocktext li{margin-left:20px;margin-bottom:6px;max-width:72ch}
+.blocktext b{color:#1a1a18}
+.blocktext code{background:#e9e7e2;border-radius:3px;padding:1px 5px;font-size:13px;
+  font-family:ui-monospace,Consolas,monospace}
+.uebersicht{max-width:1480px;margin:16px auto 60px;padding:0 22px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.uebersicht a{display:block;background:#fff;border:1px solid #e2e0db;border-radius:10px;
+  padding:16px 18px;text-decoration:none;color:#1a1a18}
+.uebersicht a:hover{border-color:#c9c5bc;box-shadow:0 3px 12px rgba(15,15,15,.07)}
+.uebersicht .em{font-size:26px;display:block;margin-bottom:8px}
+.uebersicht h3{font-size:16px;margin-bottom:5px}
+.uebersicht p{font-size:13.5px;line-height:1.55;color:#57544c}
+
+/* ============================================================
+   AB HIER: der Editor. Eigener Geltungsbereich, eigene Typografie.
+   ============================================================ */
+.ed{max-width:1480px;margin:16px auto 0;background:#fff;border:1px solid #e7e6e3;
+  border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(15,15,15,.06);
+  display:flex;flex-direction:column;height:920px;position:relative;
+  font-family:ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  color:rgb(55,53,47);font-size:14px;line-height:1.5}
+.ed.hoch{height:auto;min-height:620px}
+.ed *{box-sizing:border-box}
+.ed-rumpf{flex:1;min-height:0;display:flex}
+.ed.hoch .ed-rumpf{min-height:0}
+
+/* ---------- Dateibaum links ---------- */
+.ed-baum{width:250px;flex-shrink:0;background:rgb(247,247,245);
+  border-right:1px solid rgba(55,53,47,.09);display:flex;flex-direction:column;
+  padding:8px 8px;overflow-y:auto}
+.ed.hoch .ed-baum{overflow:visible}
+.ed-wurzel{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;
+  font-size:14px;font-weight:600}
+.ed-wurzel svg{color:rgba(55,53,47,.5)}
+.ed-wurzel .ch{margin-left:auto;color:rgba(55,53,47,.4);display:flex}
+.ed-such{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;
+  font-size:14px;color:rgba(55,53,47,.55);margin:2px 0 8px}
+.ed-such svg{color:rgba(55,53,47,.45)}
+.ed-such kbd{margin-left:auto;font-size:11px;background:rgba(55,53,47,.06);border-radius:4px;
+  padding:1px 5px;font-family:inherit;color:rgba(55,53,47,.45)}
+.ed-z{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;
+  font-size:14px;color:rgba(55,53,47,.78)}
+.ed-z:hover{background:rgba(55,53,47,.06)}
+.ed-z .dre{width:14px;flex-shrink:0;color:rgba(55,53,47,.32);display:flex;
+  align-items:center;justify-content:center}
+.ed-z .em{font-size:14px;width:18px;text-align:center;flex-shrink:0;line-height:1}
+.ed-z .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ed-z.an{background:rgba(55,53,47,.08);font-weight:500;color:rgb(55,53,47)}
+.ed-z.k1{padding-left:22px}
+.ed-z.k2{padding-left:38px}
+.ed-z .kb{margin-left:auto;font-size:11px;color:rgba(55,53,47,.3)}
+.ed-sek{font-size:11.5px;font-weight:600;color:rgba(55,53,47,.45);padding:12px 8px 4px;
+  display:flex;align-items:center}
+.ed-sek .sp{flex:1}
+.ed-fuss{margin-top:auto;padding-top:8px}
+
+/* ---------- Kopfzeile ---------- */
+.ed-kopf{display:flex;align-items:center;gap:8px;padding:9px 16px;font-size:13.5px;
+  color:rgba(55,53,47,.6);border-bottom:1px solid rgba(55,53,47,.07);flex-shrink:0}
+.ed-krume{display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:5px}
+.ed-krume:hover{background:rgba(55,53,47,.06)}
+.ed-kopf .tr{color:rgba(55,53,47,.25)}
+.ed-kopf .re{margin-left:auto;display:flex;gap:3px;align-items:center}
+.ed-kopf .re .kn{padding:4px 9px;border-radius:5px;display:flex;align-items:center;gap:6px;
+  color:rgba(55,53,47,.62)}
+.ed-kopf .re .kn:hover{background:rgba(55,53,47,.06)}
+.ed-kopf .re .kn.an{background:rgba(55,53,47,.08);color:rgb(55,53,47);font-weight:500}
+.ed-schalt{display:flex;background:rgba(55,53,47,.06);border-radius:6px;padding:2px}
+.ed-schalt span{padding:3px 10px;border-radius:4px;font-size:12.5px;
+  color:rgba(55,53,47,.6)}
+.ed-schalt span.an{background:#fff;color:rgb(55,53,47);font-weight:500;
+  box-shadow:0 1px 2px rgba(15,15,15,.12)}
+
+/* ---------- Schreibfläche ---------- */
+.ed-blatt{flex:1;min-width:0;overflow-y:auto;background:#fff;position:relative}
+.ed.hoch .ed-blatt{overflow:visible}
+.ed-deck{height:140px;background:linear-gradient(115deg,#e6e1d6,#f2ece1 55%,#e3ebeb)}
+.ed-seite{max-width:900px;margin:0 auto;padding:0 96px 90px}
+.ed-icon{font-size:64px;line-height:1;display:block;margin:-34px 0 6px}
+.ed-titel{font-size:40px;font-weight:700;letter-spacing:-.02em;line-height:1.2;
+  margin-bottom:6px}
+
+/* ---------- Frontmatter als Eigenschaften ---------- */
+.ed-eig{margin:4px 0 14px}
+.ed-eig .r{display:flex;align-items:flex-start;gap:8px;font-size:14px}
+.ed-eig .l{width:172px;flex-shrink:0;display:flex;align-items:center;gap:7px;
+  color:rgba(55,53,47,.5);padding:4px 6px;border-radius:5px}
+.ed-eig .l svg{flex-shrink:0}
+.ed-eig .w{flex:1;padding:4px 8px;border-radius:5px;min-height:26px}
+.ed-eig .w:hover{background:rgba(55,53,47,.06)}
+.ed-eig .w.leer{color:rgba(55,53,47,.33)}
+.ed-eig-fuss{display:flex;align-items:center;gap:8px;font-size:12px;
+  color:rgba(55,53,47,.4);padding:6px 6px 0;border-top:1px solid rgba(55,53,47,.07);
+  margin-top:6px}
+
+/* ---------- Blöcke ---------- */
+.b{position:relative;padding:3px 2px;font-size:16px;line-height:1.6}
+.b:hover{background:rgba(55,53,47,.02)}
+.b .gr{position:absolute;left:-46px;top:2px;display:flex;gap:2px;opacity:0;
+  color:rgba(55,53,47,.3)}
+.b.zeig .gr,.b:hover .gr{opacity:1}
+.b .gr span{padding:2px;border-radius:4px}
+.b .gr span:hover{background:rgba(55,53,47,.08)}
+.h1{font-size:30px;font-weight:600;letter-spacing:-.01em;margin:28px 0 2px}
+.h2{font-size:24px;font-weight:600;margin:22px 0 1px}
+.h3{font-size:19px;font-weight:600;margin:18px 0 0}
+.grau{color:rgba(55,53,47,.5)}
+.b-leer{color:rgba(55,53,47,.28);font-size:16px;padding:4px 2px;display:flex;
+  align-items:center;gap:10px}
+.b-leer .pl{color:rgba(55,53,47,.3);display:flex}
+.b-todo{display:flex;align-items:flex-start;gap:10px;padding:3px 2px;font-size:16px}
+.b-todo .ka{width:16px;height:16px;border-radius:3px;border:1.5px solid rgba(55,53,47,.35);
+  margin-top:5px;flex-shrink:0;display:grid;place-items:center}
+.b-todo.fertig .ka{background:rgb(35,131,226);border-color:rgb(35,131,226);color:#fff}
+.b-todo.fertig .tt{color:rgba(55,53,47,.4);text-decoration:line-through}
+.b-pkt{display:flex;align-items:flex-start;gap:11px;padding:3px 2px;font-size:16px}
+.b-pkt .m{color:rgba(55,53,47,.75);line-height:1.6;flex-shrink:0}
+.b-tog{display:flex;align-items:flex-start;gap:9px;padding:3px 2px;font-size:16px}
+.b-tog .dre{color:rgba(55,53,47,.5);margin-top:6px;flex-shrink:0;display:flex}
+.b-tog .dre.zu{transform:rotate(-90deg)}
+.kind{margin-left:27px}
+.b-zit{border-left:3px solid rgb(55,53,47);padding-left:14px;font-size:16px;margin:8px 0}
+.b-ruf{display:flex;gap:11px;background:rgb(241,241,239);border-radius:4px;padding:16px;
+  margin:8px 0;font-size:15.5px;line-height:1.5}
+.b-ruf.blau{background:rgb(231,242,248)}
+.b-ruf.gelb{background:rgb(253,236,200)}
+.b-ruf.rot{background:rgb(255,226,221)}
+.b-ruf .em{font-size:17px;line-height:1.35;flex-shrink:0}
+.b-lin{height:1px;background:rgba(55,53,47,.11);margin:15px 0}
+.b-code{background:rgb(247,246,243);border-radius:4px;padding:28px 16px 16px;margin:8px 0;
+  font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:13.5px;line-height:1.55;
+  position:relative;white-space:pre;overflow-x:auto}
+.b-code .spr{position:absolute;top:6px;left:12px;font-size:11.5px;
+  color:rgba(55,53,47,.4);font-family:ui-sans-serif,sans-serif}
+.b-code .kop{position:absolute;top:5px;right:8px;font-size:11.5px;
+  color:rgba(55,53,47,.45);font-family:ui-sans-serif,sans-serif;
+  border:1px solid rgba(55,53,47,.14);border-radius:4px;padding:1px 7px}
+.b-tab{width:100%;border-collapse:collapse;font-size:15px;margin:8px 0}
+.b-tab th,.b-tab td{border:1px solid rgba(55,53,47,.14);padding:7px 10px;text-align:left}
+.b-tab th{background:rgb(247,246,243);font-weight:600;font-size:14px}
+.b-bild{margin:10px 0;border-radius:4px;overflow:hidden}
+.b-bild .fl{height:190px;background:linear-gradient(120deg,#dfe6ea,#eef1ec 60%,#e8e0d8);
+  display:grid;place-items:center;color:rgba(55,53,47,.35);font-size:13px}
+.b-bild .un{font-size:12.5px;color:rgba(55,53,47,.45);padding:6px 2px}
+.b-marke{border:1px solid rgba(55,53,47,.14);border-radius:4px;display:flex;margin:8px 0;
+  overflow:hidden}
+.b-marke .l{flex:1;padding:12px 14px;min-width:0}
+.b-marke .t{font-size:14px;margin-bottom:3px}
+.b-marke .u{font-size:12px;color:rgba(55,53,47,.5);line-height:1.45}
+.b-marke .a{font-size:12px;color:rgba(55,53,47,.5);margin-top:7px;display:flex;
+  align-items:center;gap:6px}
+.b-marke .r{width:130px;background:rgb(241,241,239);flex-shrink:0}
+.b-spalten{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin:8px 0}
+.b-marker{background:rgb(251,243,196);border-radius:3px;padding:1px 2px}
+.b-farbe{color:rgb(186,67,63)}
+.b-inline{background:rgba(135,131,120,.15);color:rgb(212,76,71);border-radius:3px;
+  padding:1px 5px;font-family:ui-monospace,Consolas,monospace;font-size:.86em}
+.b-verweis{border-bottom:1px solid rgba(55,53,47,.25);padding:0 1px;border-radius:2px}
+.b-verweis:hover{background:rgba(55,53,47,.07)}
+.b-erw{background:rgba(35,131,226,.09);color:rgb(35,131,226);border-radius:3px;padding:1px 5px}
+.b-komm{background:rgb(253,236,200);border-bottom:2px solid rgb(222,178,64);
+  border-radius:2px;padding:0 1px}
+
+/* ---------- Gliederung rechts ---------- */
+.ed-gl{width:236px;flex-shrink:0;border-left:1px solid rgba(55,53,47,.09);padding:20px 14px;
+  overflow-y:auto}
+.ed.hoch .ed-gl{overflow:visible}
+.ed-gl h4{font-size:11.5px;font-weight:600;color:rgba(55,53,47,.45);margin-bottom:9px}
+.ed-gl a{display:block;font-size:13px;color:rgba(55,53,47,.65);padding:4px 7px;
+  border-radius:5px;text-decoration:none;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.ed-gl a:hover{background:rgba(55,53,47,.06)}
+.ed-gl a.t2{padding-left:18px;font-size:12.5px}
+.ed-gl a.t3{padding-left:30px;font-size:12.5px;color:rgba(55,53,47,.5)}
+.ed-gl a.an{color:rgb(35,131,226);background:rgba(35,131,226,.08)}
+
+/* ---------- Fußleiste ---------- */
+.ed-stat{flex-shrink:0;display:flex;align-items:center;gap:16px;padding:6px 16px;
+  border-top:1px solid rgba(55,53,47,.09);background:rgb(251,251,250);font-size:11.5px;
+  color:rgba(55,53,47,.45)}
+.ed-stat .sp{flex:1}
+.ed-stat b{font-weight:600;color:rgba(55,53,47,.6)}
+.ed-stat .neu{color:rgb(35,131,226)}
+
+/* ---------- Schwebende Menüs ---------- */
+.mn{background:#fff;border-radius:6px;padding:6px;position:absolute;z-index:30;
+  box-shadow:0 14px 38px rgba(15,15,15,.22),0 0 0 1px rgba(15,15,15,.07);
+  font-size:14px}
+.mn .k{font-size:11.5px;font-weight:600;color:rgba(55,53,47,.45);padding:9px 9px 4px}
+.mn .z{display:flex;align-items:center;gap:10px;padding:5px 8px;border-radius:5px;
+  color:rgba(55,53,47,.85)}
+.mn .z:hover,.mn .z.an{background:rgba(55,53,47,.06)}
+.mn .z .ic{width:26px;height:26px;border-radius:4px;border:1px solid rgba(55,53,47,.13);
+  display:grid;place-items:center;flex-shrink:0;background:rgb(251,251,250);
+  color:rgba(55,53,47,.7);font-size:13px}
+.mn .z .t{flex:1;min-width:0}
+.mn .z .u{font-size:11.5px;color:rgba(55,53,47,.45)}
+.mn .z .ta{font-size:11px;color:rgba(55,53,47,.4);font-family:ui-monospace,Consolas,monospace;
+  background:rgba(55,53,47,.05);border-radius:3px;padding:1px 5px;flex-shrink:0}
+.mn .tr{height:1px;background:rgba(55,53,47,.09);margin:5px 4px}
+
+/* Das Slash-Menü: Liste links, Vorschau rechts */
+.slash{width:640px;display:flex;padding:0;overflow:hidden}
+.slash .li{width:334px;flex-shrink:0;padding:6px;overflow-y:auto;
+  border-right:1px solid rgba(55,53,47,.09)}
+.slash .vs{flex:1;padding:14px;background:rgb(251,251,250);display:flex;
+  flex-direction:column;gap:10px;min-width:0}
+.slash .vs .h{font-size:11.5px;font-weight:600;color:rgba(55,53,47,.45)}
+.slash .vs .bild{background:#fff;border:1px solid rgba(55,53,47,.11);border-radius:5px;
+  padding:12px 14px}
+.slash .vs .md{background:rgb(46,44,40);color:#e9e6df;border-radius:5px;padding:11px 13px;
+  font-family:ui-monospace,Consolas,monospace;font-size:12.5px;line-height:1.6;
+  white-space:pre-wrap;word-break:break-word}
+.slash .vs .md em{color:#9fd4a0;font-style:normal}
+.slash .vs .t{font-size:12.5px;color:rgba(55,53,47,.55);line-height:1.5}
+.slash-feld{display:flex;align-items:center;gap:8px;padding:8px 10px 6px;
+  border-bottom:1px solid rgba(55,53,47,.07);font-size:13px;color:rgba(55,53,47,.5)}
+.slash-feld b{color:rgb(55,53,47);font-family:ui-monospace,Consolas,monospace;font-weight:400}
+
+/* Auswahlleiste */
+.aus{display:inline-flex;align-items:center;background:rgb(37,36,33);color:#f1efe9;
+  border-radius:5px;padding:3px;gap:1px;position:absolute;z-index:30;
+  box-shadow:0 8px 26px rgba(15,15,15,.3);font-size:13.5px}
+.aus .kn{padding:5px 8px;border-radius:4px;display:flex;align-items:center;gap:5px;
+  white-space:nowrap}
+.aus .kn:hover{background:rgba(255,255,255,.12)}
+.aus .kn.aus1{opacity:.35}
+.aus .kn b{font-weight:700}
+.aus .kn i{font-style:italic}
+.aus .kn s{text-decoration:line-through}
+.aus .kn u{text-decoration:underline}
+.aus .tr{width:1px;align-self:stretch;background:rgba(255,255,255,.16);margin:3px 4px}
+.markiert{background:rgba(35,131,226,.22);border-radius:2px}
+
+/* Farbmenü */
+.farben .pr{width:22px;height:22px;border-radius:4px;border:1px solid rgba(55,53,47,.13);
+  display:grid;place-items:center;font-size:13px;flex-shrink:0}
+
+/* ---------- Quelltext ---------- */
+.q{font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:13.5px;
+  line-height:24px;white-space:pre-wrap;word-break:break-word;color:rgb(55,53,47)}
+.q-mk{color:rgb(35,131,226)}
+.q-h{color:rgb(55,53,47);font-weight:700}
+.q-b{font-weight:700}
+.q-i{font-style:italic}
+.q-c{color:rgb(186,67,63)}
+.q-l{color:rgb(45,111,149)}
+.q-fm{color:rgba(55,53,47,.45)}
+.q-w{color:rgb(190,101,12)}
+.qspalte{flex:1;min-width:0;overflow-y:auto;background:rgb(251,251,250);
+  border-left:1px solid rgba(55,53,47,.09)}
+.ed.hoch .qspalte{overflow:visible}
+.qkopf{position:sticky;top:0;background:rgb(251,251,250);padding:9px 18px;font-size:11.5px;
+  color:rgba(55,53,47,.45);border-bottom:1px solid rgba(55,53,47,.07);display:flex;
+  align-items:center;gap:10px}
+.qkopf .sp{flex:1}
+.qrumpf{padding:18px 18px 60px;display:flex;gap:14px}
+.qnr{flex-shrink:0;width:26px;text-align:right;color:rgba(55,53,47,.25);font-size:12.5px;
+  font-family:ui-monospace,Consolas,monospace;line-height:24px;user-select:none;
+  white-space:pre}
+.qrumpf .q{flex:1;min-width:0}
+.qzeile-an{background:rgb(253,236,200);border-radius:3px}
+
+/* ---------- Blockkatalog ---------- */
+.kat{width:100%;border-collapse:collapse;font-size:14px}
+.kat th{text-align:left;font-size:11.5px;font-weight:600;color:rgba(55,53,47,.45);
+  padding:8px 12px;border-bottom:1px solid rgba(55,53,47,.11);text-transform:uppercase;
+  letter-spacing:.05em}
+.kat td{padding:12px;border-bottom:1px solid rgba(55,53,47,.08);vertical-align:top}
+.kat tr:hover td{background:rgba(55,53,47,.02)}
+.kat .b-tab th{text-transform:none;letter-spacing:0;font-size:14px;
+  color:rgb(55,53,47);padding:7px 10px;border:1px solid rgba(55,53,47,.14)}
+.kat .nm{width:180px;font-weight:500;font-size:14px}
+.kat .nm .ta{display:block;font-size:11.5px;color:rgba(55,53,47,.42);font-weight:400;
+  font-family:ui-monospace,Consolas,monospace;margin-top:3px}
+.kat .zeig{width:38%}
+.kat .md{width:34%;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;
+  line-height:1.65;white-space:pre-wrap;color:rgba(55,53,47,.8);
+  background:rgb(247,246,243);border-radius:4px;padding:9px 11px}
+.kat .ur{width:104px;text-align:center}
+.ur-p{display:inline-flex;align-items:center;gap:5px;border-radius:3px;padding:2px 8px;
+  font-size:11.5px;white-space:nowrap}
+.ur-ok{background:rgb(219,237,219);color:rgb(51,105,74)}
+.ur-warn{background:rgb(253,236,200);color:rgb(160,113,32)}
+.ur-nein{background:rgb(255,226,221);color:rgb(178,60,56)}
+.legende{display:flex;gap:18px;font-size:12.5px;color:rgba(55,53,47,.6);
+  align-items:center;flex-wrap:wrap;padding:12px 2px 0}
+
+/* ---------- Grenzen: vier Karten ---------- */
+.wege{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;
+  margin:14px 0}
+.weg{border:1px solid rgba(55,53,47,.12);border-radius:8px;padding:16px 18px;
+  display:flex;flex-direction:column;gap:9px}
+.weg .nr{width:24px;height:24px;border-radius:50%;background:rgb(241,241,239);
+  display:grid;place-items:center;font-size:12.5px;font-weight:600;
+  color:rgba(55,53,47,.6)}
+.weg h4{font-size:16px;font-weight:600}
+.weg p{font-size:13.5px;line-height:1.55;color:rgba(55,53,47,.7)}
+.weg .bsp{background:rgb(247,246,243);border-radius:5px;padding:10px 12px;
+  font-family:ui-monospace,Consolas,monospace;font-size:12px;line-height:1.6;
+  white-space:pre-wrap;color:rgba(55,53,47,.8);margin-top:auto}
+.weg .ur-p{align-self:flex-start}
+</style>
+
+<div class="meta"><b>Markdown-Editor im Notion-Stil</b><span>Entwurf, nicht umgesetzt</span><nav><a href="index.html">Übersicht</a><a href="schreiben.html">Schreiben</a><a href="slash.html">Slash-Menü</a><a href="auswahl.html">Auswahl &amp; Menüs</a><a href="bloecke.html">Blockkatalog</a><a class="hier" href="quelltext.html">Quelltext</a><a href="grenzen.html">Grenzen</a></nav></div>
+<p class="rahmenhinweis"><b>Links die Fläche, rechts die Datei.</b> Ohne diese Ansicht wäre der ganze Entwurf unehrlich — wer Markdown wählt, wählt es, weil die Datei lesbarer Text ist. Zwei Zeilen stehen gelb: <code>&gt; [!TIP]</code> und <code>&lt;details&gt;</code>. Das sind die beiden Stellen in diesem Dokument, an denen der Editor die reine Sprache verlässt — <b>sie werden markiert, nicht versteckt.</b></p>
+<div class="ed hoch"><div class="ed-kopf"><span class="ed-krume">📁 Projekte</span><span class="tr">/</span><span class="ed-krume">📄 Ablösung Altsystem.md</span><div class="re"><div class="ed-schalt"><span>Schreiben</span><span class="an">Geteilt</span><span>Quelltext</span></div><span class="kn"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.8 11.4a1.8 1.8 0 0 1-1.8 1.8H6.6L3.2 16V5.4a1.8 1.8 0 0 1 1.8-1.8h10a1.8 1.8 0 0 1 1.8 1.8z"/></svg></span><span class="kn"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 3.4 2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7-3.4-3.3 4.7-.7z"/></svg></span><span class="kn"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="4.6" cy="10" r=".95"/><circle cx="10" cy="10" r=".95"/><circle cx="15.4" cy="10" r=".95"/></svg></span></div></div><div class="ed-rumpf"><div class="ed-baum"><div class="ed-wurzel"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.8 6.2a1.4 1.4 0 0 1 1.4-1.4h3l1.6 2h6.4a1.4 1.4 0 0 1 1.4 1.4v6.6a1.4 1.4 0 0 1-1.4 1.4H4.2a1.4 1.4 0 0 1-1.4-1.4z"/></svg>Notizbuch<span class="ch"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.6 7.6 10 13l5.4-5.4"/></svg></span></div><div class="ed-such"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="5.8"/><path d="m16.2 16.2-3-3"/></svg>Suchen<kbd>Strg K</kbd></div><div class="ed-sek">Ordner<span class="sp"></span><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4.2v11.6M4.2 10h11.6"/></svg></div><div class="ed-z ord"><span class="dre"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.6 4.6 13 10l-5.4 5.4"/></svg></span><span class="em">📁</span><span class="nm">Projekte</span></div><div class="ed-z k1 an"><span class="dre"></span><span class="em">📄</span><span class="nm">Ablösung Altsystem.md</span></div><div class="ed-z k1"><span class="dre"></span><span class="em">📄</span><span class="nm">Schnittstellen.md</span></div><div class="ed-z k1 ord"><span class="dre"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.6 4.6 13 10l-5.4 5.4"/></svg></span><span class="em">📁</span><span class="nm">Anhänge</span></div><div class="ed-z ord"><span class="dre"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.6 4.6 13 10l-5.4 5.4"/></svg></span><span class="em">📁</span><span class="nm">Notizen</span></div><div class="ed-z k1"><span class="dre"></span><span class="em">📄</span><span class="nm">Preismodell Staffeln.md</span></div><div class="ed-z k1"><span class="dre"></span><span class="em">📄</span><span class="nm">Wettbewerbs-Research.md</span></div><div class="ed-z ord"><span class="dre"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.6 4.6 13 10l-5.4 5.4"/></svg></span><span class="em">📁</span><span class="nm">Vorlagen</span></div><div class="ed-z k1"><span class="dre"></span><span class="em">📄</span><span class="nm">Telefonnotiz.md</span></div><div class="ed-z k1"><span class="dre"></span><span class="em">📄</span><span class="nm">Protokoll.md</span></div><div class="ed-sek">Zuletzt<span class="sp"></span></div><div class="ed-z"><span class="dre"></span><span class="em">📄</span><span class="nm">Ablösung Altsystem.md</span><span class="kb">vor 4 Min.</span></div><div class="ed-fuss"><div class="ed-z"><span class="dre"></span><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4.2v11.6M4.2 10h11.6"/></svg><span class="nm">Neue Datei</span></div><div class="ed-z"><span class="dre"></span><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="4.6" cy="10" r=".95"/><circle cx="10" cy="10" r=".95"/><circle cx="15.4" cy="10" r=".95"/></svg><span class="nm">Einstellungen</span></div></div></div><div class="ed-blatt"><div class="ed-seite" style="padding:26px 40px 60px;max-width:none"><div class="ed-titel" style="font-size:30px">Ablösung Altsystem</div><div class="ed-eig"><div class="r"><div class="l"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.4 5.4h11.2M4.4 10h11.2M4.4 14.6h6.4"/></svg>titel</div><div class="w">Ablösung Altsystem</div></div><div class="r"><div class="l"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.4 5.4h11.2M4.4 10h11.2M4.4 14.6h6.4"/></svg>datum</div><div class="w">2026-08-19</div></div><div class="r"><div class="l"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="4.4" cy="5.6" r="1"/><path d="M8 5.6h9M8 10h9M8 14.4h9"/><circle cx="4.4" cy="10" r="1"/><circle cx="4.4" cy="14.4" r="1"/></svg>status</div><div class="w"><span class="b-inline">laeuft</span></div></div><div class="r"><div class="l"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="4.4" cy="5.6" r="1"/><path d="M8 5.6h9M8 10h9M8 14.4h9"/><circle cx="4.4" cy="10" r="1"/><circle cx="4.4" cy="14.4" r="1"/></svg>schlagworte</div><div class="w"><span class="b-inline">projekt</span> <span class="b-inline">altsystem</span> <span class="b-inline">2026</span></div></div><div class="r"><div class="l"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.4 5.4h11.2M4.4 10h11.2M4.4 14.6h6.4"/></svg>verantwortlich</div><div class="w">Marco Bosse</div></div><div class="ed-eig-fuss"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.6 6.4 3.8 10l3.8 3.6M12.4 6.4 16.2 10l-3.8 3.6"/></svg>YAML-Frontmatter · 5 Schlüssel · als Text zeigen<span style="flex:1"></span><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4.2v11.6M4.2 10h11.6"/></svg>Schlüssel hinzufügen</div></div><div class="b"><span class="gr"><span><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4.2v11.6M4.2 10h11.6"/></svg></span><span><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.6" cy="5" r="1.05"/><circle cx="12.4" cy="5" r="1.05"/><circle cx="7.6" cy="10" r="1.05"/><circle cx="12.4" cy="10" r="1.05"/><circle cx="7.6" cy="15" r="1.05"/><circle cx="12.4" cy="15" r="1.05"/></svg></span></span>Das Altsystem läuft seit elf Jahren und trägt noch immer die Auftragsbearbeitung. Abgelöst wird es <b>bis zum 18. Dezember</b>; bis dahin laufen beide Systeme <i>parallel</i>. Der Stand steht in <span class="b-verweis">📄 Schnittstellen.md</span>, die Zahlen kommen aus <span class="b-inline">auftrag_export.csv</span>.</div><div class="b h2"><span class="gr"><span><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4.2v11.6M4.2 10h11.6"/></svg></span><span><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.6" cy="5" r="1.05"/><circle cx="12.4" cy="5" r="1.05"/><circle cx="7.6" cy="10" r="1.05"/><circle cx="12.4" cy="10" r="1.05"/><circle cx="7.6" cy="15" r="1.05"/><circle cx="12.4" cy="15" r="1.05"/></svg></span></span>1 Bestandsaufnahme</div><div class="b-todo fertig"><span class="ka"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.4 10.4 8 14l7.6-8"/></svg></span><span class="tt">Schnittstellen erfassen — 12 gefunden</span></div><div class="b-todo fertig"><span class="ka"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.4 10.4 8 14l7.6-8"/></svg></span><span class="tt">Datenmengen messen</span></div><div class="b-todo"><span class="ka"></span><span class="tt">Berichte sichten <span class="b-erw">@Kai Richter</span></span></div><div class="b-ruf blau"><span class="em">💡</span><div>Die zwölf Schnittstellen sind nicht zwölf Programme. Vier davon sind derselbe Export mit anderem Dateinamen.</div></div><div class="b h3"><span class="gr"><span><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4.2v11.6M4.2 10h11.6"/></svg></span><span><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.6" cy="5" r="1.05"/><circle cx="12.4" cy="5" r="1.05"/><circle cx="7.6" cy="10" r="1.05"/><circle cx="12.4" cy="10" r="1.05"/><circle cx="7.6" cy="15" r="1.05"/><circle cx="12.4" cy="15" r="1.05"/></svg></span></span>Schnittstellen</div><table class="b-tab"><tr><th>Name</th><th>Richtung</th><th>Format</th></tr><tr><td>Auftragsexport</td><td>hinaus</td><td>CSV</td></tr><tr><td>Stammdaten</td><td>herein</td><td>XML</td></tr><tr><td>Rechnungslauf</td><td>hinaus</td><td>PDF</td></tr></table><div class="b h2"><span class="gr"><span><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4.2v11.6M4.2 10h11.6"/></svg></span><span><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.6" cy="5" r="1.05"/><circle cx="12.4" cy="5" r="1.05"/><circle cx="7.6" cy="10" r="1.05"/><circle cx="12.4" cy="10" r="1.05"/><circle cx="7.6" cy="15" r="1.05"/><circle cx="12.4" cy="15" r="1.05"/></svg></span></span>2 Zielbild</div><div class="b-pkt"><span class="m">•</span><span>Fachliche Anforderungen aus dem Papier vom 18. August</span></div><div class="b-pkt"><span class="m">•</span><span>Technische Randbedingungen: <b>eine Datei, offline, ohne Server</b></span></div><div class="b-tog"><span class="dre"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.6 7.6 10 13l5.4-5.4"/></svg></span><span><b>Entscheidungen</b></span></div><div class="kind"><div class="b-pkt"><span class="m">•</span><span>Keine externen Abhängigkeiten</span></div><div class="b-pkt"><span class="m">•</span><span>Speicherung über <span class="b-inline">localStorage</span></span></div></div><div class="b-zit">„Zwei Bedienkonzepte in einer Datei wären ein Umschalter, den niemand pflegen will."</div><div class="b-code"><span class="spr">javascript</span><span class="kop">Kopieren</span>const [d1, d2] = planTage();
+return DATEN.termine
+  .filter(t =&gt; t.d === iso(d1) || t.d === iso(d2))
+  .sort((a, b) =&gt; toMin(a.zeit) - toMin(b.zeit));</div><div class="b-lin"></div><div class="b h3"><span class="gr"><span><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4.2v11.6M4.2 10h11.6"/></svg></span><span><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.6" cy="5" r="1.05"/><circle cx="12.4" cy="5" r="1.05"/><circle cx="7.6" cy="10" r="1.05"/><circle cx="12.4" cy="10" r="1.05"/><circle cx="7.6" cy="15" r="1.05"/><circle cx="12.4" cy="15" r="1.05"/></svg></span></span>Offene Fragen</div><div class="b-pkt"><span class="m grau">1.</span><span>Wer pflegt die Stammdaten während der Parallelphase?</span></div><div class="b-pkt"><span class="m grau">2.</span><span>Bleibt der Rechnungslauf im Altsystem? <span class="b-komm">— Rückfrage an Eva</span></span></div></div></div><div class="qspalte"><div class="qkopf">Ablösung Altsystem.md<span class="sp"></span><span>Zeilenumbruch an</span><span>2 Stellen gelb: kein reines Markdown</span></div><div class="qrumpf"><div class="qnr">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63</div><div class="q"><span class="q-fm">---</span>
+<span class="q-fm">titel: Ablösung Altsystem</span>
+<span class="q-fm">datum: 2026-08-19</span>
+<span class="q-fm">status: laeuft</span>
+<span class="q-fm">schlagworte: [projekt, altsystem, 2026]</span>
+<span class="q-fm">verantwortlich: Marco Bosse</span>
+<span class="q-fm">---</span>
+&nbsp;
+<span class="q-mk"># </span><span class="q-h">Ablösung Altsystem</span>
+&nbsp;
+Das Altsystem läuft seit elf Jahren und trägt noch immer die
+Auftragsbearbeitung. Abgelöst wird es <span class="q-mk">**</span><span class="q-b">bis zum 18. Dezember</span><span class="q-mk">**</span>; bis dahin
+laufen beide Systeme <span class="q-mk">*</span><span class="q-i">parallel</span><span class="q-mk">*</span>. Der Stand steht in
+<span class="q-mk">[</span><span class="q-l">Schnittstellen</span><span class="q-mk">](</span><span class="q-l">./Schnittstellen.md</span><span class="q-mk">)</span>, die Zahlen kommen aus <span class="q-mk">`</span><span class="q-c">auftrag_export.csv</span><span class="q-mk">`</span>.
+&nbsp;
+<span class="q-mk">## </span><span class="q-h">1 Bestandsaufnahme</span>
+&nbsp;
+<span class="q-mk">- [x]</span> Schnittstellen erfassen — 12 gefunden
+<span class="q-mk">- [x]</span> Datenmengen messen
+<span class="q-mk">- [ ]</span> Berichte sichten <span class="q-mk">[[</span><span class="q-l">Kai Richter</span><span class="q-mk">]]</span>
+&nbsp;
+<span class="qzeile-an"><span class="q-mk">> [!TIP]</span>   <span class="q-w">← Dialekt, siehe Grenzen</span></span>
+<span class="q-mk">> </span>Die zwölf Schnittstellen sind nicht zwölf Programme.
+<span class="q-mk">> </span>Vier davon sind derselbe Export mit anderem Dateinamen.
+&nbsp;
+<span class="q-mk">### </span><span class="q-h">Schnittstellen</span>
+&nbsp;
+<span class="q-mk">| </span>Name<span class="q-mk"> | </span>Richtung<span class="q-mk"> | </span>Format<span class="q-mk"> |</span>
+<span class="q-mk">| --- | --- | --- |</span>
+<span class="q-mk">| </span>Auftragsexport<span class="q-mk"> | </span>hinaus<span class="q-mk"> | </span>CSV<span class="q-mk"> |</span>
+<span class="q-mk">| </span>Stammdaten<span class="q-mk"> | </span>herein<span class="q-mk"> | </span>XML<span class="q-mk"> |</span>
+<span class="q-mk">| </span>Rechnungslauf<span class="q-mk"> | </span>hinaus<span class="q-mk"> | </span>PDF<span class="q-mk"> |</span>
+&nbsp;
+<span class="q-mk">## </span><span class="q-h">2 Zielbild</span>
+&nbsp;
+<span class="q-mk">- </span>Fachliche Anforderungen aus dem Papier vom 18. August
+<span class="q-mk">- </span>Technische Randbedingungen: <span class="q-mk">**</span><span class="q-b">eine Datei, offline, ohne Server</span><span class="q-mk">**</span>
+&nbsp;
+<span class="qzeile-an"><span class="q-mk">&lt;details&gt;</span>   <span class="q-w">← HTML, siehe Grenzen</span></span>
+<span class="q-mk">&lt;summary&gt;</span>Entscheidungen<span class="q-mk">&lt;/summary&gt;</span>
+&nbsp;
+<span class="q-mk">- </span>Keine externen Abhängigkeiten
+<span class="q-mk">- </span>Speicherung über <span class="q-mk">`</span><span class="q-c">localStorage</span><span class="q-mk">`</span>
+&nbsp;
+<span class="q-mk">&lt;/details&gt;</span>
+&nbsp;
+<span class="q-mk">> </span>„Zwei Bedienkonzepte in einer Datei wären ein
+<span class="q-mk">> </span>Umschalter, den niemand pflegen will."
+&nbsp;
+<span class="q-mk">```javascript</span>
+<span class="q-c">const [d1, d2] = planTage();</span>
+<span class="q-c">return DATEN.termine</span>
+<span class="q-c">  .filter(t =&gt; t.d === iso(d1) || t.d === iso(d2))</span>
+<span class="q-c">  .sort((a, b) =&gt; toMin(a.zeit) - toMin(b.zeit));</span>
+<span class="q-mk">```</span>
+&nbsp;
+<span class="q-mk">---</span>
+&nbsp;
+<span class="q-mk">### </span><span class="q-h">Offene Fragen</span>
+&nbsp;
+<span class="q-mk">1. </span>Wer pflegt die Stammdaten während der Parallelphase?
+<span class="q-mk">2. </span>Bleibt der Rechnungslauf im Altsystem?
+&nbsp;</div></div></div></div><div class="ed-stat"><span><b>412</b> Wörter</span><span><b>2 418</b> Zeichen</span><span>Zeile <b>34</b> · Spalte <b>18</b></span><span class="sp"></span><span>geteilt · 60 Zeilen</span><span>Markdown · UTF-8 · LF</span><span class="neu">gespeichert vor 3 Sekunden</span></div></div><div class="bilanz"><section class="gewinn"><h3>Was der Notion-Weg bringt</h3><ul><li><b>Nichts ist geheim.</b> Jeder Block ist an seiner Zeile nachzusehen. Wer die Fläche nicht traut, arbeitet rechts weiter — dieselbe Datei, derselbe Stand.</li><li><b>Die gelbe Markierung ist die wichtigste Zeile des Entwurfs.</b> Sie beantwortet im Vorbeigehen, was der Blockkatalog auf einem ganzen Blatt erklärt.</li><li><b>Drei Ansichten, ein Umschalter</b> oben rechts: Schreiben, Geteilt, Quelltext. Notion hat nur die erste.</li><li><b>Wer Markdown tippt, wird nicht bestraft.</b> <code>## </code> am Zeilenanfang wird sofort eine Überschrift — links wie rechts.</li></ul></section><section class="verlust"><h3>Was er kostet</h3><ul><li><b>Zwei Ansichten sind zwei Stände.</b> Die Schreibmarke muss in beiden dieselbe Stelle meinen; das ist der teuerste Teil einer solchen Anwendung und der häufigste Ort für Fehler.</li><li><b>Die Fläche ist breiter als 708 Pixel geworden.</b> Geteilt geht die feste Schreibbreite verloren — der Gewinn aus „Schreiben" fällt hier weg.</li><li><b>Zeilennummern lügen ein bisschen.</b> Ein Absatz ist links ein Block und rechts vier Zeilen. Was „Zeile 34" bedeutet, hängt davon ab, wo man steht.</li></ul></section></div>

@@ -1,0 +1,357 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Markdown im Notion-Stil — Blockkatalog</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{color-scheme:light}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:#f2f1ee;color:#111}
+
+/* ---------- Rahmen: nicht Teil des Entwurfs ---------- */
+.meta{background:#1a1a18;color:#e7e5e0;padding:10px 22px;font-size:13px;
+  display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.meta b{color:#fff}
+.meta nav{display:flex;gap:12px;margin-left:auto;flex-wrap:wrap}
+.meta a{color:#b9b6ad;text-decoration:none;font-size:12.5px}
+.meta a.hier{color:#fff;font-weight:600}
+.meta a:hover{color:#fff}
+.rahmenhinweis{max-width:1480px;margin:14px auto 0;padding:0 22px;font-size:13.5px;
+  color:#57544c;line-height:1.55}
+.rahmenhinweis b{color:#1a1a18}
+.bilanz{max-width:1480px;margin:18px auto 60px;padding:0 22px;display:grid;
+  grid-template-columns:1fr 1fr;gap:16px}
+.bilanz section{background:#fff;border:1px solid #e2e0db;border-radius:10px;padding:14px 17px}
+.bilanz h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;
+  color:#8a857a}
+.bilanz section.gewinn h3{color:#2f7d4f}
+.bilanz section.verlust h3{color:#a63d2f}
+.bilanz li{font-size:13.5px;line-height:1.55;color:#4a473f;margin-left:17px;margin-bottom:5px}
+.bilanz b{color:#1a1a18}
+.bilanz code{background:#e9e7e2;border-radius:3px;padding:1px 5px;font-size:12.5px;
+  font-family:ui-monospace,Consolas,monospace}
+@media(max-width:900px){.bilanz{grid-template-columns:1fr}}
+.blocktext{max-width:1480px;margin:22px auto;padding:0 22px;font-size:14px;line-height:1.65;
+  color:#3d3a34}
+.blocktext h2{font-size:19px;margin:26px 0 8px;color:#1a1a18}
+.blocktext p{margin-bottom:10px;max-width:74ch}
+.blocktext li{margin-left:20px;margin-bottom:6px;max-width:72ch}
+.blocktext b{color:#1a1a18}
+.blocktext code{background:#e9e7e2;border-radius:3px;padding:1px 5px;font-size:13px;
+  font-family:ui-monospace,Consolas,monospace}
+.uebersicht{max-width:1480px;margin:16px auto 60px;padding:0 22px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.uebersicht a{display:block;background:#fff;border:1px solid #e2e0db;border-radius:10px;
+  padding:16px 18px;text-decoration:none;color:#1a1a18}
+.uebersicht a:hover{border-color:#c9c5bc;box-shadow:0 3px 12px rgba(15,15,15,.07)}
+.uebersicht .em{font-size:26px;display:block;margin-bottom:8px}
+.uebersicht h3{font-size:16px;margin-bottom:5px}
+.uebersicht p{font-size:13.5px;line-height:1.55;color:#57544c}
+
+/* ============================================================
+   AB HIER: der Editor. Eigener Geltungsbereich, eigene Typografie.
+   ============================================================ */
+.ed{max-width:1480px;margin:16px auto 0;background:#fff;border:1px solid #e7e6e3;
+  border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(15,15,15,.06);
+  display:flex;flex-direction:column;height:920px;position:relative;
+  font-family:ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  color:rgb(55,53,47);font-size:14px;line-height:1.5}
+.ed.hoch{height:auto;min-height:620px}
+.ed *{box-sizing:border-box}
+.ed-rumpf{flex:1;min-height:0;display:flex}
+.ed.hoch .ed-rumpf{min-height:0}
+
+/* ---------- Dateibaum links ---------- */
+.ed-baum{width:250px;flex-shrink:0;background:rgb(247,247,245);
+  border-right:1px solid rgba(55,53,47,.09);display:flex;flex-direction:column;
+  padding:8px 8px;overflow-y:auto}
+.ed.hoch .ed-baum{overflow:visible}
+.ed-wurzel{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;
+  font-size:14px;font-weight:600}
+.ed-wurzel svg{color:rgba(55,53,47,.5)}
+.ed-wurzel .ch{margin-left:auto;color:rgba(55,53,47,.4);display:flex}
+.ed-such{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;
+  font-size:14px;color:rgba(55,53,47,.55);margin:2px 0 8px}
+.ed-such svg{color:rgba(55,53,47,.45)}
+.ed-such kbd{margin-left:auto;font-size:11px;background:rgba(55,53,47,.06);border-radius:4px;
+  padding:1px 5px;font-family:inherit;color:rgba(55,53,47,.45)}
+.ed-z{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;
+  font-size:14px;color:rgba(55,53,47,.78)}
+.ed-z:hover{background:rgba(55,53,47,.06)}
+.ed-z .dre{width:14px;flex-shrink:0;color:rgba(55,53,47,.32);display:flex;
+  align-items:center;justify-content:center}
+.ed-z .em{font-size:14px;width:18px;text-align:center;flex-shrink:0;line-height:1}
+.ed-z .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ed-z.an{background:rgba(55,53,47,.08);font-weight:500;color:rgb(55,53,47)}
+.ed-z.k1{padding-left:22px}
+.ed-z.k2{padding-left:38px}
+.ed-z .kb{margin-left:auto;font-size:11px;color:rgba(55,53,47,.3)}
+.ed-sek{font-size:11.5px;font-weight:600;color:rgba(55,53,47,.45);padding:12px 8px 4px;
+  display:flex;align-items:center}
+.ed-sek .sp{flex:1}
+.ed-fuss{margin-top:auto;padding-top:8px}
+
+/* ---------- Kopfzeile ---------- */
+.ed-kopf{display:flex;align-items:center;gap:8px;padding:9px 16px;font-size:13.5px;
+  color:rgba(55,53,47,.6);border-bottom:1px solid rgba(55,53,47,.07);flex-shrink:0}
+.ed-krume{display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:5px}
+.ed-krume:hover{background:rgba(55,53,47,.06)}
+.ed-kopf .tr{color:rgba(55,53,47,.25)}
+.ed-kopf .re{margin-left:auto;display:flex;gap:3px;align-items:center}
+.ed-kopf .re .kn{padding:4px 9px;border-radius:5px;display:flex;align-items:center;gap:6px;
+  color:rgba(55,53,47,.62)}
+.ed-kopf .re .kn:hover{background:rgba(55,53,47,.06)}
+.ed-kopf .re .kn.an{background:rgba(55,53,47,.08);color:rgb(55,53,47);font-weight:500}
+.ed-schalt{display:flex;background:rgba(55,53,47,.06);border-radius:6px;padding:2px}
+.ed-schalt span{padding:3px 10px;border-radius:4px;font-size:12.5px;
+  color:rgba(55,53,47,.6)}
+.ed-schalt span.an{background:#fff;color:rgb(55,53,47);font-weight:500;
+  box-shadow:0 1px 2px rgba(15,15,15,.12)}
+
+/* ---------- Schreibfläche ---------- */
+.ed-blatt{flex:1;min-width:0;overflow-y:auto;background:#fff;position:relative}
+.ed.hoch .ed-blatt{overflow:visible}
+.ed-deck{height:140px;background:linear-gradient(115deg,#e6e1d6,#f2ece1 55%,#e3ebeb)}
+.ed-seite{max-width:900px;margin:0 auto;padding:0 96px 90px}
+.ed-icon{font-size:64px;line-height:1;display:block;margin:-34px 0 6px}
+.ed-titel{font-size:40px;font-weight:700;letter-spacing:-.02em;line-height:1.2;
+  margin-bottom:6px}
+
+/* ---------- Frontmatter als Eigenschaften ---------- */
+.ed-eig{margin:4px 0 14px}
+.ed-eig .r{display:flex;align-items:flex-start;gap:8px;font-size:14px}
+.ed-eig .l{width:172px;flex-shrink:0;display:flex;align-items:center;gap:7px;
+  color:rgba(55,53,47,.5);padding:4px 6px;border-radius:5px}
+.ed-eig .l svg{flex-shrink:0}
+.ed-eig .w{flex:1;padding:4px 8px;border-radius:5px;min-height:26px}
+.ed-eig .w:hover{background:rgba(55,53,47,.06)}
+.ed-eig .w.leer{color:rgba(55,53,47,.33)}
+.ed-eig-fuss{display:flex;align-items:center;gap:8px;font-size:12px;
+  color:rgba(55,53,47,.4);padding:6px 6px 0;border-top:1px solid rgba(55,53,47,.07);
+  margin-top:6px}
+
+/* ---------- Blöcke ---------- */
+.b{position:relative;padding:3px 2px;font-size:16px;line-height:1.6}
+.b:hover{background:rgba(55,53,47,.02)}
+.b .gr{position:absolute;left:-46px;top:2px;display:flex;gap:2px;opacity:0;
+  color:rgba(55,53,47,.3)}
+.b.zeig .gr,.b:hover .gr{opacity:1}
+.b .gr span{padding:2px;border-radius:4px}
+.b .gr span:hover{background:rgba(55,53,47,.08)}
+.h1{font-size:30px;font-weight:600;letter-spacing:-.01em;margin:28px 0 2px}
+.h2{font-size:24px;font-weight:600;margin:22px 0 1px}
+.h3{font-size:19px;font-weight:600;margin:18px 0 0}
+.grau{color:rgba(55,53,47,.5)}
+.b-leer{color:rgba(55,53,47,.28);font-size:16px;padding:4px 2px;display:flex;
+  align-items:center;gap:10px}
+.b-leer .pl{color:rgba(55,53,47,.3);display:flex}
+.b-todo{display:flex;align-items:flex-start;gap:10px;padding:3px 2px;font-size:16px}
+.b-todo .ka{width:16px;height:16px;border-radius:3px;border:1.5px solid rgba(55,53,47,.35);
+  margin-top:5px;flex-shrink:0;display:grid;place-items:center}
+.b-todo.fertig .ka{background:rgb(35,131,226);border-color:rgb(35,131,226);color:#fff}
+.b-todo.fertig .tt{color:rgba(55,53,47,.4);text-decoration:line-through}
+.b-pkt{display:flex;align-items:flex-start;gap:11px;padding:3px 2px;font-size:16px}
+.b-pkt .m{color:rgba(55,53,47,.75);line-height:1.6;flex-shrink:0}
+.b-tog{display:flex;align-items:flex-start;gap:9px;padding:3px 2px;font-size:16px}
+.b-tog .dre{color:rgba(55,53,47,.5);margin-top:6px;flex-shrink:0;display:flex}
+.b-tog .dre.zu{transform:rotate(-90deg)}
+.kind{margin-left:27px}
+.b-zit{border-left:3px solid rgb(55,53,47);padding-left:14px;font-size:16px;margin:8px 0}
+.b-ruf{display:flex;gap:11px;background:rgb(241,241,239);border-radius:4px;padding:16px;
+  margin:8px 0;font-size:15.5px;line-height:1.5}
+.b-ruf.blau{background:rgb(231,242,248)}
+.b-ruf.gelb{background:rgb(253,236,200)}
+.b-ruf.rot{background:rgb(255,226,221)}
+.b-ruf .em{font-size:17px;line-height:1.35;flex-shrink:0}
+.b-lin{height:1px;background:rgba(55,53,47,.11);margin:15px 0}
+.b-code{background:rgb(247,246,243);border-radius:4px;padding:28px 16px 16px;margin:8px 0;
+  font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:13.5px;line-height:1.55;
+  position:relative;white-space:pre;overflow-x:auto}
+.b-code .spr{position:absolute;top:6px;left:12px;font-size:11.5px;
+  color:rgba(55,53,47,.4);font-family:ui-sans-serif,sans-serif}
+.b-code .kop{position:absolute;top:5px;right:8px;font-size:11.5px;
+  color:rgba(55,53,47,.45);font-family:ui-sans-serif,sans-serif;
+  border:1px solid rgba(55,53,47,.14);border-radius:4px;padding:1px 7px}
+.b-tab{width:100%;border-collapse:collapse;font-size:15px;margin:8px 0}
+.b-tab th,.b-tab td{border:1px solid rgba(55,53,47,.14);padding:7px 10px;text-align:left}
+.b-tab th{background:rgb(247,246,243);font-weight:600;font-size:14px}
+.b-bild{margin:10px 0;border-radius:4px;overflow:hidden}
+.b-bild .fl{height:190px;background:linear-gradient(120deg,#dfe6ea,#eef1ec 60%,#e8e0d8);
+  display:grid;place-items:center;color:rgba(55,53,47,.35);font-size:13px}
+.b-bild .un{font-size:12.5px;color:rgba(55,53,47,.45);padding:6px 2px}
+.b-marke{border:1px solid rgba(55,53,47,.14);border-radius:4px;display:flex;margin:8px 0;
+  overflow:hidden}
+.b-marke .l{flex:1;padding:12px 14px;min-width:0}
+.b-marke .t{font-size:14px;margin-bottom:3px}
+.b-marke .u{font-size:12px;color:rgba(55,53,47,.5);line-height:1.45}
+.b-marke .a{font-size:12px;color:rgba(55,53,47,.5);margin-top:7px;display:flex;
+  align-items:center;gap:6px}
+.b-marke .r{width:130px;background:rgb(241,241,239);flex-shrink:0}
+.b-spalten{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin:8px 0}
+.b-marker{background:rgb(251,243,196);border-radius:3px;padding:1px 2px}
+.b-farbe{color:rgb(186,67,63)}
+.b-inline{background:rgba(135,131,120,.15);color:rgb(212,76,71);border-radius:3px;
+  padding:1px 5px;font-family:ui-monospace,Consolas,monospace;font-size:.86em}
+.b-verweis{border-bottom:1px solid rgba(55,53,47,.25);padding:0 1px;border-radius:2px}
+.b-verweis:hover{background:rgba(55,53,47,.07)}
+.b-erw{background:rgba(35,131,226,.09);color:rgb(35,131,226);border-radius:3px;padding:1px 5px}
+.b-komm{background:rgb(253,236,200);border-bottom:2px solid rgb(222,178,64);
+  border-radius:2px;padding:0 1px}
+
+/* ---------- Gliederung rechts ---------- */
+.ed-gl{width:236px;flex-shrink:0;border-left:1px solid rgba(55,53,47,.09);padding:20px 14px;
+  overflow-y:auto}
+.ed.hoch .ed-gl{overflow:visible}
+.ed-gl h4{font-size:11.5px;font-weight:600;color:rgba(55,53,47,.45);margin-bottom:9px}
+.ed-gl a{display:block;font-size:13px;color:rgba(55,53,47,.65);padding:4px 7px;
+  border-radius:5px;text-decoration:none;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.ed-gl a:hover{background:rgba(55,53,47,.06)}
+.ed-gl a.t2{padding-left:18px;font-size:12.5px}
+.ed-gl a.t3{padding-left:30px;font-size:12.5px;color:rgba(55,53,47,.5)}
+.ed-gl a.an{color:rgb(35,131,226);background:rgba(35,131,226,.08)}
+
+/* ---------- Fußleiste ---------- */
+.ed-stat{flex-shrink:0;display:flex;align-items:center;gap:16px;padding:6px 16px;
+  border-top:1px solid rgba(55,53,47,.09);background:rgb(251,251,250);font-size:11.5px;
+  color:rgba(55,53,47,.45)}
+.ed-stat .sp{flex:1}
+.ed-stat b{font-weight:600;color:rgba(55,53,47,.6)}
+.ed-stat .neu{color:rgb(35,131,226)}
+
+/* ---------- Schwebende Menüs ---------- */
+.mn{background:#fff;border-radius:6px;padding:6px;position:absolute;z-index:30;
+  box-shadow:0 14px 38px rgba(15,15,15,.22),0 0 0 1px rgba(15,15,15,.07);
+  font-size:14px}
+.mn .k{font-size:11.5px;font-weight:600;color:rgba(55,53,47,.45);padding:9px 9px 4px}
+.mn .z{display:flex;align-items:center;gap:10px;padding:5px 8px;border-radius:5px;
+  color:rgba(55,53,47,.85)}
+.mn .z:hover,.mn .z.an{background:rgba(55,53,47,.06)}
+.mn .z .ic{width:26px;height:26px;border-radius:4px;border:1px solid rgba(55,53,47,.13);
+  display:grid;place-items:center;flex-shrink:0;background:rgb(251,251,250);
+  color:rgba(55,53,47,.7);font-size:13px}
+.mn .z .t{flex:1;min-width:0}
+.mn .z .u{font-size:11.5px;color:rgba(55,53,47,.45)}
+.mn .z .ta{font-size:11px;color:rgba(55,53,47,.4);font-family:ui-monospace,Consolas,monospace;
+  background:rgba(55,53,47,.05);border-radius:3px;padding:1px 5px;flex-shrink:0}
+.mn .tr{height:1px;background:rgba(55,53,47,.09);margin:5px 4px}
+
+/* Das Slash-Menü: Liste links, Vorschau rechts */
+.slash{width:640px;display:flex;padding:0;overflow:hidden}
+.slash .li{width:334px;flex-shrink:0;padding:6px;overflow-y:auto;
+  border-right:1px solid rgba(55,53,47,.09)}
+.slash .vs{flex:1;padding:14px;background:rgb(251,251,250);display:flex;
+  flex-direction:column;gap:10px;min-width:0}
+.slash .vs .h{font-size:11.5px;font-weight:600;color:rgba(55,53,47,.45)}
+.slash .vs .bild{background:#fff;border:1px solid rgba(55,53,47,.11);border-radius:5px;
+  padding:12px 14px}
+.slash .vs .md{background:rgb(46,44,40);color:#e9e6df;border-radius:5px;padding:11px 13px;
+  font-family:ui-monospace,Consolas,monospace;font-size:12.5px;line-height:1.6;
+  white-space:pre-wrap;word-break:break-word}
+.slash .vs .md em{color:#9fd4a0;font-style:normal}
+.slash .vs .t{font-size:12.5px;color:rgba(55,53,47,.55);line-height:1.5}
+.slash-feld{display:flex;align-items:center;gap:8px;padding:8px 10px 6px;
+  border-bottom:1px solid rgba(55,53,47,.07);font-size:13px;color:rgba(55,53,47,.5)}
+.slash-feld b{color:rgb(55,53,47);font-family:ui-monospace,Consolas,monospace;font-weight:400}
+
+/* Auswahlleiste */
+.aus{display:inline-flex;align-items:center;background:rgb(37,36,33);color:#f1efe9;
+  border-radius:5px;padding:3px;gap:1px;position:absolute;z-index:30;
+  box-shadow:0 8px 26px rgba(15,15,15,.3);font-size:13.5px}
+.aus .kn{padding:5px 8px;border-radius:4px;display:flex;align-items:center;gap:5px;
+  white-space:nowrap}
+.aus .kn:hover{background:rgba(255,255,255,.12)}
+.aus .kn.aus1{opacity:.35}
+.aus .kn b{font-weight:700}
+.aus .kn i{font-style:italic}
+.aus .kn s{text-decoration:line-through}
+.aus .kn u{text-decoration:underline}
+.aus .tr{width:1px;align-self:stretch;background:rgba(255,255,255,.16);margin:3px 4px}
+.markiert{background:rgba(35,131,226,.22);border-radius:2px}
+
+/* Farbmenü */
+.farben .pr{width:22px;height:22px;border-radius:4px;border:1px solid rgba(55,53,47,.13);
+  display:grid;place-items:center;font-size:13px;flex-shrink:0}
+
+/* ---------- Quelltext ---------- */
+.q{font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:13.5px;
+  line-height:24px;white-space:pre-wrap;word-break:break-word;color:rgb(55,53,47)}
+.q-mk{color:rgb(35,131,226)}
+.q-h{color:rgb(55,53,47);font-weight:700}
+.q-b{font-weight:700}
+.q-i{font-style:italic}
+.q-c{color:rgb(186,67,63)}
+.q-l{color:rgb(45,111,149)}
+.q-fm{color:rgba(55,53,47,.45)}
+.q-w{color:rgb(190,101,12)}
+.qspalte{flex:1;min-width:0;overflow-y:auto;background:rgb(251,251,250);
+  border-left:1px solid rgba(55,53,47,.09)}
+.ed.hoch .qspalte{overflow:visible}
+.qkopf{position:sticky;top:0;background:rgb(251,251,250);padding:9px 18px;font-size:11.5px;
+  color:rgba(55,53,47,.45);border-bottom:1px solid rgba(55,53,47,.07);display:flex;
+  align-items:center;gap:10px}
+.qkopf .sp{flex:1}
+.qrumpf{padding:18px 18px 60px;display:flex;gap:14px}
+.qnr{flex-shrink:0;width:26px;text-align:right;color:rgba(55,53,47,.25);font-size:12.5px;
+  font-family:ui-monospace,Consolas,monospace;line-height:24px;user-select:none;
+  white-space:pre}
+.qrumpf .q{flex:1;min-width:0}
+.qzeile-an{background:rgb(253,236,200);border-radius:3px}
+
+/* ---------- Blockkatalog ---------- */
+.kat{width:100%;border-collapse:collapse;font-size:14px}
+.kat th{text-align:left;font-size:11.5px;font-weight:600;color:rgba(55,53,47,.45);
+  padding:8px 12px;border-bottom:1px solid rgba(55,53,47,.11);text-transform:uppercase;
+  letter-spacing:.05em}
+.kat td{padding:12px;border-bottom:1px solid rgba(55,53,47,.08);vertical-align:top}
+.kat tr:hover td{background:rgba(55,53,47,.02)}
+.kat .b-tab th{text-transform:none;letter-spacing:0;font-size:14px;
+  color:rgb(55,53,47);padding:7px 10px;border:1px solid rgba(55,53,47,.14)}
+.kat .nm{width:180px;font-weight:500;font-size:14px}
+.kat .nm .ta{display:block;font-size:11.5px;color:rgba(55,53,47,.42);font-weight:400;
+  font-family:ui-monospace,Consolas,monospace;margin-top:3px}
+.kat .zeig{width:38%}
+.kat .md{width:34%;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;
+  line-height:1.65;white-space:pre-wrap;color:rgba(55,53,47,.8);
+  background:rgb(247,246,243);border-radius:4px;padding:9px 11px}
+.kat .ur{width:104px;text-align:center}
+.ur-p{display:inline-flex;align-items:center;gap:5px;border-radius:3px;padding:2px 8px;
+  font-size:11.5px;white-space:nowrap}
+.ur-ok{background:rgb(219,237,219);color:rgb(51,105,74)}
+.ur-warn{background:rgb(253,236,200);color:rgb(160,113,32)}
+.ur-nein{background:rgb(255,226,221);color:rgb(178,60,56)}
+.legende{display:flex;gap:18px;font-size:12.5px;color:rgba(55,53,47,.6);
+  align-items:center;flex-wrap:wrap;padding:12px 2px 0}
+
+/* ---------- Grenzen: vier Karten ---------- */
+.wege{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;
+  margin:14px 0}
+.weg{border:1px solid rgba(55,53,47,.12);border-radius:8px;padding:16px 18px;
+  display:flex;flex-direction:column;gap:9px}
+.weg .nr{width:24px;height:24px;border-radius:50%;background:rgb(241,241,239);
+  display:grid;place-items:center;font-size:12.5px;font-weight:600;
+  color:rgba(55,53,47,.6)}
+.weg h4{font-size:16px;font-weight:600}
+.weg p{font-size:13.5px;line-height:1.55;color:rgba(55,53,47,.7)}
+.weg .bsp{background:rgb(247,246,243);border-radius:5px;padding:10px 12px;
+  font-family:ui-monospace,Consolas,monospace;font-size:12px;line-height:1.6;
+  white-space:pre-wrap;color:rgba(55,53,47,.8);margin-top:auto}
+.weg .ur-p{align-self:flex-start}
+</style>
+
+<div class="meta"><b>Markdown-Editor im Notion-Stil</b><span>Entwurf, nicht umgesetzt</span><nav><a href="index.html">Übersicht</a><a href="schreiben.html">Schreiben</a><a href="slash.html">Slash-Menü</a><a href="auswahl.html">Auswahl &amp; Menüs</a><a class="hier" href="bloecke.html">Blockkatalog</a><a href="quelltext.html">Quelltext</a><a href="grenzen.html">Grenzen</a></nav></div>
+<p class="rahmenhinweis"><b>27 Blöcke, dreimal dieselbe Frage:</b> Wie sieht er aus, was steht in der Datei, und was ist das für ein Markdown? Das ist die eigentliche Antwort auf „Editor im Notion-Stil": Für jeden Block, den Notion kann, muss ein Markdown-Editor entscheiden, ob er ihn wegläßt, in HTML ausweicht oder einen Dialekt spricht. <b>12 Blöcke sind reines Markdown, 3 sind GitHub-Markdown, 3 brauchen HTML, 5 einen Dialekt, 4 gibt es ohne zweite Datei nicht.</b></p>
+<div style="max-width:1480px;margin:16px auto 0;padding:20px 26px 26px;background:#fff;border:1px solid #e7e6e3;border-radius:10px;font-family:ui-sans-serif,-apple-system,'Segoe UI',sans-serif;color:rgb(55,53,47)"><table class="kat"><tr><th>Block</th><th>Wie er aussieht</th><th>Was in der Datei steht</th><th>Urteil</th></tr><tr><td class="nm">Text</td><td class="zeig"><span style="font-size:15px">Ein einfacher Absatz.</span></td><td><div class="md">Ein einfacher Absatz.</div></td><td class="ur"><span class="ur-p ur-ok">echtes Markdown</span></td></tr><tr><td class="nm">Überschrift 1–3<span class="ta"># ## ###</span></td><td class="zeig"><div class="h2" style="margin:0;font-size:20px">2 Zielbild</div></td><td><div class="md">## 2 Zielbild</div></td><td class="ur"><span class="ur-p ur-ok">echtes Markdown</span></td></tr><tr><td class="nm">Aufzählung<span class="ta">- </span></td><td class="zeig"><div class="b-pkt" style="font-size:15px"><span class="m">•</span><span>Erster Punkt</span></div></td><td><div class="md">- Erster Punkt</div></td><td class="ur"><span class="ur-p ur-ok">echtes Markdown</span></td></tr><tr><td class="nm">Nummerierte Liste<span class="ta">1. </span></td><td class="zeig"><div class="b-pkt" style="font-size:15px"><span class="m grau">1.</span><span>Erster Punkt</span></div></td><td><div class="md">1. Erster Punkt</div></td><td class="ur"><span class="ur-p ur-ok">echtes Markdown</span></td></tr><tr><td class="nm">To-do-Liste<span class="ta">- [ ] </span></td><td class="zeig"><div class="b-todo" style="font-size:15px"><span class="ka"></span><span class="tt">Berichte sichten</span></div></td><td><div class="md">- [ ] Berichte sichten
+- [x] Erledigtes</div></td><td class="ur"><span class="ur-p ur-ok">GFM</span></td></tr><tr><td class="nm">Zitat<span class="ta">&gt; </span></td><td class="zeig"><div class="b-zit" style="font-size:15px;margin:0">Ein abgesetzter Satz.</div></td><td><div class="md">> Ein abgesetzter Satz.</div></td><td class="ur"><span class="ur-p ur-ok">echtes Markdown</span></td></tr><tr><td class="nm">Trennlinie<span class="ta">---</span></td><td class="zeig"><div class="b-lin" style="margin:14px 0"></div></td><td><div class="md">---</div></td><td class="ur"><span class="ur-p ur-ok">echtes Markdown</span></td></tr><tr><td class="nm">Codeblock<span class="ta">```</span></td><td class="zeig"><div class="b-code" style="margin:0;font-size:12px;padding:24px 12px 12px"><span class="spr">javascript</span>const n = 1;</div></td><td><div class="md">```javascript
+const n = 1;
+```</div></td><td class="ur"><span class="ur-p ur-ok">echtes Markdown</span></td></tr><tr><td class="nm">Text in Code<span class="ta">`…`</span></td><td class="zeig"><span style="font-size:15px">Der Wert <span class="b-inline">localStorage</span></span></td><td><div class="md">Der Wert `localStorage`</div></td><td class="ur"><span class="ur-p ur-ok">echtes Markdown</span></td></tr><tr><td class="nm">Fett, kursiv<span class="ta">** *</span></td><td class="zeig"><span style="font-size:15px"><b>fett</b> und <i>kursiv</i></span></td><td><div class="md">**fett** und *kursiv*</div></td><td class="ur"><span class="ur-p ur-ok">echtes Markdown</span></td></tr><tr><td class="nm">Durchgestrichen<span class="ta">~~</span></td><td class="zeig"><span style="font-size:15px"><s>verworfen</s></span></td><td><div class="md">~~verworfen~~</div></td><td class="ur"><span class="ur-p ur-ok">GFM</span></td></tr><tr><td class="nm">Unterstrichen<span class="ta">—</span></td><td class="zeig"><span style="font-size:15px;color:rgba(55,53,47,.4)"><u>unterstrichen</u></span></td><td><div class="md">&lt;u&gt;unterstrichen&lt;/u&gt;</div></td><td class="ur"><span class="ur-p ur-warn">HTML</span></td></tr><tr><td class="nm">Link<span class="ta">[ ]( )</span></td><td class="zeig"><span style="font-size:15px"><span class="b-verweis">Schnittstellen</span></span></td><td><div class="md">[Schnittstellen](./Schnittstellen.md)</div></td><td class="ur"><span class="ur-p ur-ok">echtes Markdown</span></td></tr><tr><td class="nm">Bild<span class="ta">![ ]( )</span></td><td class="zeig"><div class="b-bild" style="margin:0"><div class="fl" style="height:64px;font-size:11px">raster.png</div></div></td><td><div class="md">![Das Raster](./bilder/raster.png)</div></td><td class="ur"><span class="ur-p ur-ok">echtes Markdown</span></td></tr><tr><td class="nm">Tabelle<span class="ta">| </span></td><td class="zeig"><table class="b-tab" style="margin:0;font-size:13px"><tr><th>Name</th><th>Format</th></tr><tr><td>Export</td><td>CSV</td></tr></table></td><td><div class="md">| Name | Format |
+| --- | --- |
+| Export | CSV |</div></td><td class="ur"><span class="ur-p ur-ok">GFM</span></td></tr><tr><td class="nm">Callout<span class="ta">💡</span></td><td class="zeig"><div class="b-ruf blau" style="margin:0;padding:11px;font-size:14px"><span class="em">💡</span><div>Vier davon sind derselbe Export.</div></div></td><td><div class="md">> [!TIP]
+> Vier davon sind derselbe Export.</div></td><td class="ur"><span class="ur-p ur-warn">Dialekt</span></td></tr><tr><td class="nm">Toggle-Liste<span class="ta">›</span></td><td class="zeig"><div class="b-tog" style="font-size:15px"><span class="dre zu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.6 7.6 10 13l5.4-5.4"/></svg></span><span>Entscheidungen</span></div></td><td><div class="md">&lt;details&gt;
+&lt;summary&gt;Entscheidungen&lt;/summary&gt;
+
+…
+
+&lt;/details&gt;</div></td><td class="ur"><span class="ur-p ur-warn">HTML</span></td></tr><tr><td class="nm">Markierter Text<span class="ta">==</span></td><td class="zeig"><span style="font-size:15px"><span class="b-marker">elf Jahre</span></span></td><td><div class="md">==elf Jahre==</div></td><td class="ur"><span class="ur-p ur-warn">Dialekt</span></td></tr><tr><td class="nm">Farbiger Text<span class="ta">—</span></td><td class="zeig"><span style="font-size:15px" class="b-farbe">dringend</span></td><td><div class="md">&lt;span style="color:#c0392b"&gt;dringend&lt;/span&gt;</div></td><td class="ur"><span class="ur-p ur-warn">HTML</span></td></tr><tr><td class="nm">Erwähnung<span class="ta">@ [[ ]]</span></td><td class="zeig"><span style="font-size:15px"><span class="b-erw">@Kai Richter</span></span></td><td><div class="md">[[Kai Richter]]</div></td><td class="ur"><span class="ur-p ur-warn">Dialekt</span></td></tr><tr><td class="nm">Lesezeichen</td><td class="zeig"><div class="b-marke" style="margin:0"><div class="l" style="padding:8px 10px"><div class="t" style="font-size:13px">Handbuch</div><div class="u">conf.firma.de/hb</div></div><div class="r" style="width:54px"></div></div></td><td><div class="md">[Handbuch](https://conf.firma.de/hb)</div></td><td class="ur"><span class="ur-p ur-ok">echtes Markdown</span></td></tr><tr><td class="nm">Inhaltsverzeichnis</td><td class="zeig"><div style="font-size:13px;color:rgba(55,53,47,.6);line-height:1.7">1 Bestandsaufnahme<br>&nbsp;&nbsp;Schnittstellen<br>2 Zielbild</div></td><td><div class="md">&lt;!-- inhalt --&gt;   ← oder beim Speichern erzeugt</div></td><td class="ur"><span class="ur-p ur-warn">Dialekt</span></td></tr><tr><td class="nm">Eigenschaften<span class="ta">---</span></td><td class="zeig"><div style="font-size:13px;color:rgba(55,53,47,.6);line-height:1.7"><span style="color:rgba(55,53,47,.45)">status</span>&nbsp;&nbsp;laeuft<br><span style="color:rgba(55,53,47,.45)">datum</span>&nbsp;&nbsp;2026-08-19</div></td><td><div class="md">---
+status: laeuft
+datum: 2026-08-19
+---</div></td><td class="ur"><span class="ur-p ur-warn">Dialekt</span></td></tr><tr><td class="nm">Spalten</td><td class="zeig"><div class="b-spalten" style="margin:0;gap:10px;font-size:13px"><div style="background:rgb(247,246,243);border-radius:4px;padding:8px">links</div><div style="background:rgb(247,246,243);border-radius:4px;padding:8px">rechts</div></div></td><td><div class="md">—</div></td><td class="ur"><span class="ur-p ur-nein">geht nicht</span></td></tr><tr><td class="nm">Kommentar am Text</td><td class="zeig"><span style="font-size:15px"><span class="b-komm">Rückfrage an Eva</span></span></td><td><div class="md">—</div></td><td class="ur"><span class="ur-p ur-nein">geht nicht</span></td></tr><tr><td class="nm">Synchronisierter Block</td><td class="zeig"><div style="font-size:13px;color:rgba(55,53,47,.5);border:1px dashed rgba(55,53,47,.2);border-radius:4px;padding:8px">derselbe Inhalt an zwei Stellen</div></td><td><div class="md">—</div></td><td class="ur"><span class="ur-p ur-nein">geht nicht</span></td></tr><tr><td class="nm">Datenbank</td><td class="zeig"><div style="font-size:13px;color:rgba(55,53,47,.5)">Tabelle · Brett · Kalender</div></td><td><div class="md">—</div></td><td class="ur"><span class="ur-p ur-nein">geht nicht</span></td></tr></table><div class="legende"><span class="ur-p ur-ok">echtes Markdown</span><span>läuft überall — 12 Blöcke</span><span class="ur-p ur-ok">GFM</span><span>GitHub-Markdown, sehr verbreitet — 3</span><span class="ur-p ur-warn">HTML</span><span>HTML im Markdown, gültig aber roh — 3</span><span class="ur-p ur-warn">Dialekt</span><span>Dialekt eines Werkzeugs — 5</span><span class="ur-p ur-nein">geht nicht</span><span>ohne zweite Datei nicht zu haben — 4</span></div></div><div class="bilanz"><section class="gewinn"><h3>Was der Notion-Weg bringt</h3><ul><li><b>Zwei Drittel gehen ohne Trick.</b> Alles, was ein Text braucht — Überschriften, Listen, Code, Zitate, Links, Bilder, Tabellen —, ist echtes oder verbreitetes Markdown. Der Notion-Editor über Markdown ist keine Verrenkung, sondern liegt nahe.</li><li><b>Das Urteil steht in der Oberfläche.</b> Wenn das Slash-Menü und dieses Blatt dieselbe Kennzeichnung tragen, weiß man vor dem Einfügen, was man sich einhandelt.</li><li><b>Der Dialekt ist eine Einstellung, keine Eigenschaft.</b> Callouts als <code>&gt; [!TIP]</code> (GitHub, Obsidian) oder als <code>::: tip</code> (Docusaurus, VitePress) — dieselbe Fläche, andere Ausgabe.</li></ul></section><section class="verlust"><h3>Was er kostet</h3><ul><li><b>Vier Blöcke sind nicht zu retten.</b> Spalten, Kommentare, synchronisierte Blöcke und Datenbanken haben in einer .md-Datei keinen Ort. Wer sie will, braucht eine zweite Datei — und damit ist es kein Markdown-Editor mehr, sondern ein Editor, der Markdown exportiert.</li><li><b>HTML im Markdown ist gültig und trotzdem ein Bruch.</b> <code>&lt;details&gt;</code> läuft auf GitHub, aber in Pandoc-PDF nicht, und im nächsten Editor sieht man rohes HTML statt eines Toggles.</li><li><b>Dialekte sind Wetten.</b> <code>==markiert==</code> versteht Obsidian, GitHub nicht. <code>[[Wiki-Link]]</code> versteht Obsidian, Pandoc nicht. Jede Wette bindet die Datei an ein Werkzeug — das Gegenteil dessen, wofür man Markdown nimmt.</li><li><b>Das Kopfbild und das Seitensymbol</b> stehen nicht einmal in dieser Liste. Sie sind reine Oberfläche und müssten ins Frontmatter.</li></ul></section></div>
