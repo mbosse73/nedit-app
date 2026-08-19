@@ -154,7 +154,8 @@ function verhaeltnis(a, b){
 }
 {
   const grund = farbe(tokenWert("grund"));
-  const paare = [["tinte", 4.5], ["tinte2", 4.5], ["tinte3", 3.0], ["blau", 3.0]];
+  const paare = [["tinte", 4.5], ["tinte2", 4.5], ["tinte3", 3.0], ["blau", 3.0],
+                 ["rot", 4.5]];
   const schwach = [];
   if (!grund) warn("Token --grund nicht gefunden, Kontrast nicht geprüft");
   else paare.forEach(([name, soll]) => {
@@ -197,7 +198,20 @@ function verhaeltnis(a, b){
       "1. eins\n  1. unter\n  2. noch eins\n2. zwei\n",
       "- [ ] offen\n  - [x] unterpunkt erledigt\n- [ ] noch offen\n",
       "- eins\n    - vier Leerzeichen sind zwei Stufen\n- zwei\n",
-      "1. eins\n  - gemischte Unterliste\n2. zwei\n"
+      "1. eins\n  - gemischte Unterliste\n2. zwei\n",
+      /* Die drei Bloecke jenseits von reinem Markdown. Sie tragen
+         ihre ganze Quelle im Feld `text` und muessen deshalb Zeichen
+         fuer Zeichen unveraendert zurueckkommen. */
+      "| Name | Format |\n| --- | --- |\n| Export | CSV |\n",
+      "> [!TIP]\n> Vier davon sind derselbe Export.\n",
+      "> [!WARNING]\n> Erste Zeile\n> Zweite Zeile\n",
+      "<details>\n<summary>Entscheidungen</summary>\n\nDer Rumpf.\n\n</details>\n",
+      "Ein Absatz.\n\n| a | b |\n| --- | --- |\n| 1 | 2 |\n\n> [!NOTE]\n> Hinweis\n\nSchluss.\n",
+      /* Ein Absatz mit Balken darin ist keine Tabelle -- ohne
+         Trennzeile bleibt er ein Absatz. */
+      "Erst a | dann b und sonst nichts\n",
+      /* Ein gewoehnliches Zitat darf der Callout nicht verschlucken. */
+      "> Ein Zitat\n\n> [!TIP]\n> Ein Callout\n"
     ];
     try {
       const kasten = { ergebnis: null };

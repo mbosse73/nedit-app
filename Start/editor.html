@@ -32,6 +32,7 @@
   --linie2:rgba(55,53,47,.07);
   --strich:rgba(55,53,47,.06);   /* Fläche unter dem Zeiger */
   --blau:rgb(35,131,226);
+  --rot:rgb(180,50,44);   /* 6,13 : 1 — Warnung, nicht Kategorie */
   --blau-s:rgba(35,131,226,.28);
   --code-g:rgb(247,246,243);
   --code-t:rgb(186,67,63);
@@ -152,6 +153,36 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
   pointer-events:none}
 .blk.linie{padding:12px 2px}
 .blk.linie .strich{flex:1;height:1px;background:var(--linie)}
+
+/* ---------- Tabelle, Callout, Toggle ----------
+   Die drei Blöcke jenseits von reinem Markdown. Jeder trägt sein
+   Urteil sichtbar — HTML nur als Notausgang, und gekennzeichnet
+   (doku/ENTSCHEIDUNGEN.md, Punkt 1). */
+.blk .urteil{position:absolute;right:4px;top:3px;font-size:9.5px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--tinte3);background:var(--rand);
+  border:1px solid var(--linie2);border-radius:3px;padding:1px 5px;
+  pointer-events:none;opacity:0;transition:opacity .12s}
+.blk:hover .urteil,.blk:focus-within .urteil{opacity:1}
+
+.blk.tabelle,.blk.callout,.blk.toggle{margin:10px 0}
+.blk.tabelle table{border-collapse:collapse;width:100%;font-size:14.5px}
+.blk.tabelle th,.blk.tabelle td{border:1px solid var(--linie);padding:6px 10px;
+  text-align:left;vertical-align:top}
+.blk.tabelle th{background:var(--rand);font-weight:600}
+
+.blk.callout .txt{background:var(--rand);border-left:3px solid var(--blau);
+  border-radius:var(--rad);padding:11px 14px}
+.blk.callout.warnung .txt{border-left-color:var(--rot)}
+.blk.callout .sorte{display:block;font-size:12px;font-weight:600;letter-spacing:.03em;
+  color:var(--blau);margin-bottom:3px}
+.blk.callout.warnung .sorte{color:var(--rot)}
+
+.blk.toggle .txt{border:1px solid var(--linie);border-radius:var(--rad);padding:10px 13px}
+/* Beide ausdrücklich als Block: Ohne das stünden Titel und Rumpf
+   nur deshalb untereinander, weil zufällig ein Zeilenende dazwischen
+   liegt. */
+.blk.toggle .haupt{display:block;font-weight:600}
+.blk.toggle .rumpf{display:block;margin-top:6px;color:var(--tinte2)}
 
 /* Auszeichnung im Text */
 .txt b{font-weight:600}
@@ -423,6 +454,7 @@ function kann(merkmal){ return KOENNEN[Z.stufe].indexOf(merkmal) >= 0; }
    ============================================================ */
 const GRUPPIERT = ["punkt","nummer","todo","zitat"];   /* stehen ohne Leerzeile untereinander */
 const LISTE     = ["punkt","nummer","todo"];          /* lassen sich einrücken */
+const MEHRZEILIG = ["code","tabelle","callout","toggle"];  /* Enter bricht die Zeile */
 
 /* Einrückung in Stufen. **Zwei Leerzeichen sind eine Stufe**, ein
    Tabulator zählt ebenso. Vier Leerzeichen — die andere verbreitete
@@ -485,6 +517,39 @@ function leseMarkdown(text){
     if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(z)){
       schliesse(); aus.push({art:"linie", text:""}); continue; }
 
+    /* Toggle. HTML mitten im Text — der Notausgang aus
+       doku/ENTSCHEIDUNGEN.md, Punkt 1, und als solcher gekennzeichnet.
+       Der ganze Bereich landet als Rohtext in einem Block. */
+    if (/^<details>\s*$/.test(z)){
+      schliesse();
+      const teil = [z];
+      while (i + 1 < zeilen.length && !/^<\/details>\s*$/.test(zeilen[i+1])) teil.push(zeilen[++i]);
+      if (i + 1 < zeilen.length) teil.push(zeilen[++i]);
+      aus.push({art:"toggle", text:teil.join("\n")});
+      continue;
+    }
+
+    /* Callout **vor** dem Zitat: Er sieht aus wie eines und ist keines. */
+    if (/^>\s*\[![A-Za-z]+\]\s*$/.test(z)){
+      schliesse();
+      const teil = [z];
+      while (i + 1 < zeilen.length && /^>/.test(zeilen[i+1])) teil.push(zeilen[++i]);
+      aus.push({art:"callout", text:teil.join("\n")});
+      continue;
+    }
+
+    /* Tabelle: eine Zeile mit Balken, darunter die Trennzeile. Ohne
+       die zweite Zeile ist es keine Tabelle, sondern ein Absatz mit
+       Balken darin. */
+    if (/^\s*\|/.test(z) && i + 1 < zeilen.length
+        && /^\s*\|[\s:|-]+\|\s*$/.test(zeilen[i+1])){
+      schliesse();
+      const teil = [z];
+      while (i + 1 < zeilen.length && /^\s*\|/.test(zeilen[i+1])) teil.push(zeilen[++i]);
+      aus.push({art:"tabelle", text:teil.join("\n")});
+      continue;
+    }
+
     let m;
     if ((m = z.match(/^(#{1,3})\s+(.*)$/))){
       schliesse(); aus.push({art:"h" + m[1].length, text:m[2]}); continue; }
@@ -524,6 +589,12 @@ function schreibeMarkdown(bloecke){
     const ein = "  ".repeat(tiefe);
 
     if (b.art === "code")        aus.push("```" + (b.sprache || ""), b.text, "```");
+    /* Tabelle, Callout und Toggle tragen ihre ganze Quelle im Feld
+       `text`. Sie geht unverändert wieder heraus — damit ist der
+       Rundlauf für sie ohne weiteres Zutun verlustfrei, und der Block
+       hat weiterhin genau ein Feld (doku/ENTSCHEIDUNGEN.md, Punkt 7). */
+    else if (b.art === "tabelle" || b.art === "callout" || b.art === "toggle")
+                                 aus.push(b.text);
     else if (b.art === "linie")  aus.push("---");
     else if (b.art === "h1")     aus.push("# "   + b.text);
     else if (b.art === "h2")     aus.push("## "  + b.text);
@@ -557,6 +628,64 @@ function inlineMalen(t){
   return s.replace(/ (\d+) /g, (_, i) => halter[Number(i)]);
 }
 
+/* Was auf der Fläche steht, wenn die Schreibmarke **nicht** im Block
+   ist. Für die meisten Blöcke ist das die Auszeichnung im Text; drei
+   brauchen mehr, und der Codeblock braucht weniger — in ihm wird
+   nichts gedeutet. */
+function blockInhalt(b){
+  if (b.art === "code")    return esc(b.text);
+  if (b.art === "tabelle") return tabelleMalen(b.text);
+  if (b.art === "callout") return calloutMalen(b.text);
+  if (b.art === "toggle")  return toggleMalen(b.text);
+  return inlineMalen(b.text);
+}
+
+function tabelleMalen(text){
+  const zeilen = String(text || "").split("\n").filter(z => z.trim());
+  if (!zeilen.length) return "";
+  const zellen = (z) => z.replace(/^\s*\|/, "").replace(/\|\s*$/, "")
+                         .split("|").map(x => inlineMalen(x.trim()));
+  const kopf = zellen(zeilen[0]);
+  const rumpf = zeilen.slice(2).map(zellen);
+  return "<table><thead><tr>"
+    + kopf.map(x => "<th>" + x + "</th>").join("")
+    + "</tr></thead><tbody>"
+    + rumpf.map(r => "<tr>" + r.map(x => "<td>" + x + "</td>").join("") + "</tr>").join("")
+    + "</tbody></table>";
+}
+
+/* GitHub kennt fünf Sorten. Die Farbe folgt der Dringlichkeit, nicht
+   der Kategorie: Warnung und Vorsicht sind rot, der Rest blau. */
+const CALLOUT = {NOTE:"Hinweis", TIP:"Tipp", IMPORTANT:"Wichtig",
+                 WARNING:"Warnung", CAUTION:"Vorsicht"};
+
+function calloutSorte(text){
+  const m = String(text || "").match(/^>\s*\[!([A-Za-z]+)\]/);
+  return m ? m[1].toUpperCase() : "NOTE";
+}
+
+function calloutMalen(text){
+  const zeilen = String(text || "").split("\n");
+  const sorte = calloutSorte(text);
+  const rumpf = zeilen.slice(1).map(z => z.replace(/^>\s?/, ""));
+  return '<span class="sorte">' + esc(CALLOUT[sorte] || sorte) + "</span>"
+    + inlineMalen(rumpf.join("\n"));
+}
+
+function toggleMalen(text){
+  const zeilen = String(text || "").split("\n");
+  let titel = "";
+  const rumpf = [];
+  zeilen.forEach(z => {
+    if (/^<\/?details>\s*$/.test(z)) return;
+    const t = z.match(/^<summary>(.*)<\/summary>\s*$/);
+    if (t && !titel){ titel = t[1]; return; }
+    rumpf.push(z);
+  });
+  return '<span class="haupt">' + inlineMalen(titel || "Ohne Titel") + "</span>"
+    + '<span class="rumpf">' + inlineMalen(rumpf.join("\n").replace(/^\n+|\n+$/g, "")) + "</span>";
+}
+
 /* ============================================================
    5 — DIE FLÄCHE
 
@@ -566,6 +695,10 @@ function inlineMalen(t){
    zweiten Fehlers. Beim Tippen wird **nicht** gemalt; dort wandert
    nur der Text ins Modell.
    ============================================================ */
+/* Das Urteil aus doku/BLOCKKATALOG.md, an den Block geheftet. Blöcke
+   ohne Eintrag sind reines Markdown und brauchen keine Kennzeichnung. */
+const URTEIL = {todo:"GFM", tabelle:"GFM", callout:"Dialekt", toggle:"HTML"};
+
 const SVG = (d) => '<svg viewBox="0 0 20 20" aria-hidden="true">' + d + '</svg>';
 const IK_PLUS  = SVG('<path d="M10 4.2v11.6M4.2 10h11.6"/>');
 const IK_GRIFF = SVG('<circle cx="7.6" cy="5" r="1.05"/><circle cx="12.4" cy="5" r="1.05"/>'
@@ -619,13 +752,21 @@ function blockMalen(b, i){
   if (b.art === "code" && b.sprache) n.appendChild(el("span", "sprache", esc(b.sprache)));
   if (b.art === "linie"){ n.appendChild(el("span", "strich")); return n; }
 
+  /* Was kein reines Markdown ist, wird gekennzeichnet, nicht
+     versteckt — doku/ENTSCHEIDUNGEN.md, Punkt 1. */
+  if (URTEIL[b.art]) n.appendChild(el("span", "urteil", URTEIL[b.art]));
+  if (b.art === "callout"){
+    const sorte = calloutSorte(b.text);
+    if (sorte === "WARNING" || sorte === "CAUTION") n.classList.add("warnung");
+  }
+
   const t = el("div", "txt");
   t.contentEditable = "true";
   t.spellcheck = false;
   t.dataset.leer = (i === 0 && Z.bloecke.length === 1)
     ? "Beginne zu schreiben …"
     : "Leerer Block";
-  if (i === aktiv) t.textContent = b.text; else t.innerHTML = inlineMalen(b.text);
+  if (i === aktiv) t.textContent = b.text; else t.innerHTML = blockInhalt(b);
   n.appendChild(t);
   return n;
 }
@@ -713,7 +854,7 @@ const HILFEN = [
 
 function hilfePruefen(i, n){
   const b = Z.bloecke[i];
-  if (b.art === "code") return false;             /* im Codeblock wird nichts gedeutet */
+  if (MEHRZEILIG.indexOf(b.art) >= 0) return false;   /* dort wird nichts gedeutet */
   const roh = n.textContent;
   for (let k = 0; k < HILFEN.length; k++){
     const m = roh.match(HILFEN[k][0]);
@@ -740,7 +881,11 @@ function tasteImBlock(ev, i, n){
   const laenge = n.textContent.length;
 
   if (ev.key === "Enter" && !ev.shiftKey){
-    if (b.art === "code") return;                 /* im Codeblock bricht Enter die Zeile */
+    /* In mehrzeiligen Blöcken bricht Enter die Zeile, statt den Block
+       zu teilen: Eine Tabelle mit einer Zeile pro Block wäre keine
+       Tabelle mehr. `white-space: pre-wrap` sorgt dafür, dass dabei
+       ein echtes Zeilenende im Text landet. */
+    if (MEHRZEILIG.indexOf(b.art) >= 0) return;
     ev.preventDefault();
     const roh = n.textContent;
     const davor = roh.slice(0, pos), danach = roh.slice(pos);
@@ -965,7 +1110,19 @@ const ARTEN = [
   {art:"todo",   name:"To-do-Liste",       zeichen:"[ ]", kuerzel:"- [ ] ", merkmal:"todo"},
   {art:"zitat",  name:"Zitat",             zeichen:"»",   kuerzel:"> "},
   {art:"code",   name:"Codeblock",         zeichen:"```", kuerzel:"```"},
-  {art:"linie",  name:"Trennlinie",        zeichen:"—",   kuerzel:"---"}
+  {art:"linie",  name:"Trennlinie",        zeichen:"—",   kuerzel:"---"},
+  /* Die drei jenseits von reinem Markdown. `vorlage` baut die Quelle,
+     wenn ein Block in diese Art umgewandelt wird — sie tragen ihre
+     ganze Quelle im Feld `text` und wären ohne Gerüst unlesbar. */
+  {art:"tabelle", name:"Tabelle",          zeichen:"|",   kuerzel:"| |",
+   merkmal:"tabelle", urteil:"GFM",
+   vorlage:(t) => "| " + (t || "Spalte") + " | Spalte |\n| --- | --- |\n|  |  |"},
+  {art:"callout", name:"Callout",          zeichen:"!",   kuerzel:"> [!TIP]",
+   merkmal:"callout", urteil:"Dialekt",
+   vorlage:(t) => "> [!NOTE]\n> " + (t || "Hinweis")},
+  {art:"toggle",  name:"Toggle-Liste",     zeichen:"›",   kuerzel:"<details>",
+   merkmal:"html", urteil:"HTML",
+   vorlage:(t) => "<details>\n<summary>" + (t || "Titel") + "</summary>\n\n\n\n</details>"}
 ];
 
 /* Was die gewählte Stufe nicht kann, steht nicht im Menü — harte
@@ -981,6 +1138,8 @@ function umwandeln(i, art){
   if (art !== "code") delete b.sprache;
   if (LISTE.indexOf(art) < 0) delete b.tiefe;   /* nur Listen sind eingerückt */
   if (art === "linie") b.text = "";
+  const eintrag = ARTEN.find(a => a.art === art);
+  if (eintrag && eintrag.vorlage) b.text = eintrag.vorlage(b.text.split("\n")[0]);
   bewahre(); male(i, -1);
 }
 
@@ -1031,7 +1190,8 @@ function blockMenue(i, anker){
     "tr", "k:Umwandeln in"
   ];
   arten().forEach(a => eintraege.push(
-    {ic:a.zeichen, nm:a.name, ta:a.kuerzel.trim(), tue:() => umwandeln(i, a.art)}));
+    {ic:a.zeichen, nm:a.name + (a.urteil ? "  · " + a.urteil : ""),
+     ta:a.kuerzel.trim(), tue:() => umwandeln(i, a.art)}));
   menueZeigen(eintraege, anker);
 }
 
@@ -1049,7 +1209,7 @@ function verdrahte(){
     if (i === aktiv) return;
     if (aktiv >= 0 && Z.bloecke[aktiv]){
       const alt = textVon(aktiv);
-      if (alt) alt.innerHTML = inlineMalen(Z.bloecke[aktiv].text);
+      if (alt) alt.innerHTML = blockInhalt(Z.bloecke[aktiv]);
     }
     aktiv = i;
     const t = blk.querySelector(".txt");
@@ -1062,7 +1222,7 @@ function verdrahte(){
     if (aktiv !== i){
       if (aktiv >= 0 && Z.bloecke[aktiv]){
         const alt = textVon(aktiv);
-        if (alt) alt.innerHTML = inlineMalen(Z.bloecke[aktiv].text);
+        if (alt) alt.innerHTML = blockInhalt(Z.bloecke[aktiv]);
       }
       aktiv = i;
       t.textContent = Z.bloecke[i].text;
@@ -1075,7 +1235,7 @@ function verdrahte(){
     const blk = t.closest(".blk"); if (!blk) return;
     blk.classList.remove("ueber");
     const i = Number(blk.dataset.i);
-    if (Z.bloecke[i]) t.innerHTML = inlineMalen(Z.bloecke[i].text);
+    if (Z.bloecke[i]) t.innerHTML = blockInhalt(Z.bloecke[i]);
     if (aktiv === i) aktiv = -1;
   });
 

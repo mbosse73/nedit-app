@@ -20,9 +20,9 @@ Für jeden Block, den Notion kann, muss dieser Editor entscheiden: weglassen, in
 | Unterstrichen | — | ` <u>unterstrichen</u> ` | HTML | gestrichen |
 | Link | ` [ ]( ) ` | ` [Schnittstellen](./Schnittstellen.md) ` | rein | gebaut |
 | Bild | ` ![ ]( ) ` | ` ![Das Raster](./bilder/raster.png) ` | rein | offen |
-| Tabelle | ` \| ` | ` \| Name \| Format \| `<br>` \| --- \| --- \| `<br>` \| Export \| CSV \| ` | GFM | offen |
-| Callout | ` 💡 ` | ` > [!TIP] `<br>` > Vier davon sind derselbe Export. ` | Dialekt | offen |
-| Toggle-Liste | ` › ` | ` <details> `<br>` <summary>Entscheidungen</summary> `<br><br>` … `<br><br>` </details> ` | HTML | offen |
+| Tabelle | ` \| ` | ` \| Name \| Format \| `<br>` \| --- \| --- \| `<br>` \| Export \| CSV \| ` | GFM | gebaut |
+| Callout | ` 💡 ` | ` > [!TIP] `<br>` > Vier davon sind derselbe Export. ` | Dialekt | gebaut |
+| Toggle-Liste | ` › ` | ` <details> `<br>` <summary>Entscheidungen</summary> `<br><br>` … `<br><br>` </details> ` | HTML | gebaut |
 | Markierter Text | ` == ` | ` ==elf Jahre== ` | Dialekt | gebaut |
 | Farbiger Text | — | ` <span style="color:#c0392b">dringend</span> ` | HTML | gestrichen |
 | Erwähnung | ` @ [[ ]] ` | ` [[Kai Richter]] ` | Dialekt | gestrichen |
@@ -44,6 +44,6 @@ Für jeden Block, den Notion kann, muss dieser Editor entscheiden: weglassen, in
 
 ## Stand
 
-**13 von 27 Blöcken sind gebaut.** 7 sind gestrichen, 1 ist vertagt — übrig bleiben 6 offene.
+**16 von 27 Blöcken sind gebaut.** 7 sind gestrichen, 1 ist vertagt — übrig bleiben 3 offene.
 
 Welcher Schritt welchen bringt, steht in `doku/ROADMAP.md`. Was **gestrichen** heißt und warum, steht in `doku/ENTSCHEIDUNGEN.md`, Punkt 1 und 11; **vertagt** in Punkt 12.

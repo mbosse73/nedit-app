@@ -1361,7 +1361,7 @@ const URTEIL_TEXT = { ok:"rein", gfm:"GFM", html:"HTML", dial:"Dialekt", nein:"g
    den dieses Projekt hat. */
 const GEBAUT = ["Text","Überschrift 1–3","Aufzählung","Nummerierte Liste","To-do-Liste",
   "Zitat","Trennlinie","Codeblock","Text in Code","Fett, kursiv","Durchgestrichen",
-  "Markierter Text","Link"];
+  "Markierter Text","Link","Tabelle","Callout","Toggle-Liste"];
 
 /* Bewusst gestrichen. Sie bleiben in der Tabelle stehen, damit die
    Frage nicht alle drei Monate neu gestellt wird — die Begründungen
