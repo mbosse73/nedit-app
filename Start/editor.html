@@ -166,6 +166,35 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
   font-size:13.5px;box-shadow:0 8px 26px rgba(15,15,15,.28);opacity:0;
   pointer-events:none;z-index:60;max-width:70vw}
 .zettel.an{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---------- Einstellungen ----------
+   Hängt an body, nicht an .app: Der Überzug soll über allem liegen
+   und von keinem Ansichtsumschalter erwischt werden — dieselbe
+   Überlegung wie beim Meldungszettel. */
+.ueberzug{position:fixed;inset:0;z-index:70;background:rgba(15,15,15,.34);
+  display:none;align-items:center;justify-content:center;padding:20px}
+.ueberzug.an{display:flex}
+.karte{width:min(600px,94vw);max-height:86vh;overflow-y:auto;background:var(--grund);
+  color:var(--tinte);border-radius:var(--rad-gr);padding:22px 24px 24px;
+  box-shadow:0 20px 64px rgba(15,15,15,.34)}
+.karte .titel{font-size:17px;font-weight:600;margin-bottom:5px}
+.karte .unter{font-size:13px;color:var(--tinte2);line-height:1.55;margin-bottom:20px}
+.karte .gruppe{margin-bottom:20px}
+.karte .etikett{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--tinte3);margin-bottom:8px}
+.karte .wahl{display:flex;flex-wrap:wrap;gap:6px}
+.karte .wahl button{font:inherit;font-size:13px;padding:6px 12px;border-radius:var(--rad);
+  border:1px solid var(--linie);background:var(--grund);color:var(--tinte2);cursor:pointer}
+.karte .wahl button:hover{background:var(--strich)}
+.karte .wahl button[aria-pressed="true"]{background:var(--blau);border-color:var(--blau);
+  color:#fff}
+.karte .erklaerung{font-size:12.5px;color:var(--tinte2);line-height:1.6;margin-top:10px;
+  padding:10px 12px;background:var(--rand);border-radius:var(--rad)}
+.karte .erklaerung b{color:var(--tinte);font-weight:600}
+.karte .schluss{display:flex;justify-content:flex-end}
+.karte .schluss button{font:inherit;font-size:13px;padding:6px 14px;border-radius:var(--rad);
+  border:1px solid var(--linie);background:var(--grund);color:var(--tinte);cursor:pointer}
+.karte .schluss button:hover{background:var(--strich)}
 </style>
 </head>
 <body>
@@ -187,6 +216,13 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
     <button class="akt" id="oeffnen">Öffnen</button>
     <button class="akt" id="sichern">Sichern</button>
     <button class="akt" id="neu">Neu</button>
+    <button class="akt" id="ein-auf" title="Einstellungen" aria-haspopup="dialog">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+           stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true"><circle cx="10" cy="10" r="2.6"/>
+      <path d="M10 2.6v2M10 15.4v2M17.4 10h-2M4.6 10h-2M15.2 4.8l-1.4 1.4M6.2 13.8l-1.4 1.4
+               M15.2 15.2l-1.4-1.4M6.2 6.2 4.8 4.8"/></svg>
+    </button>
     <!-- Edge erlaubt aus einer lokal geöffneten Datei keinen direkten
          Dateizugriff. Öffnen geht deshalb über die Dateiauswahl,
          Sichern über den Download. Siehe doku/ENTSCHEIDUNGEN.md. -->
@@ -214,6 +250,21 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 
 <div class="zettel" id="zettel" role="status" aria-live="polite"></div>
 
+<div class="ueberzug" id="einstellungen" role="dialog" aria-modal="true"
+     aria-labelledby="ein-titel">
+  <div class="karte">
+    <div class="titel" id="ein-titel">Einstellungen</div>
+    <p class="unter">Dieselbe Fläche, andere Ausgabe. Die Stufe bestimmt, welche Blöcke
+      der Editor anbietet — und wie er zeigt, was in der Datei steht.</p>
+    <div class="gruppe">
+      <div class="etikett">Markdown-Stufe</div>
+      <div class="wahl" id="stufen" role="group" aria-label="Markdown-Stufe"></div>
+      <div class="erklaerung" id="stufe-text"></div>
+    </div>
+    <div class="schluss"><button type="button" id="ein-zu">Schließen</button></div>
+  </div>
+</div>
+
 <script>
 "use strict";
 
@@ -230,7 +281,7 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
    Markdown. Das ist die tragende Entscheidung dieser Anwendung.
    ============================================================ */
 const SCHLUESSEL = "notion-md-editor";
-const Z = { name:"unbenannt.md", bloecke:[] };
+const Z = { name:"unbenannt.md", stufe:"rein", bloecke:[] };
 
 const $  = (w) => document.querySelector(w);
 const el = (tag, klasse, html) => {
@@ -250,18 +301,24 @@ function melde(text){
 }
 
 let bewahrUhr = null;
+function bewahreSofort(){
+  clearTimeout(bewahrUhr);
+  try {
+    localStorage.setItem(SCHLUESSEL, JSON.stringify(
+      { format:1, name:Z.name, stufe:Z.stufe, text:schreibeMarkdown(Z.bloecke) }));
+    $("#f-stand").textContent = "gespeichert";
+  } catch (e) {
+    $("#f-stand").textContent = "nicht gespeichert";
+    melde("Speichern ging nicht: " + e.message);
+  }
+}
+
+/* Beim Tippen gebündelt — sonst schriebe jeder Anschlag in den
+   Speicher. Eine Einstellung dagegen wird **sofort** gesichert:
+   Wer sie umstellt und das Fenster schließt, hat sonst nichts davon. */
 function bewahre(){
   clearTimeout(bewahrUhr);
-  bewahrUhr = setTimeout(() => {
-    try {
-      localStorage.setItem(SCHLUESSEL, JSON.stringify(
-        { format:1, name:Z.name, text:schreibeMarkdown(Z.bloecke) }));
-      $("#f-stand").textContent = "gespeichert";
-    } catch (e) {
-      $("#f-stand").textContent = "nicht gespeichert";
-      melde("Speichern ging nicht: " + e.message);
-    }
-  }, 400);
+  bewahrUhr = setTimeout(bewahreSofort, 400);
 }
 
 function lade(){
@@ -271,6 +328,7 @@ function lade(){
   try {
     const d = JSON.parse(roh);
     Z.name = d.name || "unbenannt.md";
+    if (KOENNEN[d.stufe]) Z.stufe = d.stufe;
     ersetze(Z.bloecke, leseMarkdown(d.text || ""));
     return true;
   } catch (e) { melde("Der gespeicherte Stand ließ sich nicht lesen."); return false; }
@@ -278,6 +336,40 @@ function lade(){
 
 /* Inhalt austauschen, ohne das Array selbst zu ersetzen. */
 function ersetze(ziel, neu){ ziel.length = 0; neu.forEach(x => ziel.push(x)); }
+
+/* ---------- Die Markdown-Stufe ----------
+   Harte Regel 9: Alles, was über reines Markdown hinausgeht, hängt an
+   der Stufe und wird gekennzeichnet. Was die gewählte Stufe nicht
+   kann, wird **gar nicht erst angeboten** — statt es anzubieten und
+   hinterher zu enttäuschen.
+
+   Die Stufe ändert nie die Datei. Sie ändert, was der Editor
+   anbietet und wie er zeigt, was schon dasteht: Auf „Rein" bleibt
+   `~~so~~` als Zeichenfolge stehen, weil ein reiner Markdown-Leser
+   genau das zeigen würde. Dieselbe Fläche, andere Ausgabe. */
+const STUFEN = [
+  ["rein",     "Rein",
+   "Nur was in <b>jedem</b> Werkzeug der Welt läuft. Kein To-do, keine Tabelle, "
+   + "kein Durchgestrichen. Die Datei ist überall dieselbe."],
+  ["github",   "GitHub",
+   "GitHub-Markdown (GFM): <b>To-do-Listen</b>, <b>Tabellen</b>, "
+   + "<b>~~durchgestrichen~~</b> und Hinweiskästen. Der verbreitetste Standard."],
+  ["obsidian", "Obsidian",
+   "Wie GitHub, dazu der <b>==Textmarker==</b>. Bindet die Datei an Werkzeuge, "
+   + "die diese Schreibweise kennen."],
+  ["pandoc",   "Pandoc",
+   "Tabellen und Durchgestrichen. <b>Keine To-dos, keine Hinweiskästen</b> — "
+   + "Pandoc kennt sie ohne Erweiterung nicht."]
+];
+
+const KOENNEN = {
+  rein:     [],
+  github:   ["todo","tabelle","durch","callout","html"],
+  obsidian: ["todo","tabelle","durch","callout","html","marker"],
+  pandoc:   ["tabelle","durch","html"]
+};
+
+function kann(merkmal){ return KOENNEN[Z.stufe].indexOf(merkmal) >= 0; }
 
 /* ============================================================
    4 — MARKDOWN LESEN UND SCHREIBEN
@@ -368,8 +460,10 @@ function inlineMalen(t){
   s = s.replace(/\[([^\]\n]+)\]\(([^)\s]+)\)/g, '<span class="verweis">$1</span>');
   s = s.replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>");
   s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<i>$2</i>");
-  s = s.replace(/~~([^~\n]+)~~/g, "<s>$1</s>");
-  s = s.replace(/==([^=\n]+)==/g, "<mark>$1</mark>");
+  /* Was die Stufe nicht kann, bleibt als Zeichenfolge stehen — der
+     Editor zeigt, was das Zielwerkzeug zeigen würde. */
+  if (kann("durch"))  s = s.replace(/~~([^~\n]+)~~/g, "<s>$1</s>");
+  if (kann("marker")) s = s.replace(/==([^=\n]+)==/g, "<mark>$1</mark>");
   return s.replace(/ (\d+) /g, (_, i) => halter[Number(i)]);
 }
 
@@ -766,7 +860,46 @@ function ansicht(name){
 }
 
 /* ============================================================
-   8 — DATEIEN
+   8 — EINSTELLUNGEN
+
+   Bisher steht hier nur die Markdown-Stufe. Sie gehört in die
+   Einstellungen und nicht in den Code: Dieselbe Fläche, andere
+   Ausgabe — doku/ENTSCHEIDUNGEN.md, Punkt 1.
+   ============================================================ */
+function stufeMalen(){
+  const feld = $("#stufen");
+  feld.innerHTML = "";
+  STUFEN.forEach(([schluessel, name]) => {
+    const b = el("button", null, esc(name));
+    b.type = "button";
+    b.setAttribute("aria-pressed", String(schluessel === Z.stufe));
+    b.onclick = () => {
+      if (schluessel === Z.stufe) return;
+      Z.stufe = schluessel;
+      bewahreSofort();
+      stufeMalen();
+      male();                       /* die Anzeige folgt der Stufe */
+      melde("Stufe: " + name);
+    };
+    feld.appendChild(b);
+  });
+  const jetzt = STUFEN.find(x => x[0] === Z.stufe);
+  $("#stufe-text").innerHTML = jetzt ? jetzt[2] : "";
+}
+
+function einstellungenVerdrahten(){
+  const ueber = $("#einstellungen");
+  const zu = () => ueber.classList.remove("an");
+  $("#ein-auf").onclick = () => { stufeMalen(); ueber.classList.add("an"); $("#ein-zu").focus(); };
+  $("#ein-zu").onclick = zu;
+  /* Ein Klick daneben schließt, ein Klick auf die Karte nicht. */
+  ueber.addEventListener("mousedown", (ev) => { if (ev.target === ueber) zu(); });
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape" && ueber.classList.contains("an")) zu(); });
+}
+
+/* ============================================================
+   9 — DATEIEN
 
    Edge erlaubt aus einer lokal geöffneten Datei **keinen** direkten
    Dateizugriff; die File System Access API ist damit keine Option.
@@ -821,7 +954,7 @@ function dateienVerdrahten(){
 }
 
 /* ============================================================
-   9 — TASTATUR UND START
+  10 — TASTATUR UND START
    ============================================================ */
 document.addEventListener("keydown", (ev) => {
   if (!(ev.ctrlKey || ev.metaKey)) return;
@@ -855,6 +988,7 @@ function start(){
   verdrahte();
   quelltextVerdrahten();
   dateienVerdrahten();
+  einstellungenVerdrahten();
   ["schreiben","geteilt","quelltext"].forEach(n => {
     $("#w-" + n).onclick = () => ansicht(n); });
   let gemerkt = "schreiben";
