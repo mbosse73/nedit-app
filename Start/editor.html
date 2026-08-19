@@ -2153,20 +2153,29 @@ document.addEventListener("keydown", (ev) => {
 });
 
 const START = "# Willkommen\n\n"
-  + "Dies ist ein **Gerüst**, kein fertiger Editor. Was schon geht und was noch\n"
-  + "fehlt, steht in `STAND.md`; wie es aussehen soll, in `mockups/`.\n\n"
-  + "## Was hier schon funktioniert\n\n"
-  + "- [x] Blöcke aus Markdown lesen und wieder als Markdown schreiben\n"
-  + "- [x] Eingabehilfen: `# `, `- `, `1. `, `- [ ] `, `> ` und `---`\n"
-  + "- [x] Der Block unter der Schreibmarke zeigt seinen Rohtext\n"
-  + "- [ ] Slash-Menü, Auswahlleiste, Umwandeln — Schritt 2 und 3\n\n"
+  + "Ein Markdown-Editor, der sich wie Notion bedienen lässt und trotzdem nichts\n"
+  + "anderes schreibt als eine `.md`-Datei.\n\n"
+  + "## Die drei Griffe\n\n"
+  + "1. Tippe `/` am Zeilenanfang — die Liste aller Blöcke, mit dem\n"
+  + "   Markdown-Kürzel daneben und einer Vorschau, *was in die Datei kommt*.\n"
+  + "2. Markiere Text — die Leiste kommt zur Auswahl, statt am Rand zu warten.\n"
+  + "3. Der Griff links am Absatz: ziehen zum Verschieben, klicken für Löschen,\n"
+  + "   Duplizieren und **Umwandeln in**.\n\n"
   + "> Der Text ist immer Rohtext. Gespeichert wird nie etwas anderes als Markdown.\n\n"
+  + "## Was sonst noch da ist\n\n"
+  + "- Eingabehilfen: `# `, `- `, `1. `, `> `, ` ``` ` und `---`\n"
+  + "- `Tab` rückt Listen ein, `Umschalt+Tab` wieder aus\n"
+  + "- `Strg+F` sucht im Dokument, `Strg+Z` nimmt auch ganze Blöcke zurück\n"
+  + "- Rechts die Gliederung; darunter ein Knopf für das Inhaltsverzeichnis\n"
+  + "- Der Knopf **PDF** öffnet den Druckdialog — drei Layouts in den Einstellungen\n\n"
   + "```javascript\n"
   + "const bloecke = leseMarkdown(text);\n"
   + "console.assert(schreibeMarkdown(bloecke) === text);\n"
   + "```\n\n"
   + "---\n\n"
-  + "Ziehe einen Block am Griff links, um ihn zu verschieben.\n";
+  + "In den **Einstellungen** steht die Markdown-Stufe. Auf `Rein` bietet der\n"
+  + "Editor nur an, was in jedem Werkzeug der Welt läuft — Tabellen, To-dos und\n"
+  + "Hinweiskästen kommen erst ab `GitHub` dazu.\n";
 
 function start(){
   if (!lade()) ersetze(Z.bloecke, leseMarkdown(START));

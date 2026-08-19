@@ -71,9 +71,21 @@ oder das Format kaputt.
 * Alles Veränderliche liegt im Objekt `Z`. **Nie neu zuweisen** —
   immer an Ort und Stelle ändern. Zum Austauschen des Inhalts gibt es
   `ersetze(ziel, neu)`.
-* Ein Block ist `{art, text}`, dazu je nach Art `fertig` (To-do) und
-  `sprache` (Codeblock). `art` ist einer von: `absatz`, `h1`, `h2`,
-  `h3`, `punkt`, `nummer`, `todo`, `zitat`, `code`, `linie`.
+* Ein Block ist `{art, text}`, dazu je nach Art `fertig` (To-do),
+  `sprache` (Codeblock) und `tiefe` (Einrückung, nur bei `punkt`,
+  `nummer`, `todo`; fehlt, wenn sie 0 ist). `art` ist einer von:
+  `absatz`, `h1`, `h2`, `h3`, `punkt`, `nummer`, `todo`, `zitat`,
+  `code`, `linie`, `tabelle`, `callout`, `toggle`.
+* **`tiefe` heißt nicht `stufe`.** `Z.stufe` ist die Markdown-Stufe
+  des Dialektschalters; zwei Dinge gleichen Namens in einem Modell
+  sind eine Fehlerquelle.
+* **Tabelle, Callout und Toggle tragen ihre ganze Quelle im Feld
+  `text`** — mitsamt Balken, `> [!TIP]` und `<details>`. Sie gehen
+  unverändert wieder heraus. Deshalb hat auch für sie ein Block genau
+  ein Feld, und der Rundlauf braucht keine Sonderbehandlung.
+* Neben dem Text liegen in `Z` vier Einstellungen: `stufe`, `thema`,
+  `satz`, `druck`. Sie werden **sofort** gesichert (`bewahreSofort`),
+  nicht gebündelt wie das Tippen.
 * Nach jeder Änderung `bewahre()` aufrufen. Ohne das ist die Änderung
   beim Neuladen weg.
 * **Arbeitsstand: localStorage.** **Datei öffnen: Dateiauswahl.**
@@ -91,19 +103,30 @@ Neun nummerierte Abschnitte, jeder mit einem Kopfkommentar. Ändere
 Das hält Diffs klein und lesbar.
 
 ```
-1  GRUNDLAGEN            Tokens, Grundstil
-2  DIE BLÖCKE            Aussehen je Blockart
-3  DATEN                 Z, bewahre, lade, melde
-4  MARKDOWN              leseMarkdown, schreibeMarkdown, inlineMalen
-5  DIE FLÄCHE            male, blockMalen, Schreibmarke
-6  TIPPEN                Eingabehilfen, Tasten, Ereignisse, Ziehen
-7  DER QUELLTEXT         geteilte Ansicht, Umschalter
-8  DATEIEN               Öffnen, Sichern, Neu
-9  TASTATUR UND START
+ 1  GRUNDLAGEN           Tokens, beide Themen, Druckstil
+ 2  DIE BLÖCKE           Aussehen je Blockart, Leiste, Menüs
+ 3  DATEN                Z, bewahre, lade, melde, Stufen, Verlauf
+ 4  MARKDOWN             leseMarkdown, schreibeMarkdown, nummern
+ 5  DIE FLÄCHE           male, blockMalen, blockInhalt, Schreibmarke
+ 6  TIPPEN               Eingabehilfen, Tasten, Leiste, Menüs, Ziehen
+ 7  DER QUELLTEXT        geteilte Ansicht, Umschalter
+ 8  GLIEDERUNG, SUCHEN   Überschriften, Fund, Inhaltsverzeichnis
+ 9  EINSTELLUNGEN        Stufe, Thema, Satz, Druck-Layout
+10  DATEIEN              Öffnen, Sichern, Neu, PDF
+11  TASTATUR UND START
 ```
 
 `leseMarkdown` und `schreibeMarkdown` stehen mit Absicht nebeneinander
-und werden **immer zusammen** geändert.
+und werden **immer zusammen** geändert. `werkzeug/pruefen.mjs`
+schneidet genau diesen Bereich heraus — von `const GRUPPIERT` bis zum
+Kommentar `/* Auszeichnung im Text` — und führt ihn in einer Sandbox
+aus. **Was der Umwandler braucht, muss deshalb in diesem Bereich
+stehen**; ein Aufruf nach draußen (etwa `kann()`) bricht die
+Markdown-Prüfung.
+
+Was neu in den Umwandler kommt, bekommt eine Probe in `PROBEN`. Dort
+stehen auch Gegenproben: dass ein Absatz mit Balken **keine** Tabelle
+ist und ein gewöhnliches Zitat vom Callout nicht verschluckt wird.
 
 ---
 
@@ -114,6 +137,12 @@ und werden **immer zusammen** geändert.
 * **Die Schreibspalte ist 708 Pixel breit** (`--spalte`), unabhängig
   von der Fensterbreite. Das ist Notions Maß und der wirksamste
   einzelne Griff für die Lesbarkeit.
+* **Zwei Themen.** Die hellen Werte stehen in `:root`, die dunklen in
+  `:root[data-thema="dunkel"]` — dort nur, was sich ändert. Eine feste
+  Farbe wie `#fff` mitten im Stil bricht das zweite Thema; wo eine
+  Fläche den umgekehrten Grund hat (Auswahlleiste, Meldungszettel),
+  gehören `--grund` und `--tinte` über Kreuz oder ein neutrales Grau
+  hin. `werkzeug/pruefen.mjs` rechnet **beide** Themen nach.
 * Kontrast prüfen: tragender Text mindestens 4,5 : 1, große Schrift
   mindestens 3 : 1. **Notions eigene Grauwerte unterschreiten das** —
   `rgba(55,53,47,.62)` ergibt auf Weiß nur 3,86 : 1. Die Tokens sind
@@ -159,7 +188,16 @@ nichts über die Darstellung:
 
 ```bash
 node werkzeug/schau.mjs
+node werkzeug/probe.mjs
 ```
+
+`probe.mjs` **bedient** die Anwendung: Es markiert Text, öffnet Menüs,
+rückt ein, nimmt zurück, wechselt die Stufe — und prüft danach, was in
+der Datei steht. Das ist der einzige Weg, den Rundlauf über die Fläche
+zu prüfen: `pruefen.mjs` rechnet `lesen(schreiben(x))` in einer Sandbox
+nach, ob ein Klick auf „Umwandeln in" dasselbe ergibt, sieht es nicht.
+
+Wer einen Griff ändert, ändert dort die Probe mit.
 
 Wird eine neue Regel gefunden, die sich automatisch prüfen lässt,
 gehört sie in `werkzeug/pruefen.mjs` — nicht nur in dieses Dokument.
@@ -173,6 +211,7 @@ gehört sie in `werkzeug/pruefen.mjs` — nicht nur in dieses Dokument.
 | `node werkzeug/lage.mjs` | Branch, letzte Commits, offene Punkte. Läuft beim Sitzungsbeginn von selbst |
 | `node werkzeug/pruefen.mjs` | die Regelprüfung. Läuft nach jedem Schreiben als Haken automatisch mit |
 | `node werkzeug/schau.mjs` | echter Browser, drei Ansichten, Tippprobe, Bilder, Skriptfehler |
+| `node werkzeug/probe.mjs` | die **Bedienung** im echten Browser: markieren, Menüs, Einrücken, Verlauf, Stufen, Druck. 37 Proben |
 | `node werkzeug/bau-mockups.mjs` | die sieben Entwürfe neu erzeugen |
 
 ---

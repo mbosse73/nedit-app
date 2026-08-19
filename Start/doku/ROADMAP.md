@@ -26,7 +26,7 @@ Drei Ansichten. Öffnen, Sichern, localStorage.
 
 ---
 
-## Schritt 2 — Der Dialektschalter
+## Schritt 2 — Der Dialektschalter · **erledigt**
 
 **Vorgezogen.** In der Roadmap stand er als Schritt 6; die Durchsprache
 hat Callout, Toggle und Tabelle bestätigt, und harte Regel 9 verlangt
@@ -42,7 +42,7 @@ nicht erst angeboten.
 
 ---
 
-## Schritt 3 — Die Auswahlleiste
+## Schritt 3 — Die Auswahlleiste · **erledigt**
 
 Text markieren, und über der Auswahl steht eine Leiste: **B** *I*
 ~~S~~, `Code`, Link, Textmarker. Sie kommt zum Text, statt am
@@ -60,7 +60,7 @@ gestrichen, siehe Punkt 11.
 
 ---
 
-## Schritt 4 — Blockmenü, Umwandeln, Einrücken
+## Schritt 4 — Blockmenü, Umwandeln, Einrücken · **erledigt**
 
 Der Griff `⠿` öffnet ein Menü: Löschen, Duplizieren, Umwandeln in.
 „Umwandeln in" ändert die Art, ohne die Zeile anzufassen — der Griff,
@@ -78,7 +78,7 @@ seit Schritt 1.
 
 ---
 
-## Schritt 5 — Callout, Toggle, Tabelle
+## Schritt 5 — Callout, Toggle, Tabelle · **erledigt**
 
 Die drei Blöcke, an denen sich entscheidet, wie ernst dieses Projekt
 seine neunte Regel nimmt. Callout ist ein Dialekt (`> [!TIP]`), Toggle
@@ -93,7 +93,7 @@ Schritt 2.
 
 ---
 
-## Schritt 6 — Das Slash-Menü
+## Schritt 6 — Das Slash-Menü · **erledigt**
 
 `/` am Blockanfang öffnet die Liste, Weitertippen filtert. Rechts in
 jeder Zeile das Markdown-Kürzel — das Menü ist damit nebenbei ein
@@ -112,7 +112,7 @@ ist — sonst verspricht es etwas, das beim Klick nicht kommt.
 
 ---
 
-## Schritt 7 — Sich zurechtfinden
+## Schritt 7 — Sich zurechtfinden · **erledigt**
 
 Rechts die Gliederung aus den Überschriften, die springt. Dazu die
 Suche im Dokument (`Strg+F` im Editor, nicht im Browser — die
@@ -126,7 +126,7 @@ Inhaltsverzeichnis, das sich aus den Überschriften erzeugen lässt.
 
 ---
 
-## Schritt 8 — Bild und Rückgängig
+## Schritt 8 — Bild und Rückgängig · **erledigt**
 
 Bild einfügen als **Verweis** (`![Titel](bild.png)`), nicht
 eingebettet — sonst ist die Datei kein lesbarer Text mehr.
@@ -137,7 +137,7 @@ oder verschobener Block kommt mit `Strg+Z` derzeit nicht zurück.
 
 ---
 
-## Schritt 9 — Aussehen und Druck
+## Schritt 9 — Aussehen und Druck · **erledigt**
 
 Zweites Thema (dunkel). Blocksatz als **Anzeige-Einstellung**, nicht
 als Merkmal des Textes.
