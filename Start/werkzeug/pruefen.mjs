@@ -188,7 +188,16 @@ function verhaeltnis(a, b){
       "```javascript\nconst a = 1;\n```\n",
       "---\n",
       "Ein Absatz\nüber zwei Zeilen\n",
-      "# A\n\n## B\n\n### C\n\nText\n\n- x\n\n> y\n\n---\n\nEnde\n"
+      "# A\n\n## B\n\n### C\n\nText\n\n- x\n\n> y\n\n---\n\nEnde\n",
+      /* Eingerueckte Listen. Zwei Leerzeichen sind eine Stufe, vier
+         sind zwei -- beide Schreibweisen muessen unveraendert
+         zurueckkommen. Die Nummern einer Unterliste fangen bei 1 an,
+         der Zaehler der flacheren Stufe laeuft danach weiter. */
+      "- eins\n  - unter\n  - noch eins\n- zwei\n",
+      "1. eins\n  1. unter\n  2. noch eins\n2. zwei\n",
+      "- [ ] offen\n  - [x] unterpunkt erledigt\n- [ ] noch offen\n",
+      "- eins\n    - vier Leerzeichen sind zwei Stufen\n- zwei\n",
+      "1. eins\n  - gemischte Unterliste\n2. zwei\n"
     ];
     try {
       const kasten = { ergebnis: null };

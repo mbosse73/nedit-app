@@ -40,6 +40,7 @@
   --rad:5px;
   --rad-gr:8px;
   --spalte:708px;         /* Notions Schreibbreite. Nicht verhandelbar. */
+  --einzug:26px;          /* eine Stufe Einrückung in der Anzeige */
   --schrift:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",
             Roboto,Helvetica,Arial,sans-serif;
   --fest:ui-monospace,Consolas,"Courier New",monospace;
@@ -109,7 +110,8 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
    alle anderen zeigen das Ergebnis.
    ============================================================ */
 .blk{position:relative;display:flex;align-items:flex-start;gap:8px;
-  padding:2px 2px;border-radius:3px}
+  padding:2px 2px;border-radius:3px;
+  margin-left:calc(var(--tiefe,0) * var(--einzug))}
 .blk.ueber{background:rgba(55,53,47,.02)}
 .blk.zielvor{box-shadow:0 -2px 0 var(--blau)}
 .blk.zielnach{box-shadow:0 2px 0 var(--blau)}
@@ -182,6 +184,28 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 .leiste svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.8;fill:none;
   stroke-linecap:round;stroke-linejoin:round}
 .leiste .mk{background:var(--marker);color:rgb(55,53,47);border-radius:2px;padding:1px 4px}
+
+/* ---------- Menüs ----------
+   Eine Fläche für alle: Blockmenü und Slash-Menü unterscheiden sich
+   im Inhalt, nicht in der Form. */
+.menue{position:fixed;z-index:58;display:none;min-width:232px;max-height:70vh;
+  overflow-y:auto;padding:5px;background:var(--grund);border:1px solid var(--linie);
+  border-radius:var(--rad-gr);box-shadow:0 10px 34px rgba(15,15,15,.20)}
+.menue.an{display:block}
+.menue .k{padding:8px 9px 4px;font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--tinte3)}
+.menue button{display:flex;align-items:center;gap:10px;width:100%;font:inherit;
+  font-size:13.5px;padding:6px 9px;border:0;border-radius:var(--rad);background:none;
+  color:var(--tinte);cursor:pointer;text-align:left}
+.menue button:hover,.menue button.zeig{background:var(--strich)}
+.menue button .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.menue button .ta{font-size:11.5px;color:var(--tinte3);font-family:var(--fest);
+  flex-shrink:0}
+.menue .ic{width:26px;flex-shrink:0;color:var(--tinte3);font-size:11.5px;
+  font-family:var(--fest);text-align:center}
+.menue .tr{height:1px;background:var(--linie2);margin:5px 2px}
+.menue .leer{padding:9px;font-size:13px;color:var(--tinte3)}
 
 /* ---------- Einstellungen ----------
    Hängt an body, nicht an .app: Der Überzug soll über allem liegen
@@ -265,6 +289,7 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 </div>
 
 <div class="leiste" id="leiste" role="toolbar" aria-label="Auszeichnung"></div>
+<div class="menue" id="menue" role="menu" aria-label="Menü"></div>
 
 <div class="zettel" id="zettel" role="status" aria-live="polite"></div>
 
@@ -397,6 +422,44 @@ function kann(merkmal){ return KOENNEN[Z.stufe].indexOf(merkmal) >= 0; }
    Was das nicht erfüllt, gehört nicht in den Umwandler.
    ============================================================ */
 const GRUPPIERT = ["punkt","nummer","todo","zitat"];   /* stehen ohne Leerzeile untereinander */
+const LISTE     = ["punkt","nummer","todo"];          /* lassen sich einrücken */
+
+/* Einrückung in Stufen. **Zwei Leerzeichen sind eine Stufe**, ein
+   Tabulator zählt ebenso. Vier Leerzeichen — die andere verbreitete
+   Schreibweise — ergeben zwei Stufen und werden als vier Leerzeichen
+   zurückgeschrieben; der Rundlauf bleibt also verlustfrei. Eine
+   ungerade Einrückung wird auf die nächstkleinere Stufe
+   vereinheitlicht. Das ist der einzige Ort, an dem dieser Umwandler
+   etwas begradigt, und er tut es offen.
+
+   Das Feld heißt `tiefe` und nicht `stufe`: `Z.stufe` ist die
+   Markdown-Stufe des Dialektschalters, und zwei Dinge gleichen
+   Namens in einem Modell sind eine Fehlerquelle. */
+const MAXTIEFE = 6;
+const einzug = (s) => Math.min(MAXTIEFE, Math.floor(s.replace(/\t/g, "  ").length / 2));
+
+/* Die laufenden Nummern für alle Blöcke auf einmal. Eine Unterliste
+   fängt bei 1 an; kehrt sie zur flacheren Stufe zurück, läuft deren
+   Zähler weiter. Steht hier und nicht in Abschnitt 5, weil
+   `schreibeMarkdown` dieselbe Rechnung braucht — zwei Fassungen
+   davon liefen unweigerlich auseinander. */
+function nummern(bloecke){
+  const aus = [], zaehler = [];
+  bloecke.forEach((b, i) => {
+    const vor = bloecke[i-1], tiefe = b.tiefe || 0;
+    if (LISTE.indexOf(b.art) < 0){ zaehler.length = 0; aus.push(0); return; }
+    const kette = vor && LISTE.indexOf(vor.art) >= 0;
+    if (b.art === "nummer"){
+      if (!kette || (vor.tiefe || 0) < tiefe) zaehler[tiefe] = 1;
+      else zaehler[tiefe] = (zaehler[tiefe] || 0) + 1;
+    }
+    for (let k = tiefe + 1; k < zaehler.length; k++) zaehler[k] = 0;
+    aus.push(b.art === "nummer" ? zaehler[tiefe] : 0);
+  });
+  return aus;
+}
+
+const mitTiefe = (b, tiefe) => { if (tiefe > 0) b.tiefe = tiefe; return b; };
 
 function leseMarkdown(text){
   const zeilen = String(text || "").replace(/\r\n?/g, "\n").split("\n");
@@ -425,12 +488,13 @@ function leseMarkdown(text){
     let m;
     if ((m = z.match(/^(#{1,3})\s+(.*)$/))){
       schliesse(); aus.push({art:"h" + m[1].length, text:m[2]}); continue; }
-    if ((m = z.match(/^\s*[-*]\s+\[([ xX])\]\s*(.*)$/))){
-      schliesse(); aus.push({art:"todo", fertig:m[1] !== " ", text:m[2]}); continue; }
-    if ((m = z.match(/^\s*[-*]\s+(.*)$/))){
-      schliesse(); aus.push({art:"punkt", text:m[1]}); continue; }
-    if ((m = z.match(/^\s*\d+[.)]\s+(.*)$/))){
-      schliesse(); aus.push({art:"nummer", text:m[1]}); continue; }
+    if ((m = z.match(/^([ \t]*)[-*]\s+\[([ xX])\]\s*(.*)$/))){
+      schliesse(); aus.push(mitTiefe({art:"todo", fertig:m[2] !== " ", text:m[3]},
+                                     einzug(m[1]))); continue; }
+    if ((m = z.match(/^([ \t]*)[-*]\s+(.*)$/))){
+      schliesse(); aus.push(mitTiefe({art:"punkt", text:m[2]}, einzug(m[1]))); continue; }
+    if ((m = z.match(/^([ \t]*)\d+[.)]\s+(.*)$/))){
+      schliesse(); aus.push(mitTiefe({art:"nummer", text:m[2]}, einzug(m[1]))); continue; }
     if ((m = z.match(/^>\s?(.*)$/))){
       schliesse(); aus.push({art:"zitat", text:m[1]}); continue; }
 
@@ -444,21 +508,29 @@ function leseMarkdown(text){
 
 function schreibeMarkdown(bloecke){
   const aus = [];
-  let zahl = 1;                            /* laufende Nummer der aktuellen Liste */
+  const nr = nummern(bloecke);
   bloecke.forEach((b, i) => {
     const vor = bloecke[i-1];
-    const zusammen = vor && GRUPPIERT.indexOf(b.art) >= 0 && b.art === vor.art;
+    const tiefe = b.tiefe || 0;
+    /* Eine Leerzeile zwischen zwei Blöcken — außer sie gehören zur
+       selben Liste. Eine Unterliste gehört auch dann dazu, wenn sie
+       eine andere Art hat: `- a` mit `1. b` darunter ist eine Liste,
+       nicht zwei. */
+    const zusammen = vor && (
+         (GRUPPIERT.indexOf(b.art) >= 0 && b.art === vor.art)
+      || (LISTE.indexOf(b.art) >= 0 && LISTE.indexOf(vor.art) >= 0
+          && tiefe !== (vor.tiefe || 0)));
     if (i && !zusammen) aus.push("");
-    zahl = (b.art === "nummer" && vor && vor.art === "nummer") ? zahl + 1 : 1;
+    const ein = "  ".repeat(tiefe);
 
     if (b.art === "code")        aus.push("```" + (b.sprache || ""), b.text, "```");
     else if (b.art === "linie")  aus.push("---");
     else if (b.art === "h1")     aus.push("# "   + b.text);
     else if (b.art === "h2")     aus.push("## "  + b.text);
     else if (b.art === "h3")     aus.push("### " + b.text);
-    else if (b.art === "punkt")  aus.push("- "   + b.text);
-    else if (b.art === "nummer") aus.push(zahl + ". " + b.text);
-    else if (b.art === "todo")   aus.push("- [" + (b.fertig ? "x" : " ") + "] " + b.text);
+    else if (b.art === "punkt")  aus.push(ein + "- "   + b.text);
+    else if (b.art === "nummer") aus.push(ein + nr[i] + ". " + b.text);
+    else if (b.art === "todo")   aus.push(ein + "- [" + (b.fertig ? "x" : " ") + "] " + b.text);
     else if (b.art === "zitat")  aus.push("> "   + b.text);
     else                         aus.push(b.text);
   });
@@ -505,15 +577,15 @@ const IK_HAKEN = '<svg viewBox="0 0 20 20" aria-hidden="true">'
 let aktiv = -1;          /* Index des Blocks unter der Schreibmarke */
 let ziehtVon = -1;       /* Index des gezogenen Blocks */
 
-function nummerVon(i){
-  let n = 1;
-  for (let k = i - 1; k >= 0 && Z.bloecke[k].art === "nummer"; k--) n++;
-  return n;
-}
+/* Einmal je Anstrich gerechnet, nicht je Block: `nummern()` läuft
+   sonst für jede Zeile über die ganze Liste. */
+let NUMMERN = [];
+function nummerVon(i){ return NUMMERN[i] || 1; }
 
 function blockMalen(b, i){
   const n = el("div", "blk " + b.art + (b.fertig ? " fertig" : ""));
   n.dataset.i = String(i);
+  if (b.tiefe) n.style.setProperty("--tiefe", String(b.tiefe));
 
   const griff = el("span", "griff");
   const plus = el("button", null, IK_PLUS);
@@ -527,6 +599,8 @@ function blockMalen(b, i){
      `draggable`, ließe sich sein Text nicht mehr markieren. */
   fass.addEventListener("mousedown", () => { n.draggable = true; });
   fass.addEventListener("mouseup",   () => { n.draggable = false; });
+  fass.title = "Ziehen zum Verschieben, Klicken für das Menü";
+  fass.onclick = () => blockMenue(i, fass);
   griff.append(plus, fass);
   n.appendChild(griff);
 
@@ -558,6 +632,7 @@ function blockMalen(b, i){
 
 function male(fokusIndex, fokusPos){
   if (fokusIndex !== undefined) aktiv = fokusIndex;
+  NUMMERN = nummern(Z.bloecke);
   const s = $("#spalte");
   s.innerHTML = "";
   Z.bloecke.forEach((b, i) => s.appendChild(blockMalen(b, i)));
@@ -676,7 +751,7 @@ function tasteImBlock(ev, i, n){
     }
     b.text = davor;
     const folgt = GRUPPIERT.indexOf(b.art) >= 0
-      ? {art:b.art, text:danach, fertig:false}
+      ? mitTiefe({art:b.art, text:danach, fertig:false}, b.tiefe || 0)
       : {art:"absatz", text:danach};
     Z.bloecke.splice(i + 1, 0, folgt);
     bewahre(); male(i + 1, 0);
@@ -687,6 +762,14 @@ function tasteImBlock(ev, i, n){
     /* Erst die Art zurücknehmen, dann erst verschmelzen — so wie in
        Notion: Ein Backspace am Anfang einer Überschrift macht sie zum
        Absatz und löscht nichts. */
+    /* Eingerückt? Dann nimmt Backspace erst die Einrückung zurück —
+       sonst verlöre ein Unterpunkt beim Löschen zwei Dinge auf
+       einmal, und niemand könnte sagen, welches gemeint war. */
+    if (b.tiefe){
+      ev.preventDefault();
+      b.tiefe -= 1; if (!b.tiefe) delete b.tiefe;
+      bewahre(); male(i, 0); return;
+    }
     if (b.art !== "absatz"){
       ev.preventDefault();
       b.art = "absatz"; delete b.fertig; delete b.sprache;
@@ -719,7 +802,26 @@ function tasteImBlock(ev, i, n){
   if (ev.key === "ArrowDown" && pos === laenge && i < Z.bloecke.length - 1){
     ev.preventDefault(); setzeFokus(i+1, 0); return; }
 
-  if (ev.key === "Tab") ev.preventDefault();      /* Einrücken kommt in Schritt 4 */
+  if (ev.key === "Tab"){
+    ev.preventDefault();
+    if (LISTE.indexOf(b.art) < 0) return;         /* nur Listen rücken ein */
+    const tiefe = b.tiefe || 0;
+    if (ev.shiftKey){
+      if (!tiefe) return;
+      b.tiefe = tiefe - 1;
+    } else {
+      /* Höchstens eine Stufe tiefer als der Vorgänger. Eine Lücke
+         darüber hinaus könnte Markdown nicht ausdrücken — sie käme
+         beim nächsten Lesen als flachere Stufe zurück. */
+      const vor = Z.bloecke[i-1];
+      const grenze = vor && LISTE.indexOf(vor.art) >= 0 ? (vor.tiefe || 0) + 1 : 0;
+      if (tiefe >= grenze || tiefe >= MAXTIEFE) return;
+      b.tiefe = tiefe + 1;
+    }
+    if (!b.tiefe) delete b.tiefe;
+    bewahre(); male(i, pos);
+    return;
+  }
 }
 
 /* ---------- Die Auswahlleiste ----------
@@ -846,6 +948,91 @@ function leistePruefen(){
   if (oben < 8) oben = a.rechteck.bottom + 8;
   l.style.left = Math.round(links) + "px";
   l.style.top  = Math.round(oben) + "px";
+}
+
+/* ---------- Die Blockarten ----------
+   Eine Liste für alles, was eine Blockart auswählbar macht:
+   Blockmenü, Umwandeln, später das Slash-Menü. Das Kürzel steht
+   überall daneben — wer das Menü zweimal benutzt hat, tippt beim
+   dritten Mal die zwei Zeichen und braucht es nicht mehr. */
+const ARTEN = [
+  {art:"absatz", name:"Text",              zeichen:"¶",   kuerzel:""},
+  {art:"h1",     name:"Überschrift 1",     zeichen:"H1",  kuerzel:"# "},
+  {art:"h2",     name:"Überschrift 2",     zeichen:"H2",  kuerzel:"## "},
+  {art:"h3",     name:"Überschrift 3",     zeichen:"H3",  kuerzel:"### "},
+  {art:"punkt",  name:"Aufzählung",        zeichen:"•",   kuerzel:"- "},
+  {art:"nummer", name:"Nummerierte Liste", zeichen:"1.",  kuerzel:"1. "},
+  {art:"todo",   name:"To-do-Liste",       zeichen:"[ ]", kuerzel:"- [ ] ", merkmal:"todo"},
+  {art:"zitat",  name:"Zitat",             zeichen:"»",   kuerzel:"> "},
+  {art:"code",   name:"Codeblock",         zeichen:"```", kuerzel:"```"},
+  {art:"linie",  name:"Trennlinie",        zeichen:"—",   kuerzel:"---"}
+];
+
+/* Was die gewählte Stufe nicht kann, steht nicht im Menü — harte
+   Regel 9. Was schon im Text steht, bleibt davon unberührt. */
+function arten(){ return ARTEN.filter(a => !a.merkmal || kann(a.merkmal)); }
+
+function umwandeln(i, art){
+  const b = Z.bloecke[i];
+  if (b.art === art) return;
+  b.art = art;
+  if (art === "todo"){ if (b.fertig === undefined) b.fertig = false; }
+  else delete b.fertig;
+  if (art !== "code") delete b.sprache;
+  if (LISTE.indexOf(art) < 0) delete b.tiefe;   /* nur Listen sind eingerückt */
+  if (art === "linie") b.text = "";
+  bewahre(); male(i, -1);
+}
+
+/* ---------- Menüs ---------- */
+function menueVerbergen(){ $("#menue").classList.remove("an"); }
+
+/* `eintraege` ist eine Liste aus {ic, nm, ta, tue} und "tr" für einen
+   Trenner, "k:Überschrift" für eine Gruppenzeile. */
+function menueZeigen(eintraege, anker){
+  const m = $("#menue");
+  m.innerHTML = "";
+  eintraege.forEach(e => {
+    if (e === "tr"){ m.appendChild(el("div", "tr")); return; }
+    if (typeof e === "string" && e.slice(0,2) === "k:"){
+      m.appendChild(el("div", "k", esc(e.slice(2)))); return; }
+    const b = el("button", null,
+      '<span class="ic">' + esc(e.ic || "") + '</span>'
+      + '<span class="nm">' + esc(e.nm) + '</span>'
+      + (e.ta ? '<span class="ta">' + esc(e.ta) + '</span>' : ""));
+    b.type = "button";
+    b.setAttribute("role", "menuitem");
+    b.onclick = () => { menueVerbergen(); e.tue(); };
+    m.appendChild(b);
+  });
+  m.classList.add("an");
+  const r = anker.getBoundingClientRect(), g = m.getBoundingClientRect();
+  let links = Math.min(r.left, innerWidth - g.width - 8);
+  let oben  = r.bottom + 6;
+  if (oben + g.height > innerHeight - 8) oben = Math.max(8, r.top - g.height - 6);
+  m.style.left = Math.round(Math.max(8, links)) + "px";
+  m.style.top  = Math.round(oben) + "px";
+}
+
+function blockMenue(i, anker){
+  const b = Z.bloecke[i];
+  if (!b) return;
+  const eintraege = [
+    {ic:"", nm:"Löschen", ta:"Entf", tue:() => {
+      Z.bloecke.splice(i, 1);
+      if (!Z.bloecke.length) Z.bloecke.push({art:"absatz", text:""});
+      bewahre(); male(Math.max(0, i-1), -1);
+      melde("Block gelöscht");
+    }},
+    {ic:"", nm:"Duplizieren", ta:"Strg D", tue:() => {
+      Z.bloecke.splice(i + 1, 0, JSON.parse(JSON.stringify(b)));
+      bewahre(); male(i + 1, -1);
+    }},
+    "tr", "k:Umwandeln in"
+  ];
+  arten().forEach(a => eintraege.push(
+    {ic:a.zeichen, nm:a.name, ta:a.kuerzel.trim(), tue:() => umwandeln(i, a.art)}));
+  menueZeigen(eintraege, anker);
 }
 
 /* ---------- Ereignisse an der Fläche ---------- */
@@ -986,7 +1173,11 @@ function verdrahte(){
   /* Ein Klick auf die Leiste darf die Auswahl nicht löschen — sonst
      wäre beim Loslassen nichts mehr da, worauf der Knopf wirken kann. */
   $("#leiste").addEventListener("mousedown", (ev) => ev.preventDefault());
-  $("#blatt").addEventListener("scroll", leisteVerbergen, {passive:true});
+  $("#blatt").addEventListener("scroll", () => { leisteVerbergen(); menueVerbergen(); },
+    {passive:true});
+  document.addEventListener("mousedown", (ev) => {
+    if (!ev.target.closest("#menue") && !ev.target.closest(".griff")) menueVerbergen();
+  });
 }
 
 /* ============================================================
@@ -1053,7 +1244,10 @@ function einstellungenVerdrahten(){
   /* Ein Klick daneben schließt, ein Klick auf die Karte nicht. */
   ueber.addEventListener("mousedown", (ev) => { if (ev.target === ueber) zu(); });
   document.addEventListener("keydown", (ev) => {
-    if (ev.key === "Escape" && ueber.classList.contains("an")) zu(); });
+    if (ev.key !== "Escape") return;
+    if (ueber.classList.contains("an")) zu();
+    menueVerbergen(); leisteVerbergen();
+  });
 }
 
 /* ============================================================
@@ -1121,6 +1315,11 @@ document.addEventListener("keydown", (ev) => {
   if (k === "o"){ ev.preventDefault(); $("#oeffnen").click(); }
   /* Ohne diese drei setzt das Textfeld von sich aus <b>, <i> und <u>
      in den Block — und schriebe damit HTML, wo Markdown stehen soll. */
+  if (k === "d" && aktiv >= 0 && Z.bloecke[aktiv]){
+    ev.preventDefault();
+    Z.bloecke.splice(aktiv + 1, 0, JSON.parse(JSON.stringify(Z.bloecke[aktiv])));
+    bewahre(); male(aktiv + 1, -1);
+  }
   if (k === "b"){ ev.preventDefault(); auszeichnen("**"); }
   if (k === "i"){ ev.preventDefault(); auszeichnen("*"); }
   if (k === "u"){
