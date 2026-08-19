@@ -163,8 +163,17 @@ function verhaeltnis(a, b){
   return (Math.max(l1,l2) + 0.05) / (Math.min(l1,l2) + 0.05);
 }
 {
+  /* [vorn, mindestens, hinten]. Fehlt das dritte Feld, wird gegen den
+     Blattgrund gerechnet. Der Quelltext und die Codeflaeche haben
+     einen eigenen Grund — dagegen gerechnet zu haben ist der ganze
+     Sinn der Angabe. */
   const paare = [["tinte", 4.5], ["tinte2", 4.5], ["tinte3", 3.0], ["blau", 3.0],
-                 ["rot", 4.5]];
+                 ["rot", 4.5],
+                 ["code-t", 4.5, "code-g"],   /* Code auf seiner Flaeche */
+                 ["blau", 3.0, "rand"],       /* Auszeichnungszeichen im Quelltext */
+                 ["q-l", 4.5, "rand"],        /* Verweisziel im Quelltext */
+                 ["tinte", 4.5, "fund"],      /* Text auf dem Suchtreffer */
+                 ["tinte", 4.5, "marker"]];   /* Text unter dem Textmarker */
   /* Beide Themen. Ein zweites Thema, das die Kontrastregel
      unterlaeuft, ist kein zweites Thema, sondern ein Fehler. */
   const THEMEN = [[":root{", "hell"], ['[data-thema="dunkel"]', "dunkel"]];
@@ -175,17 +184,24 @@ function verhaeltnis(a, b){
     if (!block){ warn("Thema " + name + " nicht gefunden"); return; }
     const grund = farbe(tokenAus(block, "grund"));
     if (!grund){ warn("Thema " + name + ": --grund fehlt"); return; }
-    paare.forEach(([tok, soll]) => {
+    paare.forEach(([tok, soll, hintenTok]) => {
       const c = farbe(tokenAus(block, tok));
       if (!c){ warn("Thema " + name + ": --" + tok + " fehlt"); return; }
+      let hinten = grund;
+      if (hintenTok){
+        const h = farbe(tokenAus(block, hintenTok));
+        if (!h){ warn("Thema " + name + ": --" + hintenTok + " fehlt"); return; }
+        hinten = ueber(h, grund);
+      }
       geprueft++;
-      const v = verhaeltnis(ueber(c, grund), grund);
+      const v = verhaeltnis(ueber(c, hinten), hinten);
       if (v < soll)
-        schwach.push(name + " --" + tok + " " + v.toFixed(2) + " : 1 (mindestens " + soll + ")");
+        schwach.push(name + " --" + tok + (hintenTok ? " auf --" + hintenTok : "")
+          + " " + v.toFixed(2) + " : 1 (mindestens " + soll + ")");
     });
   });
   if (schwach.length) bad("Kontrast zu schwach — " + schwach.join(", "));
-  else ok("Kontrast — " + geprueft + " Tokens über der Schwelle, beide Themen");
+  else ok("Kontrast — " + geprueft + " Paare über der Schwelle, beide Themen");
 }
 
 /* ---------- 9 Markdown: hin und zurück ----------

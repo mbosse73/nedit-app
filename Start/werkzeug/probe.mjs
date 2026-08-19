@@ -288,6 +288,81 @@ gleich("nummeriert aber nicht",
 await seite.emulateMedia({ media: "screen" });
 await stellen("Druck-Layout", "Schlicht");
 
+/* ---------- 12 Farbe im Quelltext ----------
+   Die Farbschicht liegt unter dem Feld. Sie darf kein Zeichen
+   verlieren und muss zeichengleich umbrechen -- sonst stuende die
+   Farbe neben der Schreibmarke. */
+console.log("\nFarbe im Quelltext");
+const QTEXT = "# Titel\n\n"
+  + "Ein **fetter** und ein *kursiver* Teil, dazu `code` und "
+  + "[ein Verweis](./anderswo.md), und dann noch ein langer Satz, damit die "
+  + "Zeile ganz sicher umbricht und der Umbruch zu vergleichen ist.\n\n"
+  + "- [ ] Ein Punkt\n\n"
+  + "| Name | Format |\n| --- | --- |\n| Export | CSV |\n\n"
+  + "```javascript\nconst n = 1; // **kein** fett hier\n```\n";
+await setzen(QTEXT);
+await seite.click("#w-quelltext");
+await seite.waitForTimeout(200);
+
+const schicht = () => seite.evaluate(() => {
+  const q = document.querySelector("#q"), f = document.querySelector("#qfarbe");
+  return {
+    /* Das <pre> zeichnet die letzte Zeile nur mit einem Umbruch mehr. */
+    gleich: f.textContent === q.value + "\n",
+    hoehe:  f.scrollHeight === q.scrollHeight,
+    breite: f.clientWidth === q.clientWidth,
+    mk:   f.querySelectorAll(".mk").length,
+    code: f.querySelectorAll(".c").length,
+    link: f.querySelectorAll(".l").length,
+    fett: f.querySelectorAll(".b").length,
+    /* Im Codezaun wird nichts gedeutet: Das `**kein**` darin darf
+       kein einziges .b ergeben. */
+    zaun: [...f.querySelectorAll(".c")].some(n => n.textContent.indexOf("**kein**") >= 0)
+  };
+});
+let f = await schicht();
+gleich("die Farbschicht traegt denselben Text", f.gleich, true);
+gleich("und bricht gleich um", f.hoehe, true);
+gleich("bei gleicher Breite", f.breite, true);
+gleich("Auszeichnungszeichen sind gefaerbt", f.mk > 10, true);
+gleich("Code ist gefaerbt", f.code > 0, true);
+gleich("das Verweisziel auch", f.link, 1);
+gleich("fett ist fett", f.fett, 1);
+gleich("im Codezaun wird nichts gedeutet", f.zaun, true);
+
+/* Harte Regel 9 gilt auch fuer die Farbe: Was die Stufe nicht kann,
+   ist keine Auszeichnung, sondern Text. */
+await setzen("Ein ==markierter== Teil.\n");
+await seite.click("#w-quelltext");
+await seite.waitForTimeout(200);
+const marker = () => seite.$$eval("#qfarbe .mrk", ns => ns.length);
+gleich("auf Rein ist ==...== nur Text", await marker(), 0);
+await stellen("Markdown-Stufe", "Obsidian");
+await seite.waitForTimeout(200);
+gleich("auf Obsidian ist es der Textmarker", await marker(), 1);
+await stellen("Markdown-Stufe", "Rein");
+
+/* ---------- 13 Der Suchtreffer ----------
+   Er ist keine Auszeichnung im Text und darf deshalb nicht aussehen
+   wie der Textmarker. */
+console.log("\nDer Suchtreffer");
+await setzen("Ein ==markierter== Fund im Text.\n");
+await seite.keyboard.press("Control+f");
+await seite.waitForTimeout(150);
+await seite.keyboard.type("Fund");
+await seite.waitForTimeout(300);
+const toene = await seite.evaluate(() => {
+  const holen = (n) => n ? getComputedStyle(n).backgroundColor : null;
+  const wurzel = getComputedStyle(document.documentElement);
+  return { fund: holen(document.querySelector(".fund")),
+           tokenFund: wurzel.getPropertyValue("--fund").trim(),
+           tokenMarker: wurzel.getPropertyValue("--marker").trim() };
+});
+gleich("es gibt einen Fund", toene.fund !== null, true);
+gleich("er traegt --fund", toene.fund.replace(/\s/g, ""), toene.tokenFund.replace(/\s/g, ""));
+gleich("und --fund ist nicht --marker", toene.tokenFund !== toene.tokenMarker, true);
+await seite.keyboard.press("Escape");
+
 /* ---------- Schluss ---------- */
 console.log("");
 if (skriptfehler.length){

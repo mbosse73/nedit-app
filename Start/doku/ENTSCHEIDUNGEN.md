@@ -244,3 +244,48 @@ nicht geben.
 Bis dahin gilt, was schon gilt: Ein vorhandener YAML-Kopf bleibt
 unangetastet als Rohtext stehen und wird unverändert
 zurückgeschrieben.
+
+---
+
+## 13 · Farbe im Quelltext liegt in einer zweiten Schicht
+
+Ein `<textarea>` kann keine Auszeichnung tragen — es kennt nur eine
+Farbe für allen Text. Wer im Quelltext Farbe will, hat zwei Wege:
+
+1. Das Feld gegen ein `contenteditable` tauschen. Dann färbt man
+   frei — und verliert das, was ein Textfeld von sich aus richtig
+   macht: Rückgängig, Einfügen als reiner Text, die Schreibmarke, das
+   Verhalten der Bildschirmtastatur.
+2. Ein `<pre>` mit dem eingefärbten Text **unter** das Feld legen und
+   die Schrift im Feld durchsichtig machen.
+
+Gewählt ist der zweite Weg. Der Preis dafür ist eine harte Bedingung:
+**Beide Schichten müssen zeichengenau gleich umbrechen.** Bricht die
+Farbschicht eine Zeile früher, steht sie ab dort neben der
+Schreibmarke.
+
+Deshalb steht jedes Maß, das den Umbruch beeinflusst — Schriftart,
+Größe, Zeilenhöhe, Innenabstand, Tabulatorbreite, Umbruchregel — in
+**genau einer** CSS-Regel für beide Schichten, und `scrollbar-gutter`
+hält den Platz des Rollbalkens auf beiden Seiten frei. Zwei Proben in
+`werkzeug/probe.mjs` rechnen das nach: gleicher Text, gleiche Höhe,
+gleiche Breite.
+
+Die Färbung selbst **entscheidet nichts**. Sie deutet dieselben Zeilen
+wie `leseMarkdown`, aber getrennt davon; ein falsch gefärbtes Zeichen
+steht trotzdem unverändert in der Datei. Was die gewählte Stufe nicht
+kann, wird auch nicht gefärbt — harte Regel 9 gilt hier wie überall.
+
+---
+
+## 14 · Der Suchtreffer ist orange, nicht gelb
+
+Beide waren gelb: der Textmarker (`==…==`, eine Auszeichnung **in der
+Datei**) und der Suchtreffer (eine Anzeige, die verschwindet, sobald
+man die Suche schließt). Dieselbe Farbe für beides behauptet, sie
+seien dasselbe.
+
+Der Suchtreffer hat jetzt ein eigenes Token `--fund` in Hellorange.
+Der Prüflauf rechnet für beide Töne nach, dass der Text darauf über
+4,5 : 1 bleibt — in beiden Themen.
+

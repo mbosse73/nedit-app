@@ -37,6 +37,14 @@
   --code-g:rgb(247,246,243);
   --code-t:rgb(186,67,63);
   --marker:rgb(251,243,196);
+  /* Der Suchtreffer ist kein Textmarker. Er steht nur, solange gesucht
+     wird, und darf nicht wie eine Auszeichnung im Text aussehen —
+     deshalb Orange statt Gelb. */
+  --fund:rgb(252,224,187);
+  /* Farben der Quelltextansicht. Die Auszeichnungszeichen tragen
+     --blau, Code trägt --code-t; nur das Verweisziel braucht einen
+     eigenen Ton — sonst hätten Zeichen und Ziel dieselbe Farbe. */
+  --q-l:rgb(31,102,140);
 
   --rad:5px;
   --rad-gr:8px;
@@ -72,6 +80,8 @@
   --code-g:rgb(38,38,38);
   --code-t:rgb(233,140,131);
   --marker:rgb(112,88,24);
+  --fund:rgb(126,76,22);
+  --q-l:rgb(126,190,226);
   --rot:rgb(240,133,124);
 }
 
@@ -122,10 +132,37 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
   font-size:11.5px;color:var(--tinte3);border-bottom:1px solid var(--linie2);
   background:var(--rand)}
 .quelle .qkopf .sp{flex:1}
-.quelle textarea{flex:1;min-height:0;width:100%;resize:none;border:0;outline:none;
-  background:var(--rand);color:var(--tinte);font-family:var(--fest);font-size:13.5px;
-  line-height:1.7;padding:16px 18px 40vh;tab-size:2}
-.quelle textarea[readonly]{color:var(--tinte2)}
+/* Farbe im Quelltext geht nur ueber zwei Schichten: Ein <textarea>
+   traegt keine Auszeichnung. Darunter liegt ein <pre> mit dem
+   eingefaerbten Text, darueber das Feld mit durchsichtiger Schrift.
+   Beide muessen zeichengenau gleich umbrechen — deshalb steht jedes
+   Mass, das den Umbruch beeinflusst, in genau einer Regel. */
+.qfeld{position:relative;flex:1;min-height:0}
+.qfeld textarea,.qfeld .qfarbe{position:absolute;inset:0;width:100%;height:100%;
+  margin:0;border:0;font-family:var(--fest);font-size:13.5px;line-height:1.7;
+  letter-spacing:normal;padding:16px 18px 40vh;tab-size:2;
+  white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;
+  scrollbar-gutter:stable}   /* der Balken darf den Umbruch nicht verschieben */
+.qfeld .qfarbe{overflow:hidden;background:var(--rand);color:var(--tinte);
+  pointer-events:none;user-select:none}
+.qfeld textarea{overflow-y:auto;resize:none;outline:none;
+  background:transparent;color:transparent;caret-color:var(--tinte)}
+/* Durchsichtig markiert: Der Balken der Auswahl liegt ueber der Farbe
+   und naehme sie deckend weg. */
+.qfeld textarea::selection{background:var(--blau-s);color:transparent}
+.quelle[data-lesen="ja"] .qfarbe{opacity:.72}
+
+/* Die Farben selbst. Sie deuten, was leseMarkdown deuten wuerde —
+   mehr nicht. Ein falsch gefaerbtes Zeichen steht trotzdem
+   unveraendert in der Datei. */
+.qfarbe .mk{color:var(--blau)}
+.qfarbe .h{font-weight:700}
+.qfarbe .b{font-weight:700}
+.qfarbe .i{font-style:italic}
+.qfarbe .s{text-decoration:line-through}
+.qfarbe .c{color:var(--code-t)}
+.qfarbe .l{color:var(--q-l);text-decoration:underline;text-underline-offset:2px}
+.qfarbe .mrk{background:var(--marker);border-radius:2px}
 
 /* Die drei Ansichten. `display` steht bewusst in keiner ID-Regel —
    eine ID schlägt jede Klasse und bräche jedes Umschalten. */
@@ -179,7 +216,7 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 .suchen button:hover{background:var(--strich);color:var(--tinte)}
 .suchen svg{width:15px;height:15px;stroke:currentColor;stroke-width:1.8;fill:none;
   stroke-linecap:round;stroke-linejoin:round}
-.txt .fund{background:var(--marker);font-style:normal;border-radius:2px;
+.txt .fund{background:var(--fund);font-style:normal;border-radius:2px;
   box-shadow:0 0 0 1px rgba(55,53,47,.14)}
 
 /* ---------- Fußleiste ---------- */
@@ -527,7 +564,13 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
     <div class="quelle">
       <div class="qkopf"><span id="qname">unbenannt.md</span><span class="sp"></span>
         <span id="qhinweis">nur lesen</span></div>
-      <textarea id="q" spellcheck="false" aria-label="Markdown-Quelltext"></textarea>
+      <div class="qfeld">
+        <!-- Die Farbschicht ist ein Abbild, kein Bedienelement: Sie
+             traegt aria-hidden, damit der Text nicht doppelt vorgelesen
+             wird. Gelesen und geschrieben wird im Feld darueber. -->
+        <pre class="qfarbe" id="qfarbe" aria-hidden="true"></pre>
+        <textarea id="q" spellcheck="false" aria-label="Markdown-Quelltext"></textarea>
+      </div>
     </div>
     <div class="gliederung" id="gliederung">
       <div class="gkopf">Gliederung</div>
@@ -1123,15 +1166,105 @@ function setzePos(n, pos){
   const s = getSelection(); s.removeAllRanges(); s.addRange(r);
 }
 
+/* ---------- Farbe im Quelltext ----------
+   Dieselbe Deutung wie `leseMarkdown`, nur zeilenweise und nur zum
+   Ansehen. Sie darf nichts entscheiden: Was hier falsch eingefärbt
+   wäre, stünde trotzdem unverändert in der Datei.
+
+   Ein einziger Durchlauf mit einer Alternative, keine Platzhalter:
+   Der Quelltext ist die Datei, und jedes Zeichen muss zeichengenau
+   wieder herauskommen. Code steht in der Alternative vorn — sonst
+   läsen Sternchen darin als fett. */
+const Q_INLINE = /(`[^`\n]+`)|(!?\[[^\]\n]*\]\([^)\s]*\))|(\*\*[^*\n]+\*\*)|(\*[^*\n]+\*)|(~~[^~\n]+~~)|(==[^=\n]+==)/g;
+
+function qPaar(zeichen, klasse, inhalt){
+  return '<span class="mk">' + esc(zeichen) + '</span>'
+       + '<span class="' + klasse + '">' + esc(inhalt) + '</span>'
+       + '<span class="mk">' + esc(zeichen) + '</span>';
+}
+
+/* Was die Stufe nicht kann, wird nicht gefärbt — harte Regel 9. Der
+   Editor zeigt auch hier, was das Zielwerkzeug zeigen würde. */
+function qStueck(t){
+  if (t[0] === "`") return qPaar("`", "c", t.slice(1, -1));
+  if (t[0] === "[" || t[0] === "!"){
+    const m = t.match(/^(!?\[)([^\]\n]*)(\]\()([^)\s]*)(\))$/);
+    if (!m) return esc(t);
+    return '<span class="mk">' + esc(m[1]) + '</span>' + esc(m[2])
+         + '<span class="mk">' + esc(m[3]) + '</span>'
+         + '<span class="l">' + esc(m[4]) + '</span>'
+         + '<span class="mk">' + esc(m[5]) + '</span>';
+  }
+  const zwei = t.slice(0, 2);
+  if (zwei === "**") return qPaar("**", "b", t.slice(2, -2));
+  if (zwei === "~~") return kann("durch")  ? qPaar("~~", "s",   t.slice(2, -2)) : esc(t);
+  if (zwei === "==") return kann("marker") ? qPaar("==", "mrk", t.slice(2, -2)) : esc(t);
+  return qPaar("*", "i", t.slice(1, -1));
+}
+
+function qInline(t){
+  let aus = "", letzte = 0, m;
+  Q_INLINE.lastIndex = 0;
+  while ((m = Q_INLINE.exec(t))){
+    aus += esc(t.slice(letzte, m.index)) + qStueck(m[0]);
+    letzte = m.index + m[0].length;
+  }
+  return aus + esc(t.slice(letzte));
+}
+
+function quelleFaerben(text){
+  let imCode = false;
+  return String(text).split("\n").map((z) => {
+    /* Der Codezaun schaltet um. Innen wird nichts gedeutet — genau
+       wie im Codeblock auf der Fläche. */
+    if (/^\s*```/.test(z)){ imCode = !imCode; return '<span class="mk">' + esc(z) + '</span>'; }
+    if (imCode) return '<span class="c">' + esc(z) + '</span>';
+    let m;
+    if ((m = z.match(/^(#{1,6} )(.*)$/)))
+      return '<span class="mk">' + esc(m[1]) + '</span>'
+           + '<span class="h">' + qInline(m[2]) + '</span>';
+    if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(z))
+      return '<span class="mk">' + esc(z) + '</span>';
+    if ((m = z.match(/^(\s*>\s?)(\[![A-Za-z]+\])?(.*)$/)))
+      return '<span class="mk">' + esc(m[1] + (m[2] || "")) + '</span>' + qInline(m[3]);
+    if ((m = z.match(/^(\s*)([-*+] \[[ xX]\]|[-*+]|\d+[.)])(\s)(.*)$/)))
+      return esc(m[1]) + '<span class="mk">' + esc(m[2]) + '</span>'
+           + esc(m[3]) + qInline(m[4]);
+    /* Eine Zeile aus Balken ist eine Tabellenzeile. Geteilt und wieder
+       zusammengesetzt — kein Zeichen geht dabei verloren. */
+    if (/^\s*\|.*\|\s*$/.test(z))
+      return z.split("|").map(qInline).join('<span class="mk">|</span>');
+    if (/^\s*<\/?[a-z][^>]*>\s*$/i.test(z))
+      return '<span class="mk">' + esc(z) + '</span>';
+    return qInline(z);
+  }).join("\n")
+  /* Ein <pre> zeichnet die letzte Zeile nicht, wenn der Text auf einen
+     Umbruch endet — das Feld darüber zeichnet sie. Ohne diesen einen
+     Umbruch wäre die Farbschicht um eine Zeile kürzer und stünde beim
+     Rollen ans Ende daneben. */
+  + "\n";
+}
+
+/* Die Farbschicht traegt denselben Text und rollt mit. Sie wird bei
+   jedem Tastendruck neu gebaut; der Eingabeschritt daneben liest
+   ohnehin das ganze Dokument neu. */
+function quelleFarbeMalen(){
+  const q = $("#q"), f = $("#qfarbe");
+  f.innerHTML = quelleFaerben(q.value);
+  f.scrollTop = q.scrollTop;
+}
+
 function quelleMalen(){
   const q = $("#q");
   if (document.activeElement === q) return;      /* nicht unter den Händen austauschen */
   q.value = schreibeMarkdown(Z.bloecke);
   q.readOnly = $("#app").dataset.ansicht !== "quelltext";
+  q.closest(".quelle").dataset.lesen = q.readOnly ? "ja" : "nein";
   $("#qhinweis").textContent = q.readOnly
     ? "nur lesen — zum Ändern auf „Quelltext“ umschalten"
     : "schreibbar";
   $("#qname").textContent = Z.name;
+  quelleFarbeMalen();
 }
 
 function fussMalen(){
@@ -1827,7 +1960,11 @@ function quelltextVerdrahten(){
     ersetze(Z.bloecke, leseMarkdown(q.value));
     bewahre();
     fussMalen();
+    quelleFarbeMalen();
   });
+  /* Rollt das Feld, muss die Farbe darunter mitrollen — sonst steht
+     sie einen Bildschirm daneben. */
+  q.addEventListener("scroll", () => { $("#qfarbe").scrollTop = q.scrollTop; });
   q.addEventListener("blur", () => { if (!q.readOnly) male(); });
 }
 

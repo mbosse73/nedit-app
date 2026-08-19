@@ -43,11 +43,14 @@ Dazu: `Tab` rückt Listen ein. Tabelle, Callout und Toggle, jeder mit
 sichtbarem Urteil. Der Dialektschalter `Rein · GitHub · Obsidian ·
 Pandoc` — dieselbe Fläche, andere Ausgabe. Gliederung rechts, Suche im
 Dokument, Inhaltsverzeichnis auf Knopfdruck. Rückgängig über
-Blockgrenzen. Zweites Thema, Blocksatz und drei Druck-Layouts; der
-Knopf **PDF** öffnet den Druckdialog.
+Blockgrenzen. Zweites Thema, Blocksatz und vier Druck-Layouts —
+Schlicht, Technische Doku, Magazin, Manuskript; der Knopf **PDF**
+öffnet den Druckdialog.
 
-Drei Ansichten: Schreiben, Geteilt, Quelltext. Öffnen über die
-Dateiauswahl, Sichern über den Download, Arbeitsstand in localStorage.
+Drei Ansichten: Schreiben, Geteilt, Quelltext — der Quelltext
+**farbig**, damit man die Auszeichnung sieht, ohne sie zu suchen.
+Öffnen über die Dateiauswahl, Sichern über den Download, Arbeitsstand
+in localStorage.
 
 Was noch offen ist, steht in `STAND.md`.
 

@@ -54,7 +54,7 @@ oder das Format kaputt.
    Rohtext. Die Fläche zeigt ihn gerendert; gespeichert, kopiert und
    ausgegeben wird nie etwas anderes als Markdown.
    `lesen(schreiben(x))` muss `x` ergeben — der Prüflauf rechnet das
-   an neun Proben nach. Was das nicht erfüllt, gehört nicht in den
+   an 21 Proben nach. Was das nicht erfüllt, gehört nicht in den
    Umwandler.
 9. **Kein Dialekt ohne Schalter.** Alles, was über reines Markdown
    hinausgeht — GitHub-Alerts, `==markiert==`, `[[Wiki-Links]]`,
@@ -98,7 +98,7 @@ oder das Format kaputt.
 
 ## Aufbau von `editor.html`
 
-Neun nummerierte Abschnitte, jeder mit einem Kopfkommentar. Ändere
+Elf nummerierte Abschnitte, jeder mit einem Kopfkommentar. Ändere
 **genau den Abschnitt**, um den es geht — schreibe die Datei nicht neu.
 Das hält Diffs klein und lesbar.
 
@@ -109,7 +109,7 @@ Das hält Diffs klein und lesbar.
  4  MARKDOWN             leseMarkdown, schreibeMarkdown, nummern
  5  DIE FLÄCHE           male, blockMalen, blockInhalt, Schreibmarke
  6  TIPPEN               Eingabehilfen, Tasten, Leiste, Menüs, Ziehen
- 7  DER QUELLTEXT        geteilte Ansicht, Umschalter
+ 7  DER QUELLTEXT        geteilte Ansicht, Farbschicht, Umschalter
  8  GLIEDERUNG, SUCHEN   Überschriften, Fund, Inhaltsverzeichnis
  9  EINSTELLUNGEN        Stufe, Thema, Satz, Druck-Layout
 10  DATEIEN              Öffnen, Sichern, Neu, PDF
@@ -151,6 +151,15 @@ ist und ein gewöhnliches Zitat vom Callout nicht verschluckt wird.
 * Farbe codiert Dringlichkeit und Zustand, nicht Kategorie. Blau ist
   „aktiv", Rot ist „kaputt". Blockarten unterscheiden sich durch Form,
   nicht durch Farbe.
+* **Der Suchtreffer (`--fund`) und der Textmarker (`--marker`) sind
+  zwei Farben.** Der eine ist eine Anzeige, der andere steht in der
+  Datei; sie dürfen nicht gleich aussehen.
+* **Die Farbschicht im Quelltext liegt unter dem Textfeld.** Jedes
+  Maß, das den Umbruch beeinflusst, steht in **genau einer** Regel für
+  beide Schichten (`.qfeld textarea,.qfeld .qfarbe`). Wer dort etwas
+  ändert, ändert es für beide — sonst bricht die Farbe eine Zeile
+  früher als der Text und steht ab da neben der Schreibmarke.
+  `doku/ENTSCHEIDUNGEN.md`, Punkt 13.
 
 ---
 
@@ -211,7 +220,7 @@ gehört sie in `werkzeug/pruefen.mjs` — nicht nur in dieses Dokument.
 | `node werkzeug/lage.mjs` | Branch, letzte Commits, offene Punkte. Läuft beim Sitzungsbeginn von selbst |
 | `node werkzeug/pruefen.mjs` | die Regelprüfung. Läuft nach jedem Schreiben als Haken automatisch mit |
 | `node werkzeug/schau.mjs` | echter Browser, drei Ansichten, Tippprobe, Bilder, Skriptfehler |
-| `node werkzeug/probe.mjs` | die **Bedienung** im echten Browser: markieren, Menüs, Einrücken, Verlauf, Stufen, Druck. 37 Proben |
+| `node werkzeug/probe.mjs` | die **Bedienung** im echten Browser: markieren, Menüs, Einrücken, Verlauf, Stufen, Druck, Farbe im Quelltext. 56 Proben |
 | `node werkzeug/bau-mockups.mjs` | die sieben Entwürfe neu erzeugen |
 
 ---
