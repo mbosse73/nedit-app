@@ -11,7 +11,7 @@ Abhängigkeiten.
 editor.html          die Anwendung
 mockups/             sieben Entwürfe — der Sollzustand
 doku/                Konzept, Blockkatalog, Entscheidungen, Roadmap
-werkzeug/            Prüflauf, Browserprobe, Generator für die Entwürfe
+werkzeug/            Prüflauf, Browserproben, Generator für die Entwürfe
 ```
 
 ## Anfangen
@@ -20,6 +20,7 @@ werkzeug/            Prüflauf, Browserprobe, Generator für die Entwürfe
 node werkzeug/lage.mjs        # wo steht das Projekt
 node werkzeug/pruefen.mjs     # Regelprüfung
 node werkzeug/schau.mjs       # im echten Browser ansehen
+node werkzeug/probe.mjs       # die Bedienung im echten Browser proben
 ```
 
 `editor.html` per Doppelklick öffnen. `mockups/index.html` zeigt, wie
