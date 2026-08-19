@@ -178,13 +178,37 @@ der Nutzer „Als PDF speichern". Der Editor liefert dafür das Layout —
 Schrift, Ränder, Umbrüche, Kopf- und Fußzeile. Die Arbeit steckt im
 Druckstil, nicht in einem Erzeuger.
 
-**Drei Druck-Layouts**, umschaltbar in den Einstellungen:
+**Vier Druck-Layouts**, umschaltbar in den Einstellungen:
 
 * **Schlicht** — die Vorgabe. Nüchtern, wenig Zierrat, spart Papier.
-* **Technische Doku** — serifenlos, nummerierte Überschriften,
-  gerahmte Codeblöcke, Tabellen mit Linien, Kopfzeile mit Seitenzahl.
+* **Technische Doku** — enger Satz, gerahmte Codeblöcke, Tabellen mit
+  Linien, jede Überschrift 1 auf einer neuen Seite, nummerierte
+  Überschriften.
+* **Magazin** — Serifenschrift, schmale Spalte (118 mm, rund 70
+  Zeichen), große Überschriften, Blocksatz.
 * **Manuskript** — eine Spalte, großer Zeilenabstand, breiter
-  Korrekturrand, Seitenzahlen.
+  Korrekturrand.
+
+**Seitenzahlen und Kopfzeilen setzt der Browser**, nicht die Seite.
+Sie stehen im Druckdialog und lassen sich von hier aus nicht steuern —
+Chrome und Edge unterstützen die dafür vorgesehenen CSS-Regeln nicht.
+
+### Die Nummerierung im Technik-Layout
+
+Das Layout nummeriert die Überschriften selbst — **aber nur die, die
+noch keine Nummer tragen.** Steht `## 1 Bestandsaufnahme` in der
+Datei, bleibt es dabei; steht dort `## Offene Fragen`, bekommt es
+eine. Sonst stünde auf dem Papier „1.1  1 Bestandsaufnahme".
+
+Gezählt wird trotzdem an **jeder** Überschrift, auch an den
+übersprungenen: Die vergebene Nummer soll die Stelle im Dokument
+treffen. Ein Text, in dem nur ein Teil der Überschriften eine eigene
+Nummer trägt, ergibt deshalb eine gemischte Folge (`1`, dann
+`1.2`). Das ist die ehrliche Anzeige einer uneinheitlichen Vorlage —
+**entweder alle Überschriften selbst nummerieren oder keine.**
+
+Erkannt wird über `EIGENE_NUMMER` in Abschnitt 5; CSS-Zähler können
+keinen Text lesen, deshalb setzt `blockMalen` die Klasse `eigen`.
 
 ---
 

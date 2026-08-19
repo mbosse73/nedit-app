@@ -29,8 +29,9 @@ zurückgestellt oder gestrichen worden — und das Bestätigte steht.
 * **Bild** als Verweis; ein Verweis ins Netz wird benannt, nicht
   geladen
 * **Rückgängig über Blockgrenzen** (`Strg+Z` / `Strg+Y`)
-* **Zweites Thema**, **Blocksatz** und **drei Druck-Layouts**;
-  der Knopf **PDF** öffnet den Druckdialog
+* **Zweites Thema**, **Blocksatz** und **vier Druck-Layouts** —
+  Schlicht, Technische Doku, Magazin, Manuskript; der Knopf **PDF**
+  öffnet den Druckdialog
 
 **18 von 27 Blöcken aus `doku/BLOCKKATALOG.md` stehen.** Sieben sind
 gestrichen, einer ist vertagt, zwei sind offen.
@@ -40,9 +41,9 @@ zurück — läuft an **21 Proben**, darunter verschachtelte Listen,
 Tabellen, Callouts, Toggles und zwei Gegenproben. Die Kontrastprüfung
 rechnet **beide Themen** nach.
 
-Geprüft im echten Browser (Chromium, Playwright): drei Ansichten,
-Auswahlleiste, Slash-Menü, Blockmenü, Einrücken, Suche, Verlauf, beide
-Themen und alle drei Druckbilder — ohne Skriptfehler.
+`werkzeug/probe.mjs` **bedient** die Anwendung im echten Browser —
+markieren, Menüs, Einrücken, Verlauf, Stufen, Suche, Themen, Druck —
+und prüft danach, was in der Datei steht. **43 Proben**, alle grün.
 
 ---
 
@@ -69,10 +70,12 @@ Rohtext stehen.
 
 ### 4. Der Druck ist nur emuliert geprüft
 
-Die drei Druck-Layouts sind mit Chromiums emulierter Druckausgabe
+Die vier Druck-Layouts sind mit Chromiums emulierter Druckausgabe
 angesehen worden, nicht auf Papier und nicht im Edge-Druckdialog.
 **Vor dem ersten ernsten Ausdruck einmal am Zielrechner ansehen** —
-besonders die Seitenumbrüche und den Rand im Manuskript-Layout.
+besonders die Seitenumbrüche, den Rand im Manuskript-Layout und die
+Silbentrennung im Blocksatz: Sie hängt an den Trenntabellen des
+Browsers, und im Prüflauf war keine geladen.
 
 ---
 

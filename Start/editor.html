@@ -45,6 +45,9 @@
   --schrift:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",
             Roboto,Helvetica,Arial,sans-serif;
   --fest:ui-monospace,Consolas,"Courier New",monospace;
+  /* Nur Systemschriften (harte Regel 3). Georgia und Times New Roman
+     liegen auf Windows, Palatino und Times auf dem Mac. */
+  --serif:Georgia,"Times New Roman",Palatino,"Palatino Linotype",Times,serif;
 }
 
 /* ---------- Das zweite Thema ----------
@@ -429,21 +432,46 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
      „Schlicht" das richtige Layout. */
   :root[data-druck="technik"] .blatt{font-size:10.5pt;line-height:1.45}
   :root[data-druck="technik"] .spalte{counter-reset:k1}
-  :root[data-druck="technik"] .blk.h1{counter-reset:k2;break-before:page}
+  :root[data-druck="technik"] .blk.h1{counter-increment:k1;counter-reset:k2;break-before:page}
   :root[data-druck="technik"] .blk.h1:first-child{break-before:auto}
-  :root[data-druck="technik"] .blk.h2{counter-reset:k3}
-  :root[data-druck="technik"] .blk.h1 .txt::before{
-    counter-increment:k1;content:counter(k1) "\00a0\00a0"}
-  :root[data-druck="technik"] .blk.h2 .txt::before{
-    counter-increment:k2;content:counter(k1) "." counter(k2) "\00a0\00a0"}
-  :root[data-druck="technik"] .blk.h3 .txt::before{
-    counter-increment:k3;content:counter(k1) "." counter(k2) "." counter(k3) "\00a0\00a0"}
+  :root[data-druck="technik"] .blk.h2{counter-increment:k2;counter-reset:k3}
+  :root[data-druck="technik"] .blk.h3{counter-increment:k3}
+  /* Gezählt wird am Block, **geschrieben** nur vor Überschriften ohne
+     eigene Nummer. Trüge der Zähler im ::before, sprängen die Nummern
+     bei jeder übersprungenen Überschrift. Die Klasse `eigen` setzt
+     `blockMalen` — Zähler können keinen Text lesen. */
+  :root[data-druck="technik"] .blk.h1:not(.eigen) .txt::before{
+    content:counter(k1) "\00a0\00a0"}
+  :root[data-druck="technik"] .blk.h2:not(.eigen) .txt::before{
+    content:counter(k1) "." counter(k2) "\00a0\00a0"}
+  :root[data-druck="technik"] .blk.h3:not(.eigen) .txt::before{
+    content:counter(k1) "." counter(k2) "." counter(k3) "\00a0\00a0"}
   /* Oben Platz lassen: Dort sitzt die Sprachmarke, und ohne den
      Abstand steht sie in der ersten Codezeile. */
   :root[data-druck="technik"] .blk.code .txt{border:1px solid #999;background:none;
     padding:22px 13px 12px}
   :root[data-druck="technik"] .blk.tabelle th,
   :root[data-druck="technik"] .blk.tabelle td{border:1px solid #666}
+
+  /* ---------- Magazin ----------
+     Serifenschrift, schmale Spalte, Blocksatz. Für Texte, die
+     gelesen und nicht nachgeschlagen werden. Die Spalte ist hier
+     absichtlich schmaler als der Satzspiegel: 118 mm sind rund 70
+     Zeichen, und darüber verliert das Auge beim Rücksprung die
+     Zeile. */
+  :root[data-druck="magazin"] .blatt{font-family:var(--serif);font-size:11.5pt;
+    line-height:1.62}
+  :root[data-druck="magazin"] .blatt .spalte{max-width:118mm;margin:0 auto}
+  :root[data-druck="magazin"] .blk.absatz .txt,
+  :root[data-druck="magazin"] .blk.zitat .txt,
+  :root[data-druck="magazin"] .blk.callout .txt{text-align:justify;hyphens:auto}
+  :root[data-druck="magazin"] .blk.h1{margin-top:0;margin-bottom:7mm}
+  :root[data-druck="magazin"] .blk.h1 .txt{font-size:25pt;line-height:1.12;
+    letter-spacing:-.015em}
+  :root[data-druck="magazin"] .blk.h2 .txt{font-size:15.5pt}
+  :root[data-druck="magazin"] .blk.h3 .txt{font-size:12.5pt}
+  :root[data-druck="magazin"] .blk.h2,
+  :root[data-druck="magazin"] .blk.h3{margin-top:7mm}
 
   /* ---------- Manuskript ----------
      Eine Spalte, weiter Durchschuss, breiter Rand zum Hineinschreiben. */
@@ -973,6 +1001,10 @@ function toggleMalen(text){
    ohne Eintrag sind reines Markdown und brauchen keine Kennzeichnung. */
 const URTEIL = {todo:"GFM", tabelle:"GFM", callout:"Dialekt", toggle:"HTML"};
 
+/* „2", „2.", „2)", „1.1", „1.1.3 " — alles, was wie eine
+   Gliederungsnummer am Anfang aussieht und Text dahinter hat. */
+const EIGENE_NUMMER = /^\d+(\.\d+)*[.)]?\s+\S/;
+
 const SVG = (d) => '<svg viewBox="0 0 20 20" aria-hidden="true">' + d + '</svg>';
 const IK_PLUS  = SVG('<path d="M10 4.2v11.6M4.2 10h11.6"/>');
 const IK_GRIFF = SVG('<circle cx="7.6" cy="5" r="1.05"/><circle cx="12.4" cy="5" r="1.05"/>'
@@ -993,6 +1025,9 @@ function blockMalen(b, i){
   const n = el("div", "blk " + b.art + (b.fertig ? " fertig" : ""));
   n.dataset.i = String(i);
   if (b.tiefe) n.style.setProperty("--tiefe", String(b.tiefe));
+  /* Trägt die Überschrift schon eine Nummer, nummeriert das
+     Druck-Layout „Technische Doku" sie nicht noch einmal. */
+  if (/^h[123]$/.test(b.art) && EIGENE_NUMMER.test(b.text)) n.classList.add("eigen");
 
   const griff = el("span", "griff");
   const plus = el("button", null, IK_PLUS);
@@ -1983,8 +2018,11 @@ const DRUCKARTEN = [
    "Die Vorgabe. Nüchtern, wenig Zierrat, spart Papier."],
   ["technik",    "Technische Doku",
    "Enger Satz, gerahmte Codeblöcke, Tabellen mit Linien, jede Überschrift 1 auf einer "
-   + "neuen Seite. <b>Nummeriert die Überschriften selbst</b> — bei Texten, die ihre "
-   + "Nummer schon im Titel tragen, doppelt das."],
+   + "neuen Seite. <b>Nummeriert die Überschriften selbst</b> — aber nur die, die noch "
+   + "keine Nummer tragen. Steht „1 Bestandsaufnahme“ schon im Text, bleibt es dabei."],
+  ["magazin",    "Magazin",
+   "Serifenschrift, schmale Spalte, große Überschriften, Blocksatz. Für Texte, die "
+   + "gelesen und nicht nachgeschlagen werden."],
   ["manuskript", "Manuskript",
    "Weiter Durchschuss und ein breiter Rand zum Hineinschreiben. Für Entwürfe, die auf "
    + "Papier bearbeitet werden."]

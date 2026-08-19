@@ -252,6 +252,42 @@ gleich("im Druck ist die Kopfleiste weg", await seite.isVisible(".kopf"), false)
 gleich("und das Blatt noch da", await seite.isVisible(".blatt"), true);
 await seite.emulateMedia({ media: "screen" });
 
+/* ---------- 10 Die Nummern im Technik-Layout ----------
+   Ein Text, in dem eine Ueberschrift schon eine Nummer traegt und
+   eine andere nicht. Das Layout darf nur die zweite nummerieren --
+   sonst stuende dort "1.1  1 Bestandsaufnahme". */
+console.log("\nDie Nummern im Technik-Layout");
+await setzen("# Titel ohne Nummer\n\n## 1 Bestandsaufnahme\n\n## Zweitens\n\n"
+  + "Ein Absatz, damit auch der Satz zu pruefen ist.\n");
+gleich("die Ueberschrift mit Nummer ist erkannt",
+  await seite.$$eval(".blk.h1,.blk.h2", ns => ns.map(n => n.classList.contains("eigen")).join(",")),
+  "false,true,false");
+await stellen("Druck-Layout", "Technische Doku");
+await seite.emulateMedia({ media: "print" });
+const vorsatz = (waehler) => seite.evaluate((w) =>
+  getComputedStyle(document.querySelector(w + " .txt"), "::before").content, waehler);
+gleich("ohne eigene Nummer wird nummeriert",
+  (await vorsatz('.blk[data-i="0"]')).indexOf("counter") >= 0, true);
+gleich("mit eigener Nummer nicht",
+  await vorsatz('.blk[data-i="1"]'), "none");
+gleich("die naechste ohne eigene Nummer wieder schon",
+  (await vorsatz('.blk[data-i="2"]')).indexOf("counter") >= 0, true);
+await seite.emulateMedia({ media: "screen" });
+
+/* ---------- 11 Das Magazin-Layout ---------- */
+console.log("\nDas Magazin-Layout");
+await stellen("Druck-Layout", "Magazin");
+await seite.emulateMedia({ media: "print" });
+gleich("setzt in einer Serifenschrift",
+  (await seite.$eval(".blatt", n => getComputedStyle(n).fontFamily)).indexOf("Georgia") >= 0,
+  true);
+gleich("und im Blocksatz",
+  await seite.$eval(".blk.absatz .txt", n => getComputedStyle(n).textAlign), "justify");
+gleich("nummeriert aber nicht",
+  await vorsatz('.blk[data-i="2"]'), "none");
+await seite.emulateMedia({ media: "screen" });
+await stellen("Druck-Layout", "Schlicht");
+
 /* ---------- Schluss ---------- */
 console.log("");
 if (skriptfehler.length){

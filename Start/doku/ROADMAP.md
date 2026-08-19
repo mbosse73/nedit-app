@@ -142,9 +142,12 @@ oder verschobener Block kommt mit `Strg+Z` derzeit nicht zurück.
 Zweites Thema (dunkel). Blocksatz als **Anzeige-Einstellung**, nicht
 als Merkmal des Textes.
 
-Drei Druck-Layouts, umschaltbar: **Schlicht** (Vorgabe),
-**Technische Doku**, **Manuskript**. Der Knopf **PDF** öffnet den
-Druckdialog — dort wählt der Nutzer „Als PDF speichern".
+Vier Druck-Layouts, umschaltbar: **Schlicht** (Vorgabe),
+**Technische Doku**, **Magazin**, **Manuskript**. Der Knopf **PDF**
+öffnet den Druckdialog — dort wählt der Nutzer „Als PDF speichern".
+
+Das Technik-Layout nummeriert nur die Überschriften, die noch keine
+Nummer tragen.
 
 Begründung für beides in `doku/ENTSCHEIDUNGEN.md`, Punkt 9 und 10.
 
