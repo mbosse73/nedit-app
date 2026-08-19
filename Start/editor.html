@@ -96,6 +96,55 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 .app[data-ansicht="quelltext"] .blatt{display:none}
 .app[data-ansicht="quelltext"] .quelle{width:100%;border-left:0}
 
+/* ---------- Gliederung ----------
+   Rechts die Überschriften, die springt. Sie ersetzt keinen
+   Seitenbaum — es gibt nur diese eine Datei — sondern zeigt, wie sie
+   gebaut ist. */
+.gliederung{width:238px;flex-shrink:0;background:var(--rand);
+  border-left:1px solid var(--linie2);display:flex;flex-direction:column}
+.app[data-gliederung="aus"] .gliederung{display:none}
+.app[data-ansicht="quelltext"] .gliederung{display:none}
+.gliederung .gkopf{flex-shrink:0;padding:9px 13px 7px;font-size:11px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--tinte3);border-bottom:1px solid var(--linie2)}
+.gliederung .liste{flex:1;min-height:0;overflow-y:auto;padding:6px}
+.gliederung .z{display:block;width:100%;font:inherit;font-size:13px;text-align:left;
+  padding:5px 8px;border:0;border-radius:var(--rad);background:none;color:var(--tinte2);
+  cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gliederung .z:hover{background:var(--strich);color:var(--tinte)}
+.gliederung .s1{font-weight:600;color:var(--tinte)}
+.gliederung .s2{padding-left:20px}
+.gliederung .s3{padding-left:34px}
+.gliederung .leer{padding:10px 9px;font-size:12.5px;color:var(--tinte3);line-height:1.5}
+.gliederung .gfuss{flex-shrink:0;border-top:1px solid var(--linie2);padding:7px}
+.gliederung .gfuss button{width:100%;font:inherit;font-size:12.5px;padding:6px 9px;
+  border:1px solid var(--linie);border-radius:var(--rad);background:var(--grund);
+  color:var(--tinte2);cursor:pointer}
+.gliederung .gfuss button:hover{background:var(--strich);color:var(--tinte)}
+
+/* ---------- Suchen ----------
+   Die Suche des Browsers findet nur, was gerade sichtbar ist — den
+   Rohtext eines Blocks also nicht, und in der Schreibansicht steht
+   der halbe Text als Ergebnis da. Deshalb eine eigene. */
+.suchen{position:fixed;top:52px;right:20px;z-index:56;display:none;align-items:center;
+  gap:6px;padding:6px 8px;background:var(--grund);border:1px solid var(--linie);
+  border-radius:var(--rad-gr);box-shadow:0 8px 26px rgba(15,15,15,.18)}
+.suchen.an{display:flex}
+/* Ist die Gliederung sichtbar, rückt die Suche davor — sonst verdeckt
+   sie deren oberste Zeile. */
+.app:not([data-gliederung="aus"]):not([data-ansicht="quelltext"]) ~ .suchen{right:258px}
+.suchen input{font:inherit;font-size:13.5px;width:190px;padding:5px 8px;
+  border:1px solid var(--linie);border-radius:var(--rad);background:var(--grund);
+  color:var(--tinte);outline:none}
+.suchen input:focus{border-color:var(--blau)}
+.suchen .zahl{font-size:12px;color:var(--tinte3);min-width:64px;text-align:center}
+.suchen button{font:inherit;font-size:13px;padding:4px 8px;border:0;border-radius:var(--rad);
+  background:none;color:var(--tinte2);cursor:pointer;display:grid;place-items:center}
+.suchen button:hover{background:var(--strich);color:var(--tinte)}
+.suchen svg{width:15px;height:15px;stroke:currentColor;stroke-width:1.8;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.txt .fund{background:var(--marker);font-style:normal;border-radius:2px;
+  box-shadow:0 0 0 1px rgba(55,53,47,.14)}
+
 /* ---------- Fußleiste ---------- */
 .fuss{flex-shrink:0;display:flex;align-items:center;gap:16px;padding:6px 16px;
   background:var(--rand);border-top:1px solid var(--linie2);font-size:11.5px;
@@ -306,6 +355,12 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
     <button class="akt" id="oeffnen">Öffnen</button>
     <button class="akt" id="sichern">Sichern</button>
     <button class="akt" id="neu">Neu</button>
+    <button class="akt" id="g-auf" title="Gliederung ein- und ausblenden"
+            aria-pressed="true">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+           stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 5.2h12M6.5 10h9.5M9 14.8h7"/></svg>
+    </button>
     <button class="akt" id="ein-auf" title="Einstellungen" aria-haspopup="dialog">
       <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
            stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
@@ -326,6 +381,13 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
         <span id="qhinweis">nur lesen</span></div>
       <textarea id="q" spellcheck="false" aria-label="Markdown-Quelltext"></textarea>
     </div>
+    <div class="gliederung" id="gliederung">
+      <div class="gkopf">Gliederung</div>
+      <div class="liste" id="g-liste"></div>
+      <div class="gfuss">
+        <button type="button" id="g-inhalt">Als Inhaltsverzeichnis einfügen</button>
+      </div>
+    </div>
   </div>
 
   <div class="fuss">
@@ -339,6 +401,18 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 </div>
 
 <div class="leiste" id="leiste" role="toolbar" aria-label="Auszeichnung"></div>
+<div class="suchen" id="suchen" role="search">
+  <input type="search" id="such-feld" placeholder="Im Dokument suchen"
+         aria-label="Im Dokument suchen" spellcheck="false">
+  <span class="zahl" id="such-zahl"></span>
+  <button type="button" id="such-zurueck" title="Vorheriger Fund" aria-label="Vorheriger Fund">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M14 12.5 10 8l-4 4.5"/></svg></button>
+  <button type="button" id="such-vor" title="Nächster Fund" aria-label="Nächster Fund">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 7.5 10 12l4-4.5"/></svg></button>
+  <button type="button" id="such-zu" title="Schließen" aria-label="Suche schließen">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg></button>
+</div>
+
 <div class="menue" id="menue" role="menu" aria-label="Menü"></div>
 <div class="menue slash" id="slash" role="listbox" aria-label="Block einfügen">
   <div class="liste" id="slash-liste"></div>
@@ -800,6 +874,8 @@ function male(fokusIndex, fokusPos){
   const s = $("#spalte");
   s.innerHTML = "";
   Z.bloecke.forEach((b, i) => s.appendChild(blockMalen(b, i)));
+  fundeZeigen();
+  gliederungMalen();
   quelleMalen();
   fussMalen();
   if (fokusIndex !== undefined) setzeFokus(fokusIndex, fokusPos === undefined ? 0 : fokusPos);
@@ -1527,7 +1603,157 @@ function ansicht(name){
 }
 
 /* ============================================================
-   8 — EINSTELLUNGEN
+   8 — GLIEDERUNG UND SUCHEN
+
+   Beides beantwortet dieselbe Frage — wo bin ich, und wo ist das,
+   was ich suche. Der Dateibaum aus dem Entwurf beantwortet sie
+   nicht; er ist gestrichen (doku/ENTSCHEIDUNGEN.md, Punkt 2).
+   ============================================================ */
+function gliederungMalen(){
+  const liste = $("#g-liste");
+  liste.innerHTML = "";
+  const kopf = [];
+  Z.bloecke.forEach((b, i) => { if (/^h[123]$/.test(b.art)) kopf.push({b:b, i:i}); });
+  if (!kopf.length){
+    liste.appendChild(el("div", "leer",
+      "Noch keine Überschriften. Tippe <code>## </code> am Zeilenanfang."));
+    return;
+  }
+  kopf.forEach(({b, i}) => {
+    const grad = b.art.slice(1);
+    const z = el("button", "z s" + grad, esc(b.text || "(ohne Text)"));
+    z.type = "button";
+    z.title = b.text;
+    z.onclick = () => {
+      const knoten = $('.blk[data-i="' + i + '"]');
+      if (knoten) knoten.scrollIntoView({block:"center"});
+      setzeFokus(i, 0);
+    };
+    liste.appendChild(z);
+  });
+}
+
+/* GitHubs Ankerform: klein geschrieben, Satzzeichen raus, Leerzeichen
+   zu Strichen. Buchstaben mit Umlaut bleiben — sie sind Buchstaben. */
+const anker = (t) => String(t || "").toLowerCase().trim()
+  .replace(/[^\p{L}\p{N} _-]/gu, "").replace(/\s+/g, "-");
+
+function inhaltEinfuegen(){
+  const kopf = [];
+  Z.bloecke.forEach((b, i) => { if (/^h[123]$/.test(b.art) && b.text) kopf.push(b); });
+  if (!kopf.length){ melde("Keine Überschriften — nichts zu verzeichnen."); return; }
+  /* Reine Verweise, keine Sonderschreibweise: Das Verzeichnis ist
+     hinterher gewöhnlicher Markdown-Text und lässt sich von Hand
+     ändern wie jede andere Liste. */
+  const flach = Math.min.apply(null, kopf.map(b => Number(b.art.slice(1))));
+  const zeilen = kopf.map(b =>
+    "  ".repeat(Number(b.art.slice(1)) - flach) + "- [" + b.text + "](#" + anker(b.text) + ")");
+  const neu = leseMarkdown(zeilen.join("\n"));
+  /* Hinter die erste Überschrift, sonst ganz nach oben — dort sucht
+     man ein Inhaltsverzeichnis. */
+  let wo = 0;
+  for (let i = 0; i < Z.bloecke.length; i++){
+    if (/^h[123]$/.test(Z.bloecke[i].art)){ wo = i + 1; break; }
+  }
+  Z.bloecke.splice(wo, 0, ...neu);
+  bewahre(); male(wo, 0);
+  melde(neu.length + " Überschriften als Verzeichnis eingefügt");
+}
+
+/* ---------- Suchen ---------- */
+let suchWort = "", suchStellen = [], suchWahl = 0;
+
+function suchRechnen(){
+  suchStellen = [];
+  if (!suchWort) return;
+  const wort = suchWort.toLowerCase();
+  Z.bloecke.forEach((b, i) => {
+    const t = String(b.text || "").toLowerCase();
+    let k = t.indexOf(wort);
+    while (k >= 0){ suchStellen.push({i:i, pos:k}); k = t.indexOf(wort, k + wort.length); }
+  });
+  if (suchWahl >= suchStellen.length) suchWahl = 0;
+}
+
+function suchZahlMalen(){
+  $("#such-zahl").textContent = !suchWort ? ""
+    : suchStellen.length ? (suchWahl + 1) + " von " + suchStellen.length
+    : "kein Fund";
+}
+
+/* Die Funde werden **im Baum** markiert, nicht im HTML-Text: Ein
+   Ersetzen auf der Zeichenkette träfe sonst auch das, was in einem
+   Attribut oder Elementnamen steht. */
+function fundeMarkieren(knoten, wort){
+  const suche = wort.toLowerCase();
+  const gehe = (n) => {
+    if (n.nodeType === 3){
+      const t = n.nodeValue, k = t.toLowerCase().indexOf(suche);
+      if (k < 0) return;
+      const treffer = n.splitText(k);
+      treffer.splitText(wort.length);
+      const m = document.createElement("em");
+      m.className = "fund";
+      m.textContent = treffer.nodeValue;
+      treffer.parentNode.replaceChild(m, treffer);
+      gehe(m.nextSibling);                    /* der Rest der Zeile */
+      return;
+    }
+    if (n && n.nodeType === 1 && n.className !== "fund")
+      Array.prototype.slice.call(n.childNodes).forEach(gehe);
+  };
+  Array.prototype.slice.call(knoten.childNodes).forEach(gehe);
+}
+
+function fundeZeigen(){
+  if (!suchWort) return;
+  $("#spalte").querySelectorAll(".blk").forEach(n => {
+    if (Number(n.dataset.i) === aktiv) return;   /* dort steht Rohtext */
+    const t = n.querySelector(".txt");
+    if (t) fundeMarkieren(t, suchWort);
+  });
+}
+
+function suchSpringen(k){
+  if (!suchStellen.length) return;
+  suchWahl = (k + suchStellen.length) % suchStellen.length;
+  const st = suchStellen[suchWahl];
+  const knoten = $('.blk[data-i="' + st.i + '"]');
+  if (knoten) knoten.scrollIntoView({block:"center"});
+  setzeFokus(st.i, st.pos);
+  suchZahlMalen();
+}
+
+function suchenVerdrahten(){
+  const kasten = $("#suchen"), feld = $("#such-feld");
+  const zu = () => {
+    kasten.classList.remove("an");
+    suchWort = ""; suchStellen = []; suchZahlMalen(); male();
+  };
+  $("#such-zu").onclick = zu;
+  $("#such-vor").onclick = () => suchSpringen(suchWahl + 1);
+  $("#such-zurueck").onclick = () => suchSpringen(suchWahl - 1);
+  feld.addEventListener("input", () => {
+    suchWort = feld.value; suchWahl = 0;
+    suchRechnen(); suchZahlMalen();
+    const merk = aktiv; aktiv = -1; male(); aktiv = merk;
+  });
+  feld.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape"){ ev.preventDefault(); zu(); return; }
+    if (ev.key === "Enter"){
+      ev.preventDefault();
+      suchSpringen(suchWahl + (ev.shiftKey ? -1 : 1));
+      feld.focus();
+    }
+  });
+  return () => {
+    kasten.classList.add("an");
+    feld.select(); feld.focus();
+  };
+}
+
+/* ============================================================
+   9 — EINSTELLUNGEN
 
    Bisher steht hier nur die Markdown-Stufe. Sie gehört in die
    Einstellungen und nicht in den Code: Dieselbe Fläche, andere
@@ -1569,7 +1795,7 @@ function einstellungenVerdrahten(){
 }
 
 /* ============================================================
-   9 — DATEIEN
+  10 — DATEIEN
 
    Edge erlaubt aus einer lokal geöffneten Datei **keinen** direkten
    Dateizugriff; die File System Access API ist damit keine Option.
@@ -1624,7 +1850,7 @@ function dateienVerdrahten(){
 }
 
 /* ============================================================
-  10 — TASTATUR UND START
+  11 — TASTATUR UND START
    ============================================================ */
 document.addEventListener("keydown", (ev) => {
   if (!(ev.ctrlKey || ev.metaKey)) return;
@@ -1672,6 +1898,26 @@ function start(){
   quelltextVerdrahten();
   dateienVerdrahten();
   einstellungenVerdrahten();
+  const suchenOeffnen = suchenVerdrahten();
+  $("#g-inhalt").onclick = inhaltEinfuegen;
+  $("#g-auf").onclick = () => {
+    const app = $("#app");
+    const aus = app.dataset.gliederung === "aus";
+    app.dataset.gliederung = aus ? "an" : "aus";
+    $("#g-auf").setAttribute("aria-pressed", String(aus));
+    try { localStorage.setItem(SCHLUESSEL + "-gliederung", app.dataset.gliederung); }
+    catch (e) { /* egal */ }
+  };
+  try {
+    $("#app").dataset.gliederung = localStorage.getItem(SCHLUESSEL + "-gliederung") || "an";
+  } catch (e) { $("#app").dataset.gliederung = "an"; }
+  $("#g-auf").setAttribute("aria-pressed",
+    String($("#app").dataset.gliederung !== "aus"));
+  document.addEventListener("keydown", (ev) => {
+    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === "f"){
+      ev.preventDefault(); suchenOeffnen();
+    }
+  });
   ["schreiben","geteilt","quelltext"].forEach(n => {
     $("#w-" + n).onclick = () => ansicht(n); });
   let gemerkt = "schreiben";
