@@ -167,6 +167,22 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
   pointer-events:none;z-index:60;max-width:70vw}
 .zettel.an{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ---------- Die Auswahlleiste ----------
+   Sie kommt zum Text, statt am Fensterrand zu warten. Dunkel, damit
+   sie sich vom Blatt abhebt, ohne eine Fläche zu beanspruchen. */
+.leiste{position:fixed;z-index:55;display:none;align-items:center;gap:1px;
+  background:var(--tinte);border-radius:6px;padding:4px;
+  box-shadow:0 6px 22px rgba(15,15,15,.30)}
+.leiste.an{display:flex}
+.leiste button{font:inherit;font-size:14px;line-height:1;min-width:29px;height:28px;
+  padding:0 7px;border:0;border-radius:4px;background:none;color:rgba(255,255,255,.88);
+  cursor:pointer;display:grid;place-items:center}
+.leiste button:hover{background:rgba(255,255,255,.16);color:#fff}
+.leiste .tr{width:1px;height:17px;background:rgba(255,255,255,.22);margin:0 3px}
+.leiste svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.8;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.leiste .mk{background:var(--marker);color:rgb(55,53,47);border-radius:2px;padding:1px 4px}
+
 /* ---------- Einstellungen ----------
    Hängt an body, nicht an .app: Der Überzug soll über allem liegen
    und von keinem Ansichtsumschalter erwischt werden — dieselbe
@@ -247,6 +263,8 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
     <span class="neu" id="f-stand">bereit</span>
   </div>
 </div>
+
+<div class="leiste" id="leiste" role="toolbar" aria-label="Auszeichnung"></div>
 
 <div class="zettel" id="zettel" role="status" aria-live="polite"></div>
 
@@ -704,6 +722,132 @@ function tasteImBlock(ev, i, n){
   if (ev.key === "Tab") ev.preventDefault();      /* Einrücken kommt in Schritt 4 */
 }
 
+/* ---------- Die Auswahlleiste ----------
+   Die Knöpfe setzen **Zeichen in den Rohtext**, nichts anderes. Das
+   geht nur, weil der Block unter der Schreibmarke seinen Rohtext
+   zeigt (doku/ENTSCHEIDUNGEN.md, Punkt 4): Die markierten Zeichen
+   sind dieselben, die in der Datei stehen — es gibt nichts
+   umzurechnen.
+
+   Was die gewählte Stufe nicht kann, steht nicht auf der Leiste.
+   Harte Regel 9. */
+const IK_CODE  = SVG('<path d="M7.6 6.4 3.8 10l3.8 3.6M12.4 6.4 16.2 10l-3.8 3.6"/>');
+const IK_KETTE = SVG('<path d="M8.6 11.4a3.1 3.1 0 0 0 4.4 0l2-2a3.1 3.1 0 0 0-4.4-4.4l-.9.9"/>'
+                   + '<path d="M11.4 8.6a3.1 3.1 0 0 0-4.4 0l-2 2a3.1 3.1 0 0 0 4.4 4.4l.9-.9"/>');
+
+const AUSZEICHNUNG = [
+  {zeichen:"**", inhalt:"<b>B</b>",              titel:"Fett (Strg B)"},
+  {zeichen:"*",  inhalt:"<i>I</i>",              titel:"Kursiv (Strg I)"},
+  {zeichen:"~~", inhalt:"<s>S</s>",              titel:"Durchgestrichen", merkmal:"durch"},
+  {zeichen:"`",  inhalt:IK_CODE,                 titel:"Code"},
+  {zeichen:"==", inhalt:'<span class="mk">A</span>', titel:"Textmarker", merkmal:"marker"}
+];
+
+/* Die Auswahl in Zeichen ab Blockanfang. Gibt `null` zurück, wenn
+   nichts markiert ist oder die Markierung nicht im Block unter der
+   Schreibmarke steht — nur dort steht Rohtext. */
+function auswahlLesen(){
+  const s = getSelection();
+  if (!s.rangeCount || s.isCollapsed) return null;
+  const knoten = s.anchorNode;
+  const wo = knoten.nodeType === 1 ? knoten : knoten.parentNode;
+  const t = wo && wo.closest ? wo.closest(".txt") : null;
+  if (!t) return null;
+  const blk = t.closest(".blk");
+  if (!blk) return null;
+  const i = Number(blk.dataset.i);
+  if (i !== aktiv || !Z.bloecke[i]) return null;
+  const r = s.getRangeAt(0);
+  const vor = document.createRange();
+  vor.selectNodeContents(t);
+  try { vor.setEnd(r.startContainer, r.startOffset); } catch (e) { return null; }
+  const von = vor.toString().length;
+  const bis = von + r.toString().length;
+  if (von === bis) return null;
+  return { i:i, von:von, bis:bis, rechteck:r.getBoundingClientRect() };
+}
+
+function auswahlSetzen(i, von, bis){
+  const n = textVon(i);
+  if (!n || !n.firstChild) return;
+  const t = n.firstChild, laenge = t.textContent.length;
+  const r = document.createRange();
+  r.setStart(t, Math.max(0, Math.min(von, laenge)));
+  r.setEnd(t,   Math.max(0, Math.min(bis, laenge)));
+  const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+}
+
+/* Steht die Auswahl schon zwischen diesen Zeichen, werden sie
+   entfernt — ein zweiter Klick nimmt zurück, was der erste tat. */
+function auszeichnen(zeichen){
+  const a = auswahlLesen();
+  if (!a) return;
+  const b = Z.bloecke[a.i], t = b.text, n = zeichen.length;
+  const drin = a.von >= n
+    && t.slice(a.von - n, a.von) === zeichen
+    && t.slice(a.bis, a.bis + n) === zeichen;
+  if (drin){
+    b.text = t.slice(0, a.von - n) + t.slice(a.von, a.bis) + t.slice(a.bis + n);
+    bewahre(); male(a.i, a.von - n);
+    auswahlSetzen(a.i, a.von - n, a.bis - n);
+  } else {
+    b.text = t.slice(0, a.von) + zeichen + t.slice(a.von, a.bis) + zeichen + t.slice(a.bis);
+    bewahre(); male(a.i, a.von + n);
+    auswahlSetzen(a.i, a.von + n, a.bis + n);
+  }
+  leistePruefen();
+}
+
+function verweisSetzen(){
+  const a = auswahlLesen();
+  if (!a) return;
+  const adresse = prompt("Adresse für den Link", "https://");
+  if (!adresse) return;
+  const b = Z.bloecke[a.i], t = b.text;
+  b.text = t.slice(0, a.von) + "[" + t.slice(a.von, a.bis) + "](" + adresse + ")"
+         + t.slice(a.bis);
+  bewahre(); male(a.i, a.bis + adresse.length + 4);
+}
+
+function leisteBauen(){
+  const l = $("#leiste");
+  l.innerHTML = "";
+  const knopf = (inhalt, titel, tue) => {
+    const b = el("button", null, inhalt);
+    b.type = "button"; b.title = titel;
+    b.setAttribute("aria-label", titel);
+    b.onclick = tue;
+    l.appendChild(b);
+  };
+  knopf(IK_KETTE, "Link", verweisSetzen);
+  l.appendChild(el("span", "tr"));
+  AUSZEICHNUNG.forEach(a => {
+    if (a.merkmal && !kann(a.merkmal)) return;   /* harte Regel 9 */
+    knopf(a.inhalt, a.titel, () => auszeichnen(a.zeichen));
+  });
+}
+
+function leisteVerbergen(){ $("#leiste").classList.remove("an"); }
+
+function leistePruefen(){
+  const l = $("#leiste");
+  if ($("#app").dataset.ansicht === "quelltext"
+      || $("#einstellungen").classList.contains("an")){ leisteVerbergen(); return; }
+  const a = auswahlLesen();
+  if (!a){ leisteVerbergen(); return; }
+  leisteBauen();
+  l.classList.add("an");
+  const b = l.getBoundingClientRect();
+  let links = a.rechteck.left + a.rechteck.width / 2 - b.width / 2;
+  links = Math.max(8, Math.min(links, innerWidth - b.width - 8));
+  /* In der ersten Zeile ist oben kein Platz — dann darunter. Notion
+     tut dasselbe, und es ist mehr Aufwand, als es aussieht. */
+  let oben = a.rechteck.top - b.height - 8;
+  if (oben < 8) oben = a.rechteck.bottom + 8;
+  l.style.left = Math.round(links) + "px";
+  l.style.top  = Math.round(oben) + "px";
+}
+
 /* ---------- Ereignisse an der Fläche ---------- */
 function verdrahte(){
   const spalte = $("#spalte");
@@ -830,6 +974,19 @@ function verdrahte(){
     Z.bloecke.push({art:"absatz", text:""});
     bewahre(); male(Z.bloecke.length-1, 0);
   });
+
+  /* ---------- Die Leiste ---------- */
+  /* `selectionchange` feuert bei jedem Zeichen. Ein Bild Abstand
+     genügt: Die Leiste muss nicht schneller sein als das Auge. */
+  let leistenUhr = null;
+  document.addEventListener("selectionchange", () => {
+    cancelAnimationFrame(leistenUhr);
+    leistenUhr = requestAnimationFrame(leistePruefen);
+  });
+  /* Ein Klick auf die Leiste darf die Auswahl nicht löschen — sonst
+     wäre beim Loslassen nichts mehr da, worauf der Knopf wirken kann. */
+  $("#leiste").addEventListener("mousedown", (ev) => ev.preventDefault());
+  $("#blatt").addEventListener("scroll", leisteVerbergen, {passive:true});
 }
 
 /* ============================================================
@@ -852,6 +1009,7 @@ function quelltextVerdrahten(){
 }
 
 function ansicht(name){
+  leisteVerbergen();
   $("#app").dataset.ansicht = name;
   ["schreiben","geteilt","quelltext"].forEach(n =>
     $("#w-" + n).setAttribute("aria-current", String(n === name)));
@@ -961,6 +1119,14 @@ document.addEventListener("keydown", (ev) => {
   const k = ev.key.toLowerCase();
   if (k === "s"){ ev.preventDefault(); $("#sichern").click(); }
   if (k === "o"){ ev.preventDefault(); $("#oeffnen").click(); }
+  /* Ohne diese drei setzt das Textfeld von sich aus <b>, <i> und <u>
+     in den Block — und schriebe damit HTML, wo Markdown stehen soll. */
+  if (k === "b"){ ev.preventDefault(); auszeichnen("**"); }
+  if (k === "i"){ ev.preventDefault(); auszeichnen("*"); }
+  if (k === "u"){
+    ev.preventDefault();
+    melde("Markdown kennt kein Unterstreichen. Fett: Strg B, kursiv: Strg I.");
+  }
   if (k === "e"){
     ev.preventDefault();
     ansicht($("#app").dataset.ansicht === "schreiben" ? "geteilt" : "schreiben");
