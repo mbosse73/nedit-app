@@ -32,40 +32,33 @@ wo Weg 3 nichts anbietet — und Weg 4 gar nicht.
 
 ---
 
-## 2 · Wie der Editor an Dateien kommt — **teilweise offen**
+## 2 · Wie der Editor an Dateien kommt — **entschieden**
 
 Ein Browsertest im Schwesterprojekt hat ergeben: **Edge erlaubt aus
 einer lokal geöffneten Datei keinen direkten Dateizugriff.** Die File
 System Access API ist damit keine Option, solange die harte Regel 1
 gilt (eine Datei, per Doppelklick, ohne Server).
 
-**Entschieden für den Einzelfall:**
+**Entschieden:**
 
 * Öffnen über `<input type="file">`.
 * Sichern über den Download.
 * Der Arbeitsstand dazwischen liegt in `localStorage`.
 
-Das genügt für „eine Datei bearbeiten". Es genügt **nicht** für den
-Ordnerbaum aus `mockups/schreiben.html`.
+**Der Download ist geprüft und angenommen** (August 2026, am
+Zielrechner). Damit ist der schwerste offene Punkt des Projekts erledigt:
+Der Editor hat einen Weg, etwas herauszugeben.
 
-**Offen, und vor Schritt 8 zu entscheiden:** Ein Ordner lässt sich über
-`<input webkitdirectory>` einlesen — alle Dateien auf einmal, als
-Kopie im Speicher. Zurückschreiben lässt er sich nicht; jede geänderte
-Datei käme einzeln als Download heraus, und der Nutzer müsste sie von
-Hand an ihren Platz legen. Drei Wege:
+**Kein Ordnerbaum.** Der Entwurf `mockups/schreiben.html` zeigt links
+einen Dateibaum. Ein Ordner ließe sich über `<input webkitdirectory>`
+zwar einlesen, aber nicht zurückschreiben — jede geänderte Datei käme
+einzeln als Download heraus, und der Nutzer müsste sie von Hand an
+ihren Platz legen. Ein Baum, der das verschweigt, verspricht mehr, als
+er hält.
 
-1. **Ordner nur lesen.** Der Baum zeigt, was da ist; geändert wird
-   immer nur die eine offene Datei, gesichert per Download. Ehrlich,
-   aber der Baum verspricht mehr, als er hält.
-2. **Auf die Regel verzichten** und den Editor über einen kleinen
-   lokalen Server ausliefern. Dann geht die File System Access API,
-   und der Baum ist echt. Kostet die Grundbedingung des Projekts.
-3. **Keinen Baum.** Eine Datei, ein Fenster. Am wenigsten Notion, am
-   wenigsten Lüge.
-
-Ohne Entscheidung wird Schritt 8 nicht begonnen.
-
----
+**Entschieden: eine Datei, ein Fenster.** Kein Baum, auch kein
+lesender. Damit entfällt Schritt 8 zur Hälfte; die Gliederung aus den
+Überschriften bleibt, der Dateibaum fällt weg.
 
 ## 3 · Warum der Quelltext in der geteilten Ansicht nur zu lesen ist
 
@@ -134,3 +127,165 @@ wäre nie ganz verlustfrei.
 
 **Entschieden:** Ein Block hat genau ein Feld `text`, und darin steht
 Markdown. Alles Weitere wird daraus gerechnet.
+
+---
+
+## 8 · Kommentare am Text bleiben draußen — endgültig
+
+`mockups/auswahl.html` zeigte einen Kommentar-Knopf in der
+Auswahlleiste. Das war ein Widerspruch zu Punkt 1, der Kommentare
+ausschließt: Ein Kommentar hat in einer `.md`-Datei keinen Ort. Er
+müsste entweder sichtbar im Text stehen oder in einer zweiten Datei
+liegen — beides ist ausgeschlossen.
+
+**Entschieden:** Der Knopf ist aus dem Entwurf entfernt. Die
+Auswahlleiste trägt nur Knöpfe, deren Ergebnis in der Datei landet und
+überall lesbar bleibt.
+
+Der Weg über `<!-- Anmerkung -->` wurde erwogen und verworfen: Er
+überlebt zwar das Kopieren, ist aber in jedem anderen Programm
+unsichtbar. Ein Kommentar, den niemand sieht, ist keiner.
+
+---
+
+## 9 · Ausrichtung und Aussehen gehören nicht in die Datei
+
+Markdown beschreibt, **was** etwas ist — eine Überschrift, ein Zitat —,
+nicht **wie** es aussieht. Für Blocksatz, Schriftwahl oder Randbreite
+gibt es kein Markdown-Zeichen, und das ist kein Mangel, sondern der
+Grund, warum dieselbe Datei überall funktioniert.
+
+**Entschieden:** Blocksatz ist eine **Anzeige-Einstellung** des
+Editors, kein Merkmal des Textes. Er gilt für die Schreibfläche und
+für den Druck; die Datei bleibt unberührt. Der Weg über
+`<div style="text-align:justify">` wurde verworfen — er brächte
+HTML-Gerüst mitten in den Text.
+
+Dasselbe gilt für jede weitere Frage nach Aussehen: Sie wird über die
+Themen und die Druck-Layouts beantwortet, nie über die Datei.
+
+---
+
+## 10 · Das PDF entsteht über den Druckdialog
+
+Ein PDF-Erzeuger als Bibliothek in `editor.html` würde die Datei um
+mehrere hundert Kilobyte aufblähen, fremden Code ins Projekt bringen
+(harte Regel 2) und Seitenumbrüche schlechter beherrschen als der
+Browser.
+
+**Entschieden:** Der Knopf **PDF** öffnet den Druckdialog; dort wählt
+der Nutzer „Als PDF speichern". Der Editor liefert dafür das Layout —
+Schrift, Ränder, Umbrüche, Kopf- und Fußzeile. Die Arbeit steckt im
+Druckstil, nicht in einem Erzeuger.
+
+**Vier Druck-Layouts**, umschaltbar in den Einstellungen:
+
+* **Schlicht** — die Vorgabe. Nüchtern, wenig Zierrat, spart Papier.
+* **Technische Doku** — enger Satz, gerahmte Codeblöcke, Tabellen mit
+  Linien, jede Überschrift 1 auf einer neuen Seite, nummerierte
+  Überschriften.
+* **Magazin** — Serifenschrift, schmale Spalte (118 mm, rund 70
+  Zeichen), große Überschriften, Blocksatz.
+* **Manuskript** — eine Spalte, großer Zeilenabstand, breiter
+  Korrekturrand.
+
+**Seitenzahlen und Kopfzeilen setzt der Browser**, nicht die Seite.
+Sie stehen im Druckdialog und lassen sich von hier aus nicht steuern —
+Chrome und Edge unterstützen die dafür vorgesehenen CSS-Regeln nicht.
+
+### Die Nummerierung im Technik-Layout
+
+Das Layout nummeriert die Überschriften selbst — **aber nur die, die
+noch keine Nummer tragen.** Steht `## 1 Bestandsaufnahme` in der
+Datei, bleibt es dabei; steht dort `## Offene Fragen`, bekommt es
+eine. Sonst stünde auf dem Papier „1.1  1 Bestandsaufnahme".
+
+Gezählt wird trotzdem an **jeder** Überschrift, auch an den
+übersprungenen: Die vergebene Nummer soll die Stelle im Dokument
+treffen. Ein Text, in dem nur ein Teil der Überschriften eine eigene
+Nummer trägt, ergibt deshalb eine gemischte Folge (`1`, dann
+`1.2`). Das ist die ehrliche Anzeige einer uneinheitlichen Vorlage —
+**entweder alle Überschriften selbst nummerieren oder keine.**
+
+Erkannt wird über `EIGENE_NUMMER` in Abschnitt 5; CSS-Zähler können
+keinen Text lesen, deshalb setzt `blockMalen` die Klasse `eigen`.
+
+---
+
+## 11 · Was aus dem Blockkatalog gestrichen ist
+
+Drei Auszeichnungen sind bewusst **nicht** gebaut worden, obwohl sie
+im Katalog stehen:
+
+* **Farbiger Text** (`<span style="color:…">`) und **Unterstrichen**
+  (`<u>`) — beide bringen HTML-Gerüst in den Satz. In einem einfachen
+  Editor sieht man den Schnipsel statt des Wortes.
+* **Erwähnung** (`[[Name]]`) — nützt nur mit Obsidian und setzt einen
+  Ordner voraus, den es nach Punkt 2 nicht gibt.
+
+Aus dem Blockmenü gestrichen:
+
+* **Link kopieren** — bezieht sich in Notion auf eine Web-Adresse pro
+  Block. In einer `.md`-Datei gibt es die nicht.
+* **Verschieben nach** — setzt mehrere Dateien voraus. Siehe Punkt 2.
+
+Sie bleiben im Katalog als **abgelehnt** stehen, damit die Frage nicht
+alle drei Monate neu gestellt wird.
+
+---
+
+## 12 · Eigenschaften aus dem YAML-Kopf sind zurückgestellt
+
+Der Frontmatter-Kopf als Notions Eigenschaftenzeilen ist nicht
+abgelehnt, sondern **vertagt**. Begründung: Er nützt vor allem beim
+Verwalten vieler Dateien, und einen Ordnerbaum wird es nach Punkt 2
+nicht geben.
+
+Bis dahin gilt, was schon gilt: Ein vorhandener YAML-Kopf bleibt
+unangetastet als Rohtext stehen und wird unverändert
+zurückgeschrieben.
+
+---
+
+## 13 · Farbe im Quelltext liegt in einer zweiten Schicht
+
+Ein `<textarea>` kann keine Auszeichnung tragen — es kennt nur eine
+Farbe für allen Text. Wer im Quelltext Farbe will, hat zwei Wege:
+
+1. Das Feld gegen ein `contenteditable` tauschen. Dann färbt man
+   frei — und verliert das, was ein Textfeld von sich aus richtig
+   macht: Rückgängig, Einfügen als reiner Text, die Schreibmarke, das
+   Verhalten der Bildschirmtastatur.
+2. Ein `<pre>` mit dem eingefärbten Text **unter** das Feld legen und
+   die Schrift im Feld durchsichtig machen.
+
+Gewählt ist der zweite Weg. Der Preis dafür ist eine harte Bedingung:
+**Beide Schichten müssen zeichengenau gleich umbrechen.** Bricht die
+Farbschicht eine Zeile früher, steht sie ab dort neben der
+Schreibmarke.
+
+Deshalb steht jedes Maß, das den Umbruch beeinflusst — Schriftart,
+Größe, Zeilenhöhe, Innenabstand, Tabulatorbreite, Umbruchregel — in
+**genau einer** CSS-Regel für beide Schichten, und `scrollbar-gutter`
+hält den Platz des Rollbalkens auf beiden Seiten frei. Zwei Proben in
+`werkzeug/probe.mjs` rechnen das nach: gleicher Text, gleiche Höhe,
+gleiche Breite.
+
+Die Färbung selbst **entscheidet nichts**. Sie deutet dieselben Zeilen
+wie `leseMarkdown`, aber getrennt davon; ein falsch gefärbtes Zeichen
+steht trotzdem unverändert in der Datei. Was die gewählte Stufe nicht
+kann, wird auch nicht gefärbt — harte Regel 9 gilt hier wie überall.
+
+---
+
+## 14 · Der Suchtreffer ist orange, nicht gelb
+
+Beide waren gelb: der Textmarker (`==…==`, eine Auszeichnung **in der
+Datei**) und der Suchtreffer (eine Anzeige, die verschwindet, sobald
+man die Suche schließt). Dieselbe Farbe für beides behauptet, sie
+seien dasselbe.
+
+Der Suchtreffer hat jetzt ein eigenes Token `--fund` in Hellorange.
+Der Prüflauf rechnet für beide Töne nach, dass der Text darauf über
+4,5 : 1 bleibt — in beiden Themen.
+

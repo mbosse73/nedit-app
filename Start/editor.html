@@ -32,18 +32,67 @@
   --linie2:rgba(55,53,47,.07);
   --strich:rgba(55,53,47,.06);   /* Fläche unter dem Zeiger */
   --blau:rgb(35,131,226);
+  --rot:rgb(180,50,44);   /* 6,13 : 1 — Warnung, nicht Kategorie */
   --blau-s:rgba(35,131,226,.28);
   --code-g:rgb(247,246,243);
   --code-t:rgb(186,67,63);
   --marker:rgb(251,243,196);
+  /* Der Suchtreffer ist kein Textmarker. Er steht nur, solange gesucht
+     wird, und darf nicht wie eine Auszeichnung im Text aussehen —
+     deshalb Orange statt Gelb. */
+  --fund:rgb(252,224,187);
+  /* Farben der Quelltextansicht. Die Auszeichnungszeichen tragen
+     --blau, Code trägt --code-t; nur das Verweisziel braucht einen
+     eigenen Ton — sonst hätten Zeichen und Ziel dieselbe Farbe. */
+  --q-l:rgb(31,102,140);
 
   --rad:5px;
   --rad-gr:8px;
   --spalte:708px;         /* Notions Schreibbreite. Nicht verhandelbar. */
+  --einzug:26px;          /* eine Stufe Einrückung in der Anzeige */
   --schrift:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",
             Roboto,Helvetica,Arial,sans-serif;
   --fest:ui-monospace,Consolas,"Courier New",monospace;
+  /* Nur Systemschriften (harte Regel 3). Georgia und Times New Roman
+     liegen auf Windows, Palatino und Times auf dem Mac. */
+  --serif:Georgia,"Times New Roman",Palatino,"Palatino Linotype",Times,serif;
 }
+
+/* ---------- Das zweite Thema ----------
+   `color-scheme` wandert mit: Ohne das färbt Windows Scrollbalken und
+   Formularfelder nach der Systemeinstellung ein, und zwar gegen das
+   gewählte Thema. Die hellen Werte oben bleiben die Vorgabe — hier
+   stehen nur die, die sich ändern. */
+:root[data-thema="dunkel"]{
+  color-scheme: dark;
+
+  --grund:rgb(25,25,25);
+  --rand:rgb(33,33,33);
+  --tinte:rgba(255,255,255,.92);
+  --tinte2:rgba(255,255,255,.74);
+  --tinte3:rgba(255,255,255,.56);
+  --blass:rgba(255,255,255,.34);
+  --linie:rgba(255,255,255,.14);
+  --linie2:rgba(255,255,255,.08);
+  --strich:rgba(255,255,255,.07);
+  --blau:rgb(84,166,247);
+  --blau-s:rgba(84,166,247,.34);
+  --code-g:rgb(38,38,38);
+  --code-t:rgb(233,140,131);
+  --marker:rgb(112,88,24);
+  --fund:rgb(126,76,22);
+  --q-l:rgb(126,190,226);
+  --rot:rgb(240,133,124);
+}
+
+/* ---------- Der Satz ----------
+   Blocksatz ist eine Einstellung der Anzeige, kein Merkmal des
+   Textes: Markdown beschreibt, **was** etwas ist, nicht wie es
+   aussieht. In der Datei steht davon nichts
+   (doku/ENTSCHEIDUNGEN.md, Punkt 9). */
+:root[data-satz="blocksatz"] .blk.absatz .txt,
+:root[data-satz="blocksatz"] .blk.zitat .txt,
+:root[data-satz="blocksatz"] .blk.callout .txt{text-align:justify;hyphens:auto}
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -83,16 +132,92 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
   font-size:11.5px;color:var(--tinte3);border-bottom:1px solid var(--linie2);
   background:var(--rand)}
 .quelle .qkopf .sp{flex:1}
-.quelle textarea{flex:1;min-height:0;width:100%;resize:none;border:0;outline:none;
-  background:var(--rand);color:var(--tinte);font-family:var(--fest);font-size:13.5px;
-  line-height:1.7;padding:16px 18px 40vh;tab-size:2}
-.quelle textarea[readonly]{color:var(--tinte2)}
+/* Farbe im Quelltext geht nur ueber zwei Schichten: Ein <textarea>
+   traegt keine Auszeichnung. Darunter liegt ein <pre> mit dem
+   eingefaerbten Text, darueber das Feld mit durchsichtiger Schrift.
+   Beide muessen zeichengenau gleich umbrechen — deshalb steht jedes
+   Mass, das den Umbruch beeinflusst, in genau einer Regel. */
+.qfeld{position:relative;flex:1;min-height:0}
+.qfeld textarea,.qfeld .qfarbe{position:absolute;inset:0;width:100%;height:100%;
+  margin:0;border:0;font-family:var(--fest);font-size:13.5px;line-height:1.7;
+  letter-spacing:normal;padding:16px 18px 40vh;tab-size:2;
+  white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;
+  scrollbar-gutter:stable}   /* der Balken darf den Umbruch nicht verschieben */
+.qfeld .qfarbe{overflow:hidden;background:var(--rand);color:var(--tinte);
+  pointer-events:none;user-select:none}
+.qfeld textarea{overflow-y:auto;resize:none;outline:none;
+  background:transparent;color:transparent;caret-color:var(--tinte)}
+/* Durchsichtig markiert: Der Balken der Auswahl liegt ueber der Farbe
+   und naehme sie deckend weg. */
+.qfeld textarea::selection{background:var(--blau-s);color:transparent}
+.quelle[data-lesen="ja"] .qfarbe{opacity:.72}
+
+/* Die Farben selbst. Sie deuten, was leseMarkdown deuten wuerde —
+   mehr nicht. Ein falsch gefaerbtes Zeichen steht trotzdem
+   unveraendert in der Datei. */
+.qfarbe .mk{color:var(--blau)}
+.qfarbe .h{font-weight:700}
+.qfarbe .b{font-weight:700}
+.qfarbe .i{font-style:italic}
+.qfarbe .s{text-decoration:line-through}
+.qfarbe .c{color:var(--code-t)}
+.qfarbe .l{color:var(--q-l);text-decoration:underline;text-underline-offset:2px}
+.qfarbe .mrk{background:var(--marker);border-radius:2px}
 
 /* Die drei Ansichten. `display` steht bewusst in keiner ID-Regel —
    eine ID schlägt jede Klasse und bräche jedes Umschalten. */
 .app[data-ansicht="schreiben"] .quelle{display:none}
 .app[data-ansicht="quelltext"] .blatt{display:none}
 .app[data-ansicht="quelltext"] .quelle{width:100%;border-left:0}
+
+/* ---------- Gliederung ----------
+   Rechts die Überschriften, die springt. Sie ersetzt keinen
+   Seitenbaum — es gibt nur diese eine Datei — sondern zeigt, wie sie
+   gebaut ist. */
+.gliederung{width:238px;flex-shrink:0;background:var(--rand);
+  border-left:1px solid var(--linie2);display:flex;flex-direction:column}
+.app[data-gliederung="aus"] .gliederung{display:none}
+.app[data-ansicht="quelltext"] .gliederung{display:none}
+.gliederung .gkopf{flex-shrink:0;padding:9px 13px 7px;font-size:11px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--tinte3);border-bottom:1px solid var(--linie2)}
+.gliederung .liste{flex:1;min-height:0;overflow-y:auto;padding:6px}
+.gliederung .z{display:block;width:100%;font:inherit;font-size:13px;text-align:left;
+  padding:5px 8px;border:0;border-radius:var(--rad);background:none;color:var(--tinte2);
+  cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gliederung .z:hover{background:var(--strich);color:var(--tinte)}
+.gliederung .s1{font-weight:600;color:var(--tinte)}
+.gliederung .s2{padding-left:20px}
+.gliederung .s3{padding-left:34px}
+.gliederung .leer{padding:10px 9px;font-size:12.5px;color:var(--tinte3);line-height:1.5}
+.gliederung .gfuss{flex-shrink:0;border-top:1px solid var(--linie2);padding:7px}
+.gliederung .gfuss button{width:100%;font:inherit;font-size:12.5px;padding:6px 9px;
+  border:1px solid var(--linie);border-radius:var(--rad);background:var(--grund);
+  color:var(--tinte2);cursor:pointer}
+.gliederung .gfuss button:hover{background:var(--strich);color:var(--tinte)}
+
+/* ---------- Suchen ----------
+   Die Suche des Browsers findet nur, was gerade sichtbar ist — den
+   Rohtext eines Blocks also nicht, und in der Schreibansicht steht
+   der halbe Text als Ergebnis da. Deshalb eine eigene. */
+.suchen{position:fixed;top:52px;right:20px;z-index:56;display:none;align-items:center;
+  gap:6px;padding:6px 8px;background:var(--grund);border:1px solid var(--linie);
+  border-radius:var(--rad-gr);box-shadow:0 8px 26px rgba(15,15,15,.18)}
+.suchen.an{display:flex}
+/* Ist die Gliederung sichtbar, rückt die Suche davor — sonst verdeckt
+   sie deren oberste Zeile. */
+.app:not([data-gliederung="aus"]):not([data-ansicht="quelltext"]) ~ .suchen{right:258px}
+.suchen input{font:inherit;font-size:13.5px;width:190px;padding:5px 8px;
+  border:1px solid var(--linie);border-radius:var(--rad);background:var(--grund);
+  color:var(--tinte);outline:none}
+.suchen input:focus{border-color:var(--blau)}
+.suchen .zahl{font-size:12px;color:var(--tinte3);min-width:64px;text-align:center}
+.suchen button{font:inherit;font-size:13px;padding:4px 8px;border:0;border-radius:var(--rad);
+  background:none;color:var(--tinte2);cursor:pointer;display:grid;place-items:center}
+.suchen button:hover{background:var(--strich);color:var(--tinte)}
+.suchen svg{width:15px;height:15px;stroke:currentColor;stroke-width:1.8;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.txt .fund{background:var(--fund);font-style:normal;border-radius:2px;
+  box-shadow:0 0 0 1px rgba(55,53,47,.14)}
 
 /* ---------- Fußleiste ---------- */
 .fuss{flex-shrink:0;display:flex;align-items:center;gap:16px;padding:6px 16px;
@@ -109,7 +234,8 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
    alle anderen zeigen das Ergebnis.
    ============================================================ */
 .blk{position:relative;display:flex;align-items:flex-start;gap:8px;
-  padding:2px 2px;border-radius:3px}
+  padding:2px 2px;border-radius:3px;
+  margin-left:calc(var(--tiefe,0) * var(--einzug))}
 .blk.ueber{background:rgba(55,53,47,.02)}
 .blk.zielvor{box-shadow:0 -2px 0 var(--blau)}
 .blk.zielnach{box-shadow:0 2px 0 var(--blau)}
@@ -151,8 +277,45 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 .blk.linie{padding:12px 2px}
 .blk.linie .strich{flex:1;height:1px;background:var(--linie)}
 
+/* ---------- Tabelle, Callout, Toggle ----------
+   Die drei Blöcke jenseits von reinem Markdown. Jeder trägt sein
+   Urteil sichtbar — HTML nur als Notausgang, und gekennzeichnet
+   (doku/ENTSCHEIDUNGEN.md, Punkt 1). */
+.blk .urteil{position:absolute;right:4px;top:3px;font-size:9.5px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--tinte3);background:var(--rand);
+  border:1px solid var(--linie2);border-radius:3px;padding:1px 5px;
+  pointer-events:none;opacity:0;transition:opacity .12s}
+.blk:hover .urteil,.blk:focus-within .urteil{opacity:1}
+
+.blk.tabelle,.blk.callout,.blk.toggle{margin:10px 0}
+.blk.tabelle table{border-collapse:collapse;width:100%;font-size:14.5px}
+.blk.tabelle th,.blk.tabelle td{border:1px solid var(--linie);padding:6px 10px;
+  text-align:left;vertical-align:top}
+.blk.tabelle th{background:var(--rand);font-weight:600}
+
+.blk.callout .txt{background:var(--rand);border-left:3px solid var(--blau);
+  border-radius:var(--rad);padding:11px 14px}
+.blk.callout.warnung .txt{border-left-color:var(--rot)}
+.blk.callout .sorte{display:block;font-size:12px;font-weight:600;letter-spacing:.03em;
+  color:var(--blau);margin-bottom:3px}
+.blk.callout.warnung .sorte{color:var(--rot)}
+
+.blk.toggle .txt{border:1px solid var(--linie);border-radius:var(--rad);padding:10px 13px}
+/* Beide ausdrücklich als Block: Ohne das stünden Titel und Rumpf
+   nur deshalb untereinander, weil zufällig ein Zeilenende dazwischen
+   liegt. */
+.blk.toggle .haupt{display:block;font-weight:600}
+.blk.toggle .rumpf{display:block;margin-top:6px;color:var(--tinte2)}
+
 /* Auszeichnung im Text */
 .txt b{font-weight:600}
+.txt img{display:block;max-width:100%;height:auto;margin:6px 0;border-radius:var(--rad)}
+/* Ein Bild aus dem Netz wird **nicht** geladen: Die Anwendung greift
+   zu keinem Zeitpunkt auf das Internet zu (harte Regel 2). Der
+   Verweis bleibt in der Datei und wird hier benannt. */
+.txt .fern{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;
+  color:var(--tinte2);background:var(--rand);border:1px dashed var(--linie);
+  border-radius:var(--rad);padding:3px 8px;font-family:var(--fest)}
 .txt code{background:rgba(135,131,120,.15);color:var(--code-t);border-radius:3px;
   padding:1px 5px;font-family:var(--fest);font-size:.86em}
 .txt .verweis{color:var(--blau);border-bottom:1px solid var(--blau-s)}
@@ -162,10 +325,199 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
    Hängt an body, nicht an .app: Er soll über allem liegen und von
    keinem Umschalter erwischt werden. */
 .zettel{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(70px);
-  background:var(--tinte);color:#fff;padding:9px 18px;border-radius:var(--rad-gr);
+  /* Grund und Tinte über Kreuz: Im hellen Thema dunkel auf hell, im
+     dunklen hell auf dunkel. Ein festes #fff wäre im zweiten Thema
+     weiß auf weiß. */
+  background:var(--tinte);color:var(--grund);padding:9px 18px;border-radius:var(--rad-gr);
   font-size:13.5px;box-shadow:0 8px 26px rgba(15,15,15,.28);opacity:0;
   pointer-events:none;z-index:60;max-width:70vw}
 .zettel.an{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---------- Die Auswahlleiste ----------
+   Sie kommt zum Text, statt am Fensterrand zu warten. Dunkel, damit
+   sie sich vom Blatt abhebt, ohne eine Fläche zu beanspruchen. */
+.leiste{position:fixed;z-index:55;display:none;align-items:center;gap:1px;
+  background:var(--tinte);border-radius:6px;padding:4px;
+  box-shadow:0 6px 22px rgba(15,15,15,.30)}
+.leiste.an{display:flex}
+/* Dieselbe Kreuzung wie beim Meldungszettel: Die Leiste ist dunkel
+   im hellen Thema und hell im dunklen. */
+.leiste button{font:inherit;font-size:14px;line-height:1;min-width:29px;height:28px;
+  padding:0 7px;border:0;border-radius:4px;background:none;color:var(--grund);
+  opacity:.88;cursor:pointer;display:grid;place-items:center}
+/* Neutrales Grau statt eines Themen-Tokens: Die Leiste hat in jedem
+   Thema den **umgekehrten** Grund, und jeder Token wäre auf einem der
+   beiden unsichtbar. */
+.leiste button:hover{background:rgba(128,128,128,.38);opacity:1}
+.leiste .tr{width:1px;height:17px;background:rgba(128,128,128,.5);margin:0 3px}
+.leiste svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.8;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.leiste .mk{background:var(--marker);color:rgb(55,53,47);border-radius:2px;padding:1px 4px}
+
+/* ---------- Menüs ----------
+   Eine Fläche für alle: Blockmenü und Slash-Menü unterscheiden sich
+   im Inhalt, nicht in der Form. */
+.menue{position:fixed;z-index:58;display:none;min-width:232px;max-height:70vh;
+  overflow-y:auto;padding:5px;background:var(--grund);border:1px solid var(--linie);
+  border-radius:var(--rad-gr);box-shadow:0 10px 34px rgba(15,15,15,.20)}
+.menue.an{display:block}
+.menue .k{padding:8px 9px 4px;font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--tinte3)}
+.menue button{display:flex;align-items:center;gap:10px;width:100%;font:inherit;
+  font-size:13.5px;padding:6px 9px;border:0;border-radius:var(--rad);background:none;
+  color:var(--tinte);cursor:pointer;text-align:left}
+.menue button:hover,.menue button.zeig{background:var(--strich)}
+.menue button .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.menue button .ta{font-size:11.5px;color:var(--tinte3);font-family:var(--fest);
+  flex-shrink:0}
+.menue .ic{width:26px;flex-shrink:0;color:var(--tinte3);font-size:11.5px;
+  font-family:var(--fest);text-align:center}
+.menue .tr{height:1px;background:var(--linie2);margin:5px 2px}
+.menue .leer{padding:9px;font-size:13px;color:var(--tinte3)}
+
+/* Das Slash-Menü hat eine zweite Spalte, die Notion nicht hat: Sie
+   zeigt nicht, wie der Block aussieht, sondern **was in die Datei
+   kommt** — und ob das überall läuft. Für einen Markdown-Editor ist
+   das der Unterschied zwischen einem Werkzeug, dem man traut, und
+   einem, das hinter dem Rücken HTML schreibt. */
+.menue.slash{width:min(620px,94vw);padding:0;overflow:hidden}
+.menue.slash.an{display:flex}
+.menue.slash .liste{flex:1;min-width:0;max-height:344px;overflow-y:auto;padding:5px}
+.menue.slash .vorschau{width:266px;flex-shrink:0;border-left:1px solid var(--linie2);
+  background:var(--rand);padding:13px 14px;font-size:12.5px;color:var(--tinte2)}
+.menue.slash .vorschau .k{padding:0 0 7px}
+.menue.slash .vorschau pre{background:var(--grund);border:1px solid var(--linie);
+  border-radius:var(--rad);padding:8px 10px;font-family:var(--fest);font-size:11.5px;
+  line-height:1.55;white-space:pre-wrap;word-break:break-word;color:var(--tinte)}
+.menue.slash .vorschau .ur{display:inline-block;margin-top:11px;font-size:10px;
+  letter-spacing:.05em;text-transform:uppercase;border-radius:3px;padding:2px 6px;
+  background:var(--grund);border:1px solid var(--linie);color:var(--tinte2)}
+.menue.slash .vorschau .satz{margin-top:8px;line-height:1.55}
+
+/* ---------- Einstellungen ----------
+   Hängt an body, nicht an .app: Der Überzug soll über allem liegen
+   und von keinem Ansichtsumschalter erwischt werden — dieselbe
+   Überlegung wie beim Meldungszettel. */
+.ueberzug{position:fixed;inset:0;z-index:70;background:rgba(15,15,15,.34);
+  display:none;align-items:center;justify-content:center;padding:20px}
+.ueberzug.an{display:flex}
+.karte{width:min(600px,94vw);max-height:86vh;overflow-y:auto;background:var(--grund);
+  color:var(--tinte);border-radius:var(--rad-gr);padding:22px 24px 24px;
+  box-shadow:0 20px 64px rgba(15,15,15,.34)}
+.karte .titel{font-size:17px;font-weight:600;margin-bottom:5px}
+.karte .unter{font-size:13px;color:var(--tinte2);line-height:1.55;margin-bottom:20px}
+.karte .gruppe{margin-bottom:20px}
+.karte .etikett{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--tinte3);margin-bottom:8px}
+.karte .wahl{display:flex;flex-wrap:wrap;gap:6px}
+.karte .wahl button{font:inherit;font-size:13px;padding:6px 12px;border-radius:var(--rad);
+  border:1px solid var(--linie);background:var(--grund);color:var(--tinte2);cursor:pointer}
+.karte .wahl button:hover{background:var(--strich)}
+.karte .wahl button[aria-pressed="true"]{background:var(--blau);border-color:var(--blau);
+  color:#fff}
+.karte .erklaerung{font-size:12.5px;color:var(--tinte2);line-height:1.6;margin-top:10px;
+  padding:10px 12px;background:var(--rand);border-radius:var(--rad)}
+.karte .erklaerung b{color:var(--tinte);font-weight:600}
+.karte .schluss{display:flex;justify-content:flex-end}
+.karte .schluss button{font:inherit;font-size:13px;padding:6px 14px;border-radius:var(--rad);
+  border:1px solid var(--linie);background:var(--grund);color:var(--tinte);cursor:pointer}
+.karte .schluss button:hover{background:var(--strich)}
+
+/* ============================================================
+   DER DRUCK
+
+   Das PDF entsteht über den Druckdialog des Browsers — ein eigener
+   Erzeuger wäre eine fremde Bibliothek in einer Datei, die keine
+   haben darf (harte Regel 2), und beherrschte Umbrüche schlechter.
+   Die Arbeit steckt deshalb hier: in drei Layouts, zwischen denen
+   die Einstellungen umschalten.
+
+   Seitenzahlen und Kopfzeilen kommen aus dem Druckdialog selbst —
+   der Browser setzt sie, nicht die Seite. Was hier steht, sind
+   Schrift, Ränder, Umbrüche und Abstände.
+   ============================================================ */
+@media print{
+  @page{margin:18mm}
+
+  /* Alles, was Bedienung ist, gehört nicht aufs Papier. */
+  .kopf,.fuss,.quelle,.gliederung,.leiste,.menue,.suchen,.ueberzug,.zettel,
+  .blk .griff,.blk .urteil{display:none!important}
+
+  html,body{background:#fff!important;color:#000!important;height:auto}
+  .app{display:block;height:auto;background:#fff}
+  .rumpf{display:block}
+  .blatt{overflow:visible;padding:0;background:#fff}
+  .blatt .spalte{max-width:none;padding:0}
+  .txt{color:#000}
+
+  /* Ein Block soll nicht mitten durch die Seite laufen, und eine
+     Überschrift nicht allein unten stehen. */
+  .blk.code,.blk.tabelle,.blk.callout,.blk.toggle{break-inside:avoid}
+  .blk.h1,.blk.h2,.blk.h3{break-after:avoid}
+  .blk.callout .txt,.blk.toggle .txt{background:none;border-color:#999}
+  .blk.tabelle th{background:none}
+  .txt .verweis{color:#000;border-bottom:1px solid #999}
+  .txt .fund{background:none;box-shadow:none}
+
+  /* ---------- Schlicht ---------- */
+  :root[data-druck="schlicht"] .blatt{font-size:11pt;line-height:1.5}
+
+  /* ---------- Technische Doku ----------
+     Nummeriert die Überschriften selbst. Bei Texten, die ihre
+     Nummern schon im Titel tragen, doppelt das — dann ist
+     „Schlicht" das richtige Layout. */
+  :root[data-druck="technik"] .blatt{font-size:10.5pt;line-height:1.45}
+  :root[data-druck="technik"] .spalte{counter-reset:k1}
+  :root[data-druck="technik"] .blk.h1{counter-increment:k1;counter-reset:k2;break-before:page}
+  :root[data-druck="technik"] .blk.h1:first-child{break-before:auto}
+  :root[data-druck="technik"] .blk.h2{counter-increment:k2;counter-reset:k3}
+  :root[data-druck="technik"] .blk.h3{counter-increment:k3}
+  /* Gezählt wird am Block, **geschrieben** nur vor Überschriften ohne
+     eigene Nummer. Trüge der Zähler im ::before, sprängen die Nummern
+     bei jeder übersprungenen Überschrift. Die Klasse `eigen` setzt
+     `blockMalen` — Zähler können keinen Text lesen. */
+  :root[data-druck="technik"] .blk.h1:not(.eigen) .txt::before{
+    content:counter(k1) "\00a0\00a0"}
+  :root[data-druck="technik"] .blk.h2:not(.eigen) .txt::before{
+    content:counter(k1) "." counter(k2) "\00a0\00a0"}
+  :root[data-druck="technik"] .blk.h3:not(.eigen) .txt::before{
+    content:counter(k1) "." counter(k2) "." counter(k3) "\00a0\00a0"}
+  /* Oben Platz lassen: Dort sitzt die Sprachmarke, und ohne den
+     Abstand steht sie in der ersten Codezeile. */
+  :root[data-druck="technik"] .blk.code .txt{border:1px solid #999;background:none;
+    padding:22px 13px 12px}
+  :root[data-druck="technik"] .blk.tabelle th,
+  :root[data-druck="technik"] .blk.tabelle td{border:1px solid #666}
+
+  /* ---------- Magazin ----------
+     Serifenschrift, schmale Spalte, Blocksatz. Für Texte, die
+     gelesen und nicht nachgeschlagen werden. Die Spalte ist hier
+     absichtlich schmaler als der Satzspiegel: 118 mm sind rund 70
+     Zeichen, und darüber verliert das Auge beim Rücksprung die
+     Zeile. */
+  :root[data-druck="magazin"] .blatt{font-family:var(--serif);font-size:11.5pt;
+    line-height:1.62}
+  :root[data-druck="magazin"] .blatt .spalte{max-width:118mm;margin:0 auto}
+  :root[data-druck="magazin"] .blk.absatz .txt,
+  :root[data-druck="magazin"] .blk.zitat .txt,
+  :root[data-druck="magazin"] .blk.callout .txt{text-align:justify;hyphens:auto}
+  :root[data-druck="magazin"] .blk.h1{margin-top:0;margin-bottom:7mm}
+  :root[data-druck="magazin"] .blk.h1 .txt{font-size:25pt;line-height:1.12;
+    letter-spacing:-.015em}
+  :root[data-druck="magazin"] .blk.h2 .txt{font-size:15.5pt}
+  :root[data-druck="magazin"] .blk.h3 .txt{font-size:12.5pt}
+  :root[data-druck="magazin"] .blk.h2,
+  :root[data-druck="magazin"] .blk.h3{margin-top:7mm}
+
+  /* ---------- Manuskript ----------
+     Eine Spalte, weiter Durchschuss, breiter Rand zum Hineinschreiben. */
+  :root[data-druck="manuskript"] .blatt{font-size:12pt;line-height:2}
+  :root[data-druck="manuskript"] .blatt .spalte{padding-right:48mm}
+  :root[data-druck="manuskript"] .blk.h1 .txt{font-size:17pt}
+  :root[data-druck="manuskript"] .blk.h2 .txt{font-size:14pt}
+  :root[data-druck="manuskript"] .blk.h3 .txt{font-size:12.5pt}
+}
 </style>
 </head>
 <body>
@@ -187,6 +539,20 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
     <button class="akt" id="oeffnen">Öffnen</button>
     <button class="akt" id="sichern">Sichern</button>
     <button class="akt" id="neu">Neu</button>
+    <button class="akt" id="pdf" title="Über den Druckdialog als PDF sichern">PDF</button>
+    <button class="akt" id="g-auf" title="Gliederung ein- und ausblenden"
+            aria-pressed="true">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+           stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 5.2h12M6.5 10h9.5M9 14.8h7"/></svg>
+    </button>
+    <button class="akt" id="ein-auf" title="Einstellungen" aria-haspopup="dialog">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+           stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true"><circle cx="10" cy="10" r="2.6"/>
+      <path d="M10 2.6v2M10 15.4v2M17.4 10h-2M4.6 10h-2M15.2 4.8l-1.4 1.4M6.2 13.8l-1.4 1.4
+               M15.2 15.2l-1.4-1.4M6.2 6.2 4.8 4.8"/></svg>
+    </button>
     <!-- Edge erlaubt aus einer lokal geöffneten Datei keinen direkten
          Dateizugriff. Öffnen geht deshalb über die Dateiauswahl,
          Sichern über den Download. Siehe doku/ENTSCHEIDUNGEN.md. -->
@@ -198,7 +564,20 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
     <div class="quelle">
       <div class="qkopf"><span id="qname">unbenannt.md</span><span class="sp"></span>
         <span id="qhinweis">nur lesen</span></div>
-      <textarea id="q" spellcheck="false" aria-label="Markdown-Quelltext"></textarea>
+      <div class="qfeld">
+        <!-- Die Farbschicht ist ein Abbild, kein Bedienelement: Sie
+             traegt aria-hidden, damit der Text nicht doppelt vorgelesen
+             wird. Gelesen und geschrieben wird im Feld darueber. -->
+        <pre class="qfarbe" id="qfarbe" aria-hidden="true"></pre>
+        <textarea id="q" spellcheck="false" aria-label="Markdown-Quelltext"></textarea>
+      </div>
+    </div>
+    <div class="gliederung" id="gliederung">
+      <div class="gkopf">Gliederung</div>
+      <div class="liste" id="g-liste"></div>
+      <div class="gfuss">
+        <button type="button" id="g-inhalt">Als Inhaltsverzeichnis einfügen</button>
+      </div>
     </div>
   </div>
 
@@ -212,7 +591,37 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
   </div>
 </div>
 
+<div class="leiste" id="leiste" role="toolbar" aria-label="Auszeichnung"></div>
+<div class="suchen" id="suchen" role="search">
+  <input type="search" id="such-feld" placeholder="Im Dokument suchen"
+         aria-label="Im Dokument suchen" spellcheck="false">
+  <span class="zahl" id="such-zahl"></span>
+  <button type="button" id="such-zurueck" title="Vorheriger Fund" aria-label="Vorheriger Fund">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M14 12.5 10 8l-4 4.5"/></svg></button>
+  <button type="button" id="such-vor" title="Nächster Fund" aria-label="Nächster Fund">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 7.5 10 12l4-4.5"/></svg></button>
+  <button type="button" id="such-zu" title="Schließen" aria-label="Suche schließen">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg></button>
+</div>
+
+<div class="menue" id="menue" role="menu" aria-label="Menü"></div>
+<div class="menue slash" id="slash" role="listbox" aria-label="Block einfügen">
+  <div class="liste" id="slash-liste"></div>
+  <div class="vorschau" id="slash-vorschau"></div>
+</div>
+
 <div class="zettel" id="zettel" role="status" aria-live="polite"></div>
+
+<div class="ueberzug" id="einstellungen" role="dialog" aria-modal="true"
+     aria-labelledby="ein-titel">
+  <div class="karte">
+    <div class="titel" id="ein-titel">Einstellungen</div>
+    <p class="unter">Dieselbe Fläche, andere Ausgabe. Die Stufe bestimmt, welche Blöcke
+      der Editor anbietet — und wie er zeigt, was in der Datei steht.</p>
+    <div id="ein-gruppen"></div>
+    <div class="schluss"><button type="button" id="ein-zu">Schließen</button></div>
+  </div>
+</div>
 
 <script>
 "use strict";
@@ -230,7 +639,8 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
    Markdown. Das ist die tragende Entscheidung dieser Anwendung.
    ============================================================ */
 const SCHLUESSEL = "notion-md-editor";
-const Z = { name:"unbenannt.md", bloecke:[] };
+const Z = { name:"unbenannt.md", stufe:"rein", thema:"hell", satz:"links",
+            druck:"schlicht", bloecke:[] };
 
 const $  = (w) => document.querySelector(w);
 const el = (tag, klasse, html) => {
@@ -250,18 +660,26 @@ function melde(text){
 }
 
 let bewahrUhr = null;
+function bewahreSofort(){
+  clearTimeout(bewahrUhr);
+  merken();
+  try {
+    localStorage.setItem(SCHLUESSEL, JSON.stringify(
+      { format:1, name:Z.name, stufe:Z.stufe, thema:Z.thema, satz:Z.satz,
+        druck:Z.druck, text:schreibeMarkdown(Z.bloecke) }));
+    $("#f-stand").textContent = "gespeichert";
+  } catch (e) {
+    $("#f-stand").textContent = "nicht gespeichert";
+    melde("Speichern ging nicht: " + e.message);
+  }
+}
+
+/* Beim Tippen gebündelt — sonst schriebe jeder Anschlag in den
+   Speicher. Eine Einstellung dagegen wird **sofort** gesichert:
+   Wer sie umstellt und das Fenster schließt, hat sonst nichts davon. */
 function bewahre(){
   clearTimeout(bewahrUhr);
-  bewahrUhr = setTimeout(() => {
-    try {
-      localStorage.setItem(SCHLUESSEL, JSON.stringify(
-        { format:1, name:Z.name, text:schreibeMarkdown(Z.bloecke) }));
-      $("#f-stand").textContent = "gespeichert";
-    } catch (e) {
-      $("#f-stand").textContent = "nicht gespeichert";
-      melde("Speichern ging nicht: " + e.message);
-    }
-  }, 400);
+  bewahrUhr = setTimeout(bewahreSofort, 400);
 }
 
 function lade(){
@@ -271,6 +689,8 @@ function lade(){
   try {
     const d = JSON.parse(roh);
     Z.name = d.name || "unbenannt.md";
+    if (KOENNEN[d.stufe]) Z.stufe = d.stufe;
+    ["thema","satz","druck"].forEach(f => { if (d[f]) Z[f] = d[f]; });
     ersetze(Z.bloecke, leseMarkdown(d.text || ""));
     return true;
   } catch (e) { melde("Der gespeicherte Stand ließ sich nicht lesen."); return false; }
@@ -278,6 +698,88 @@ function lade(){
 
 /* Inhalt austauschen, ohne das Array selbst zu ersetzen. */
 function ersetze(ziel, neu){ ziel.length = 0; neu.forEach(x => ziel.push(x)); }
+
+/* ---------- Der Verlauf ----------
+   Das Textfeld kann nur innerhalb eines Blocks zurücknehmen. Ein
+   gelöschter, verschobener oder umgewandelter Block käme so nie
+   zurück — der einzige Punkt dieser Anwendung, an dem ohne ihn
+   Arbeit verloren geht.
+
+   Gemerkt wird der **ganze Markdown-Text**, nicht ein Unterschied.
+   Das ist grob und aus demselben Grund richtig wie `male()`: Jede
+   strukturelle Änderung verschiebt Indizes, und ein Verlauf aus
+   Teilschritten wäre die Quelle jedes zweiten Fehlers. Ein Stand von
+   hundert Blöcken sind ein paar Kilobyte.
+
+   Beim Tippen fällt kein Stand je Anschlag an: `merken()` hängt an
+   `bewahreSofort()` und damit an derselben Bündelung. */
+const VERLAUF = { staende:[], stelle:-1, sperre:false };
+const VERLAUF_TIEF = 120;
+
+function merken(){
+  if (VERLAUF.sperre) return;
+  const text = schreibeMarkdown(Z.bloecke);
+  if (VERLAUF.staende[VERLAUF.stelle] === text) return;
+  VERLAUF.staende.length = VERLAUF.stelle + 1;   /* was wiederholt werden konnte, gilt nicht mehr */
+  VERLAUF.staende.push(text);
+  if (VERLAUF.staende.length > VERLAUF_TIEF) VERLAUF.staende.shift();
+  VERLAUF.stelle = VERLAUF.staende.length - 1;
+}
+
+function verlaufAnwenden(){
+  VERLAUF.sperre = true;
+  ersetze(Z.bloecke, leseMarkdown(VERLAUF.staende[VERLAUF.stelle]));
+  aktiv = -1;
+  bewahreSofort();
+  male();
+  VERLAUF.sperre = false;
+}
+
+function zurueck(){
+  if (VERLAUF.stelle <= 0){ melde("Nichts mehr rückgängig zu machen."); return; }
+  VERLAUF.stelle--; verlaufAnwenden();
+  melde("Rückgängig");
+}
+
+function wieder(){
+  if (VERLAUF.stelle >= VERLAUF.staende.length - 1){ melde("Nichts zu wiederholen."); return; }
+  VERLAUF.stelle++; verlaufAnwenden();
+  melde("Wiederhergestellt");
+}
+
+/* ---------- Die Markdown-Stufe ----------
+   Harte Regel 9: Alles, was über reines Markdown hinausgeht, hängt an
+   der Stufe und wird gekennzeichnet. Was die gewählte Stufe nicht
+   kann, wird **gar nicht erst angeboten** — statt es anzubieten und
+   hinterher zu enttäuschen.
+
+   Die Stufe ändert nie die Datei. Sie ändert, was der Editor
+   anbietet und wie er zeigt, was schon dasteht: Auf „Rein" bleibt
+   `~~so~~` als Zeichenfolge stehen, weil ein reiner Markdown-Leser
+   genau das zeigen würde. Dieselbe Fläche, andere Ausgabe. */
+const STUFEN = [
+  ["rein",     "Rein",
+   "Nur was in <b>jedem</b> Werkzeug der Welt läuft. Kein To-do, keine Tabelle, "
+   + "kein Durchgestrichen. Die Datei ist überall dieselbe."],
+  ["github",   "GitHub",
+   "GitHub-Markdown (GFM): <b>To-do-Listen</b>, <b>Tabellen</b>, "
+   + "<b>~~durchgestrichen~~</b> und Hinweiskästen. Der verbreitetste Standard."],
+  ["obsidian", "Obsidian",
+   "Wie GitHub, dazu der <b>==Textmarker==</b>. Bindet die Datei an Werkzeuge, "
+   + "die diese Schreibweise kennen."],
+  ["pandoc",   "Pandoc",
+   "Tabellen und Durchgestrichen. <b>Keine To-dos, keine Hinweiskästen</b> — "
+   + "Pandoc kennt sie ohne Erweiterung nicht."]
+];
+
+const KOENNEN = {
+  rein:     [],
+  github:   ["todo","tabelle","durch","callout","html"],
+  obsidian: ["todo","tabelle","durch","callout","html","marker"],
+  pandoc:   ["tabelle","durch","html"]
+};
+
+function kann(merkmal){ return KOENNEN[Z.stufe].indexOf(merkmal) >= 0; }
 
 /* ============================================================
    4 — MARKDOWN LESEN UND SCHREIBEN
@@ -287,6 +789,45 @@ function ersetze(ziel, neu){ ziel.length = 0; neu.forEach(x => ziel.push(x)); }
    Was das nicht erfüllt, gehört nicht in den Umwandler.
    ============================================================ */
 const GRUPPIERT = ["punkt","nummer","todo","zitat"];   /* stehen ohne Leerzeile untereinander */
+const LISTE     = ["punkt","nummer","todo"];          /* lassen sich einrücken */
+const MEHRZEILIG = ["code","tabelle","callout","toggle"];  /* Enter bricht die Zeile */
+
+/* Einrückung in Stufen. **Zwei Leerzeichen sind eine Stufe**, ein
+   Tabulator zählt ebenso. Vier Leerzeichen — die andere verbreitete
+   Schreibweise — ergeben zwei Stufen und werden als vier Leerzeichen
+   zurückgeschrieben; der Rundlauf bleibt also verlustfrei. Eine
+   ungerade Einrückung wird auf die nächstkleinere Stufe
+   vereinheitlicht. Das ist der einzige Ort, an dem dieser Umwandler
+   etwas begradigt, und er tut es offen.
+
+   Das Feld heißt `tiefe` und nicht `stufe`: `Z.stufe` ist die
+   Markdown-Stufe des Dialektschalters, und zwei Dinge gleichen
+   Namens in einem Modell sind eine Fehlerquelle. */
+const MAXTIEFE = 6;
+const einzug = (s) => Math.min(MAXTIEFE, Math.floor(s.replace(/\t/g, "  ").length / 2));
+
+/* Die laufenden Nummern für alle Blöcke auf einmal. Eine Unterliste
+   fängt bei 1 an; kehrt sie zur flacheren Stufe zurück, läuft deren
+   Zähler weiter. Steht hier und nicht in Abschnitt 5, weil
+   `schreibeMarkdown` dieselbe Rechnung braucht — zwei Fassungen
+   davon liefen unweigerlich auseinander. */
+function nummern(bloecke){
+  const aus = [], zaehler = [];
+  bloecke.forEach((b, i) => {
+    const vor = bloecke[i-1], tiefe = b.tiefe || 0;
+    if (LISTE.indexOf(b.art) < 0){ zaehler.length = 0; aus.push(0); return; }
+    const kette = vor && LISTE.indexOf(vor.art) >= 0;
+    if (b.art === "nummer"){
+      if (!kette || (vor.tiefe || 0) < tiefe) zaehler[tiefe] = 1;
+      else zaehler[tiefe] = (zaehler[tiefe] || 0) + 1;
+    }
+    for (let k = tiefe + 1; k < zaehler.length; k++) zaehler[k] = 0;
+    aus.push(b.art === "nummer" ? zaehler[tiefe] : 0);
+  });
+  return aus;
+}
+
+const mitTiefe = (b, tiefe) => { if (tiefe > 0) b.tiefe = tiefe; return b; };
 
 function leseMarkdown(text){
   const zeilen = String(text || "").replace(/\r\n?/g, "\n").split("\n");
@@ -312,15 +853,49 @@ function leseMarkdown(text){
     if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(z)){
       schliesse(); aus.push({art:"linie", text:""}); continue; }
 
+    /* Toggle. HTML mitten im Text — der Notausgang aus
+       doku/ENTSCHEIDUNGEN.md, Punkt 1, und als solcher gekennzeichnet.
+       Der ganze Bereich landet als Rohtext in einem Block. */
+    if (/^<details>\s*$/.test(z)){
+      schliesse();
+      const teil = [z];
+      while (i + 1 < zeilen.length && !/^<\/details>\s*$/.test(zeilen[i+1])) teil.push(zeilen[++i]);
+      if (i + 1 < zeilen.length) teil.push(zeilen[++i]);
+      aus.push({art:"toggle", text:teil.join("\n")});
+      continue;
+    }
+
+    /* Callout **vor** dem Zitat: Er sieht aus wie eines und ist keines. */
+    if (/^>\s*\[![A-Za-z]+\]\s*$/.test(z)){
+      schliesse();
+      const teil = [z];
+      while (i + 1 < zeilen.length && /^>/.test(zeilen[i+1])) teil.push(zeilen[++i]);
+      aus.push({art:"callout", text:teil.join("\n")});
+      continue;
+    }
+
+    /* Tabelle: eine Zeile mit Balken, darunter die Trennzeile. Ohne
+       die zweite Zeile ist es keine Tabelle, sondern ein Absatz mit
+       Balken darin. */
+    if (/^\s*\|/.test(z) && i + 1 < zeilen.length
+        && /^\s*\|[\s:|-]+\|\s*$/.test(zeilen[i+1])){
+      schliesse();
+      const teil = [z];
+      while (i + 1 < zeilen.length && /^\s*\|/.test(zeilen[i+1])) teil.push(zeilen[++i]);
+      aus.push({art:"tabelle", text:teil.join("\n")});
+      continue;
+    }
+
     let m;
     if ((m = z.match(/^(#{1,3})\s+(.*)$/))){
       schliesse(); aus.push({art:"h" + m[1].length, text:m[2]}); continue; }
-    if ((m = z.match(/^\s*[-*]\s+\[([ xX])\]\s*(.*)$/))){
-      schliesse(); aus.push({art:"todo", fertig:m[1] !== " ", text:m[2]}); continue; }
-    if ((m = z.match(/^\s*[-*]\s+(.*)$/))){
-      schliesse(); aus.push({art:"punkt", text:m[1]}); continue; }
-    if ((m = z.match(/^\s*\d+[.)]\s+(.*)$/))){
-      schliesse(); aus.push({art:"nummer", text:m[1]}); continue; }
+    if ((m = z.match(/^([ \t]*)[-*]\s+\[([ xX])\]\s*(.*)$/))){
+      schliesse(); aus.push(mitTiefe({art:"todo", fertig:m[2] !== " ", text:m[3]},
+                                     einzug(m[1]))); continue; }
+    if ((m = z.match(/^([ \t]*)[-*]\s+(.*)$/))){
+      schliesse(); aus.push(mitTiefe({art:"punkt", text:m[2]}, einzug(m[1]))); continue; }
+    if ((m = z.match(/^([ \t]*)\d+[.)]\s+(.*)$/))){
+      schliesse(); aus.push(mitTiefe({art:"nummer", text:m[2]}, einzug(m[1]))); continue; }
     if ((m = z.match(/^>\s?(.*)$/))){
       schliesse(); aus.push({art:"zitat", text:m[1]}); continue; }
 
@@ -334,21 +909,35 @@ function leseMarkdown(text){
 
 function schreibeMarkdown(bloecke){
   const aus = [];
-  let zahl = 1;                            /* laufende Nummer der aktuellen Liste */
+  const nr = nummern(bloecke);
   bloecke.forEach((b, i) => {
     const vor = bloecke[i-1];
-    const zusammen = vor && GRUPPIERT.indexOf(b.art) >= 0 && b.art === vor.art;
+    const tiefe = b.tiefe || 0;
+    /* Eine Leerzeile zwischen zwei Blöcken — außer sie gehören zur
+       selben Liste. Eine Unterliste gehört auch dann dazu, wenn sie
+       eine andere Art hat: `- a` mit `1. b` darunter ist eine Liste,
+       nicht zwei. */
+    const zusammen = vor && (
+         (GRUPPIERT.indexOf(b.art) >= 0 && b.art === vor.art)
+      || (LISTE.indexOf(b.art) >= 0 && LISTE.indexOf(vor.art) >= 0
+          && tiefe !== (vor.tiefe || 0)));
     if (i && !zusammen) aus.push("");
-    zahl = (b.art === "nummer" && vor && vor.art === "nummer") ? zahl + 1 : 1;
+    const ein = "  ".repeat(tiefe);
 
     if (b.art === "code")        aus.push("```" + (b.sprache || ""), b.text, "```");
+    /* Tabelle, Callout und Toggle tragen ihre ganze Quelle im Feld
+       `text`. Sie geht unverändert wieder heraus — damit ist der
+       Rundlauf für sie ohne weiteres Zutun verlustfrei, und der Block
+       hat weiterhin genau ein Feld (doku/ENTSCHEIDUNGEN.md, Punkt 7). */
+    else if (b.art === "tabelle" || b.art === "callout" || b.art === "toggle")
+                                 aus.push(b.text);
     else if (b.art === "linie")  aus.push("---");
     else if (b.art === "h1")     aus.push("# "   + b.text);
     else if (b.art === "h2")     aus.push("## "  + b.text);
     else if (b.art === "h3")     aus.push("### " + b.text);
-    else if (b.art === "punkt")  aus.push("- "   + b.text);
-    else if (b.art === "nummer") aus.push(zahl + ". " + b.text);
-    else if (b.art === "todo")   aus.push("- [" + (b.fertig ? "x" : " ") + "] " + b.text);
+    else if (b.art === "punkt")  aus.push(ein + "- "   + b.text);
+    else if (b.art === "nummer") aus.push(ein + nr[i] + ". " + b.text);
+    else if (b.art === "todo")   aus.push(ein + "- [" + (b.fertig ? "x" : " ") + "] " + b.text);
     else if (b.art === "zitat")  aus.push("> "   + b.text);
     else                         aus.push(b.text);
   });
@@ -365,12 +954,81 @@ function inlineMalen(t){
     halter.push("<code>" + x + "</code>");
     return " " + (halter.length - 1) + " ";
   });
+  /* Bilder **vor** den Verweisen: `![a](b)` enthält `[a](b)`, sonst
+     bliebe das Ausrufezeichen als Text vor einem Verweis stehen. */
+  s = s.replace(/!\[([^\]\n]*)\]\(([^)\s]+)\)/g, (_, titel, quelle) => {
+    const q = quelle.replace(/"/g, "%22");
+    /* Alles mit Schema ausser file: käme aus dem Netz. */
+    if (/^[a-z][a-z0-9+.-]*:/i.test(q) && !/^file:/i.test(q))
+      return '<span class="fern">' + esc(q) + "</span>";
+    return '<img src="' + q + '" alt="' + titel.replace(/"/g, "&quot;") + '" loading="lazy">';
+  });
   s = s.replace(/\[([^\]\n]+)\]\(([^)\s]+)\)/g, '<span class="verweis">$1</span>');
   s = s.replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>");
   s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<i>$2</i>");
-  s = s.replace(/~~([^~\n]+)~~/g, "<s>$1</s>");
-  s = s.replace(/==([^=\n]+)==/g, "<mark>$1</mark>");
+  /* Was die Stufe nicht kann, bleibt als Zeichenfolge stehen — der
+     Editor zeigt, was das Zielwerkzeug zeigen würde. */
+  if (kann("durch"))  s = s.replace(/~~([^~\n]+)~~/g, "<s>$1</s>");
+  if (kann("marker")) s = s.replace(/==([^=\n]+)==/g, "<mark>$1</mark>");
   return s.replace(/ (\d+) /g, (_, i) => halter[Number(i)]);
+}
+
+/* Was auf der Fläche steht, wenn die Schreibmarke **nicht** im Block
+   ist. Für die meisten Blöcke ist das die Auszeichnung im Text; drei
+   brauchen mehr, und der Codeblock braucht weniger — in ihm wird
+   nichts gedeutet. */
+function blockInhalt(b){
+  if (b.art === "code")    return esc(b.text);
+  if (b.art === "tabelle") return tabelleMalen(b.text);
+  if (b.art === "callout") return calloutMalen(b.text);
+  if (b.art === "toggle")  return toggleMalen(b.text);
+  return inlineMalen(b.text);
+}
+
+function tabelleMalen(text){
+  const zeilen = String(text || "").split("\n").filter(z => z.trim());
+  if (!zeilen.length) return "";
+  const zellen = (z) => z.replace(/^\s*\|/, "").replace(/\|\s*$/, "")
+                         .split("|").map(x => inlineMalen(x.trim()));
+  const kopf = zellen(zeilen[0]);
+  const rumpf = zeilen.slice(2).map(zellen);
+  return "<table><thead><tr>"
+    + kopf.map(x => "<th>" + x + "</th>").join("")
+    + "</tr></thead><tbody>"
+    + rumpf.map(r => "<tr>" + r.map(x => "<td>" + x + "</td>").join("") + "</tr>").join("")
+    + "</tbody></table>";
+}
+
+/* GitHub kennt fünf Sorten. Die Farbe folgt der Dringlichkeit, nicht
+   der Kategorie: Warnung und Vorsicht sind rot, der Rest blau. */
+const CALLOUT = {NOTE:"Hinweis", TIP:"Tipp", IMPORTANT:"Wichtig",
+                 WARNING:"Warnung", CAUTION:"Vorsicht"};
+
+function calloutSorte(text){
+  const m = String(text || "").match(/^>\s*\[!([A-Za-z]+)\]/);
+  return m ? m[1].toUpperCase() : "NOTE";
+}
+
+function calloutMalen(text){
+  const zeilen = String(text || "").split("\n");
+  const sorte = calloutSorte(text);
+  const rumpf = zeilen.slice(1).map(z => z.replace(/^>\s?/, ""));
+  return '<span class="sorte">' + esc(CALLOUT[sorte] || sorte) + "</span>"
+    + inlineMalen(rumpf.join("\n"));
+}
+
+function toggleMalen(text){
+  const zeilen = String(text || "").split("\n");
+  let titel = "";
+  const rumpf = [];
+  zeilen.forEach(z => {
+    if (/^<\/?details>\s*$/.test(z)) return;
+    const t = z.match(/^<summary>(.*)<\/summary>\s*$/);
+    if (t && !titel){ titel = t[1]; return; }
+    rumpf.push(z);
+  });
+  return '<span class="haupt">' + inlineMalen(titel || "Ohne Titel") + "</span>"
+    + '<span class="rumpf">' + inlineMalen(rumpf.join("\n").replace(/^\n+|\n+$/g, "")) + "</span>";
 }
 
 /* ============================================================
@@ -382,6 +1040,14 @@ function inlineMalen(t){
    zweiten Fehlers. Beim Tippen wird **nicht** gemalt; dort wandert
    nur der Text ins Modell.
    ============================================================ */
+/* Das Urteil aus doku/BLOCKKATALOG.md, an den Block geheftet. Blöcke
+   ohne Eintrag sind reines Markdown und brauchen keine Kennzeichnung. */
+const URTEIL = {todo:"GFM", tabelle:"GFM", callout:"Dialekt", toggle:"HTML"};
+
+/* „2", „2.", „2)", „1.1", „1.1.3 " — alles, was wie eine
+   Gliederungsnummer am Anfang aussieht und Text dahinter hat. */
+const EIGENE_NUMMER = /^\d+(\.\d+)*[.)]?\s+\S/;
+
 const SVG = (d) => '<svg viewBox="0 0 20 20" aria-hidden="true">' + d + '</svg>';
 const IK_PLUS  = SVG('<path d="M10 4.2v11.6M4.2 10h11.6"/>');
 const IK_GRIFF = SVG('<circle cx="7.6" cy="5" r="1.05"/><circle cx="12.4" cy="5" r="1.05"/>'
@@ -393,15 +1059,18 @@ const IK_HAKEN = '<svg viewBox="0 0 20 20" aria-hidden="true">'
 let aktiv = -1;          /* Index des Blocks unter der Schreibmarke */
 let ziehtVon = -1;       /* Index des gezogenen Blocks */
 
-function nummerVon(i){
-  let n = 1;
-  for (let k = i - 1; k >= 0 && Z.bloecke[k].art === "nummer"; k--) n++;
-  return n;
-}
+/* Einmal je Anstrich gerechnet, nicht je Block: `nummern()` läuft
+   sonst für jede Zeile über die ganze Liste. */
+let NUMMERN = [];
+function nummerVon(i){ return NUMMERN[i] || 1; }
 
 function blockMalen(b, i){
   const n = el("div", "blk " + b.art + (b.fertig ? " fertig" : ""));
   n.dataset.i = String(i);
+  if (b.tiefe) n.style.setProperty("--tiefe", String(b.tiefe));
+  /* Trägt die Überschrift schon eine Nummer, nummeriert das
+     Druck-Layout „Technische Doku" sie nicht noch einmal. */
+  if (/^h[123]$/.test(b.art) && EIGENE_NUMMER.test(b.text)) n.classList.add("eigen");
 
   const griff = el("span", "griff");
   const plus = el("button", null, IK_PLUS);
@@ -415,6 +1084,8 @@ function blockMalen(b, i){
      `draggable`, ließe sich sein Text nicht mehr markieren. */
   fass.addEventListener("mousedown", () => { n.draggable = true; });
   fass.addEventListener("mouseup",   () => { n.draggable = false; });
+  fass.title = "Ziehen zum Verschieben, Klicken für das Menü";
+  fass.onclick = () => blockMenue(i, fass);
   griff.append(plus, fass);
   n.appendChild(griff);
 
@@ -433,22 +1104,33 @@ function blockMalen(b, i){
   if (b.art === "code" && b.sprache) n.appendChild(el("span", "sprache", esc(b.sprache)));
   if (b.art === "linie"){ n.appendChild(el("span", "strich")); return n; }
 
+  /* Was kein reines Markdown ist, wird gekennzeichnet, nicht
+     versteckt — doku/ENTSCHEIDUNGEN.md, Punkt 1. */
+  if (URTEIL[b.art]) n.appendChild(el("span", "urteil", URTEIL[b.art]));
+  if (b.art === "callout"){
+    const sorte = calloutSorte(b.text);
+    if (sorte === "WARNING" || sorte === "CAUTION") n.classList.add("warnung");
+  }
+
   const t = el("div", "txt");
   t.contentEditable = "true";
   t.spellcheck = false;
   t.dataset.leer = (i === 0 && Z.bloecke.length === 1)
     ? "Beginne zu schreiben …"
     : "Leerer Block";
-  if (i === aktiv) t.textContent = b.text; else t.innerHTML = inlineMalen(b.text);
+  if (i === aktiv) t.textContent = b.text; else t.innerHTML = blockInhalt(b);
   n.appendChild(t);
   return n;
 }
 
 function male(fokusIndex, fokusPos){
   if (fokusIndex !== undefined) aktiv = fokusIndex;
+  NUMMERN = nummern(Z.bloecke);
   const s = $("#spalte");
   s.innerHTML = "";
   Z.bloecke.forEach((b, i) => s.appendChild(blockMalen(b, i)));
+  fundeZeigen();
+  gliederungMalen();
   quelleMalen();
   fussMalen();
   if (fokusIndex !== undefined) setzeFokus(fokusIndex, fokusPos === undefined ? 0 : fokusPos);
@@ -484,15 +1166,105 @@ function setzePos(n, pos){
   const s = getSelection(); s.removeAllRanges(); s.addRange(r);
 }
 
+/* ---------- Farbe im Quelltext ----------
+   Dieselbe Deutung wie `leseMarkdown`, nur zeilenweise und nur zum
+   Ansehen. Sie darf nichts entscheiden: Was hier falsch eingefärbt
+   wäre, stünde trotzdem unverändert in der Datei.
+
+   Ein einziger Durchlauf mit einer Alternative, keine Platzhalter:
+   Der Quelltext ist die Datei, und jedes Zeichen muss zeichengenau
+   wieder herauskommen. Code steht in der Alternative vorn — sonst
+   läsen Sternchen darin als fett. */
+const Q_INLINE = /(`[^`\n]+`)|(!?\[[^\]\n]*\]\([^)\s]*\))|(\*\*[^*\n]+\*\*)|(\*[^*\n]+\*)|(~~[^~\n]+~~)|(==[^=\n]+==)/g;
+
+function qPaar(zeichen, klasse, inhalt){
+  return '<span class="mk">' + esc(zeichen) + '</span>'
+       + '<span class="' + klasse + '">' + esc(inhalt) + '</span>'
+       + '<span class="mk">' + esc(zeichen) + '</span>';
+}
+
+/* Was die Stufe nicht kann, wird nicht gefärbt — harte Regel 9. Der
+   Editor zeigt auch hier, was das Zielwerkzeug zeigen würde. */
+function qStueck(t){
+  if (t[0] === "`") return qPaar("`", "c", t.slice(1, -1));
+  if (t[0] === "[" || t[0] === "!"){
+    const m = t.match(/^(!?\[)([^\]\n]*)(\]\()([^)\s]*)(\))$/);
+    if (!m) return esc(t);
+    return '<span class="mk">' + esc(m[1]) + '</span>' + esc(m[2])
+         + '<span class="mk">' + esc(m[3]) + '</span>'
+         + '<span class="l">' + esc(m[4]) + '</span>'
+         + '<span class="mk">' + esc(m[5]) + '</span>';
+  }
+  const zwei = t.slice(0, 2);
+  if (zwei === "**") return qPaar("**", "b", t.slice(2, -2));
+  if (zwei === "~~") return kann("durch")  ? qPaar("~~", "s",   t.slice(2, -2)) : esc(t);
+  if (zwei === "==") return kann("marker") ? qPaar("==", "mrk", t.slice(2, -2)) : esc(t);
+  return qPaar("*", "i", t.slice(1, -1));
+}
+
+function qInline(t){
+  let aus = "", letzte = 0, m;
+  Q_INLINE.lastIndex = 0;
+  while ((m = Q_INLINE.exec(t))){
+    aus += esc(t.slice(letzte, m.index)) + qStueck(m[0]);
+    letzte = m.index + m[0].length;
+  }
+  return aus + esc(t.slice(letzte));
+}
+
+function quelleFaerben(text){
+  let imCode = false;
+  return String(text).split("\n").map((z) => {
+    /* Der Codezaun schaltet um. Innen wird nichts gedeutet — genau
+       wie im Codeblock auf der Fläche. */
+    if (/^\s*```/.test(z)){ imCode = !imCode; return '<span class="mk">' + esc(z) + '</span>'; }
+    if (imCode) return '<span class="c">' + esc(z) + '</span>';
+    let m;
+    if ((m = z.match(/^(#{1,6} )(.*)$/)))
+      return '<span class="mk">' + esc(m[1]) + '</span>'
+           + '<span class="h">' + qInline(m[2]) + '</span>';
+    if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(z))
+      return '<span class="mk">' + esc(z) + '</span>';
+    if ((m = z.match(/^(\s*>\s?)(\[![A-Za-z]+\])?(.*)$/)))
+      return '<span class="mk">' + esc(m[1] + (m[2] || "")) + '</span>' + qInline(m[3]);
+    if ((m = z.match(/^(\s*)([-*+] \[[ xX]\]|[-*+]|\d+[.)])(\s)(.*)$/)))
+      return esc(m[1]) + '<span class="mk">' + esc(m[2]) + '</span>'
+           + esc(m[3]) + qInline(m[4]);
+    /* Eine Zeile aus Balken ist eine Tabellenzeile. Geteilt und wieder
+       zusammengesetzt — kein Zeichen geht dabei verloren. */
+    if (/^\s*\|.*\|\s*$/.test(z))
+      return z.split("|").map(qInline).join('<span class="mk">|</span>');
+    if (/^\s*<\/?[a-z][^>]*>\s*$/i.test(z))
+      return '<span class="mk">' + esc(z) + '</span>';
+    return qInline(z);
+  }).join("\n")
+  /* Ein <pre> zeichnet die letzte Zeile nicht, wenn der Text auf einen
+     Umbruch endet — das Feld darüber zeichnet sie. Ohne diesen einen
+     Umbruch wäre die Farbschicht um eine Zeile kürzer und stünde beim
+     Rollen ans Ende daneben. */
+  + "\n";
+}
+
+/* Die Farbschicht traegt denselben Text und rollt mit. Sie wird bei
+   jedem Tastendruck neu gebaut; der Eingabeschritt daneben liest
+   ohnehin das ganze Dokument neu. */
+function quelleFarbeMalen(){
+  const q = $("#q"), f = $("#qfarbe");
+  f.innerHTML = quelleFaerben(q.value);
+  f.scrollTop = q.scrollTop;
+}
+
 function quelleMalen(){
   const q = $("#q");
   if (document.activeElement === q) return;      /* nicht unter den Händen austauschen */
   q.value = schreibeMarkdown(Z.bloecke);
   q.readOnly = $("#app").dataset.ansicht !== "quelltext";
+  q.closest(".quelle").dataset.lesen = q.readOnly ? "ja" : "nein";
   $("#qhinweis").textContent = q.readOnly
     ? "nur lesen — zum Ändern auf „Quelltext“ umschalten"
     : "schreibbar";
   $("#qname").textContent = Z.name;
+  quelleFarbeMalen();
 }
 
 function fussMalen(){
@@ -526,7 +1298,7 @@ const HILFEN = [
 
 function hilfePruefen(i, n){
   const b = Z.bloecke[i];
-  if (b.art === "code") return false;             /* im Codeblock wird nichts gedeutet */
+  if (MEHRZEILIG.indexOf(b.art) >= 0) return false;   /* dort wird nichts gedeutet */
   const roh = n.textContent;
   for (let k = 0; k < HILFEN.length; k++){
     const m = roh.match(HILFEN[k][0]);
@@ -553,7 +1325,11 @@ function tasteImBlock(ev, i, n){
   const laenge = n.textContent.length;
 
   if (ev.key === "Enter" && !ev.shiftKey){
-    if (b.art === "code") return;                 /* im Codeblock bricht Enter die Zeile */
+    /* In mehrzeiligen Blöcken bricht Enter die Zeile, statt den Block
+       zu teilen: Eine Tabelle mit einer Zeile pro Block wäre keine
+       Tabelle mehr. `white-space: pre-wrap` sorgt dafür, dass dabei
+       ein echtes Zeilenende im Text landet. */
+    if (MEHRZEILIG.indexOf(b.art) >= 0) return;
     ev.preventDefault();
     const roh = n.textContent;
     const davor = roh.slice(0, pos), danach = roh.slice(pos);
@@ -564,7 +1340,7 @@ function tasteImBlock(ev, i, n){
     }
     b.text = davor;
     const folgt = GRUPPIERT.indexOf(b.art) >= 0
-      ? {art:b.art, text:danach, fertig:false}
+      ? mitTiefe({art:b.art, text:danach, fertig:false}, b.tiefe || 0)
       : {art:"absatz", text:danach};
     Z.bloecke.splice(i + 1, 0, folgt);
     bewahre(); male(i + 1, 0);
@@ -575,6 +1351,14 @@ function tasteImBlock(ev, i, n){
     /* Erst die Art zurücknehmen, dann erst verschmelzen — so wie in
        Notion: Ein Backspace am Anfang einer Überschrift macht sie zum
        Absatz und löscht nichts. */
+    /* Eingerückt? Dann nimmt Backspace erst die Einrückung zurück —
+       sonst verlöre ein Unterpunkt beim Löschen zwei Dinge auf
+       einmal, und niemand könnte sagen, welches gemeint war. */
+    if (b.tiefe){
+      ev.preventDefault();
+      b.tiefe -= 1; if (!b.tiefe) delete b.tiefe;
+      bewahre(); male(i, 0); return;
+    }
     if (b.art !== "absatz"){
       ev.preventDefault();
       b.art = "absatz"; delete b.fertig; delete b.sprache;
@@ -607,7 +1391,409 @@ function tasteImBlock(ev, i, n){
   if (ev.key === "ArrowDown" && pos === laenge && i < Z.bloecke.length - 1){
     ev.preventDefault(); setzeFokus(i+1, 0); return; }
 
-  if (ev.key === "Tab") ev.preventDefault();      /* Einrücken kommt in Schritt 4 */
+  if (ev.key === "Tab"){
+    ev.preventDefault();
+    if (LISTE.indexOf(b.art) < 0) return;         /* nur Listen rücken ein */
+    const tiefe = b.tiefe || 0;
+    if (ev.shiftKey){
+      if (!tiefe) return;
+      b.tiefe = tiefe - 1;
+    } else {
+      /* Höchstens eine Stufe tiefer als der Vorgänger. Eine Lücke
+         darüber hinaus könnte Markdown nicht ausdrücken — sie käme
+         beim nächsten Lesen als flachere Stufe zurück. */
+      const vor = Z.bloecke[i-1];
+      const grenze = vor && LISTE.indexOf(vor.art) >= 0 ? (vor.tiefe || 0) + 1 : 0;
+      if (tiefe >= grenze || tiefe >= MAXTIEFE) return;
+      b.tiefe = tiefe + 1;
+    }
+    if (!b.tiefe) delete b.tiefe;
+    bewahre(); male(i, pos);
+    return;
+  }
+}
+
+/* ---------- Die Auswahlleiste ----------
+   Die Knöpfe setzen **Zeichen in den Rohtext**, nichts anderes. Das
+   geht nur, weil der Block unter der Schreibmarke seinen Rohtext
+   zeigt (doku/ENTSCHEIDUNGEN.md, Punkt 4): Die markierten Zeichen
+   sind dieselben, die in der Datei stehen — es gibt nichts
+   umzurechnen.
+
+   Was die gewählte Stufe nicht kann, steht nicht auf der Leiste.
+   Harte Regel 9. */
+const IK_CODE  = SVG('<path d="M7.6 6.4 3.8 10l3.8 3.6M12.4 6.4 16.2 10l-3.8 3.6"/>');
+const IK_KETTE = SVG('<path d="M8.6 11.4a3.1 3.1 0 0 0 4.4 0l2-2a3.1 3.1 0 0 0-4.4-4.4l-.9.9"/>'
+                   + '<path d="M11.4 8.6a3.1 3.1 0 0 0-4.4 0l-2 2a3.1 3.1 0 0 0 4.4 4.4l.9-.9"/>');
+
+const AUSZEICHNUNG = [
+  {zeichen:"**", inhalt:"<b>B</b>",              titel:"Fett (Strg B)"},
+  {zeichen:"*",  inhalt:"<i>I</i>",              titel:"Kursiv (Strg I)"},
+  {zeichen:"~~", inhalt:"<s>S</s>",              titel:"Durchgestrichen", merkmal:"durch"},
+  {zeichen:"`",  inhalt:IK_CODE,                 titel:"Code"},
+  {zeichen:"==", inhalt:'<span class="mk">A</span>', titel:"Textmarker", merkmal:"marker"}
+];
+
+/* Die Auswahl in Zeichen ab Blockanfang. Gibt `null` zurück, wenn
+   nichts markiert ist oder die Markierung nicht im Block unter der
+   Schreibmarke steht — nur dort steht Rohtext. */
+function auswahlLesen(){
+  const s = getSelection();
+  if (!s.rangeCount || s.isCollapsed) return null;
+  const knoten = s.anchorNode;
+  const wo = knoten.nodeType === 1 ? knoten : knoten.parentNode;
+  const t = wo && wo.closest ? wo.closest(".txt") : null;
+  if (!t) return null;
+  const blk = t.closest(".blk");
+  if (!blk) return null;
+  const i = Number(blk.dataset.i);
+  if (i !== aktiv || !Z.bloecke[i]) return null;
+  const r = s.getRangeAt(0);
+  const vor = document.createRange();
+  vor.selectNodeContents(t);
+  try { vor.setEnd(r.startContainer, r.startOffset); } catch (e) { return null; }
+  const von = vor.toString().length;
+  const bis = von + r.toString().length;
+  if (von === bis) return null;
+  return { i:i, von:von, bis:bis, rechteck:r.getBoundingClientRect() };
+}
+
+function auswahlSetzen(i, von, bis){
+  const n = textVon(i);
+  if (!n || !n.firstChild) return;
+  const t = n.firstChild, laenge = t.textContent.length;
+  const r = document.createRange();
+  r.setStart(t, Math.max(0, Math.min(von, laenge)));
+  r.setEnd(t,   Math.max(0, Math.min(bis, laenge)));
+  const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+}
+
+/* Steht die Auswahl schon zwischen diesen Zeichen, werden sie
+   entfernt — ein zweiter Klick nimmt zurück, was der erste tat. */
+function auszeichnen(zeichen){
+  const a = auswahlLesen();
+  if (!a) return;
+  const b = Z.bloecke[a.i], t = b.text, n = zeichen.length;
+  const drin = a.von >= n
+    && t.slice(a.von - n, a.von) === zeichen
+    && t.slice(a.bis, a.bis + n) === zeichen;
+  if (drin){
+    b.text = t.slice(0, a.von - n) + t.slice(a.von, a.bis) + t.slice(a.bis + n);
+    bewahre(); male(a.i, a.von - n);
+    auswahlSetzen(a.i, a.von - n, a.bis - n);
+  } else {
+    b.text = t.slice(0, a.von) + zeichen + t.slice(a.von, a.bis) + zeichen + t.slice(a.bis);
+    bewahre(); male(a.i, a.von + n);
+    auswahlSetzen(a.i, a.von + n, a.bis + n);
+  }
+  leistePruefen();
+}
+
+/* Als **Verweis**, nicht eingebettet: Ein Bild in der Datei wäre kein
+   lesbarer Text mehr, und die .md waere um ein Vielfaches groesser
+   als ihr Inhalt. */
+function bildEinfuegen(){
+  const quelle = prompt("Pfad zum Bild — neben der .md-Datei, z. B. ./bilder/raster.png");
+  if (!quelle) return;
+  const name = quelle.split(/[\\/]/).pop().replace(/\.[a-z0-9]+$/i, "").replace(/[-_]+/g, " ");
+  const md = "![" + name + "](" + quelle + ")";
+  const i = aktiv >= 0 && Z.bloecke[aktiv] ? aktiv : Z.bloecke.length - 1;
+  const b = Z.bloecke[i];
+  if (b.text){
+    Z.bloecke.splice(i + 1, 0, {art:"absatz", text:md});
+    bewahre(); male(i + 1, -1);
+  } else {
+    b.text = md;
+    bewahre(); male(i, -1);
+  }
+}
+
+function verweisSetzen(){
+  const a = auswahlLesen();
+  if (!a) return;
+  const adresse = prompt("Adresse für den Link", "https://");
+  if (!adresse) return;
+  const b = Z.bloecke[a.i], t = b.text;
+  b.text = t.slice(0, a.von) + "[" + t.slice(a.von, a.bis) + "](" + adresse + ")"
+         + t.slice(a.bis);
+  bewahre(); male(a.i, a.bis + adresse.length + 4);
+}
+
+function leisteBauen(){
+  const l = $("#leiste");
+  l.innerHTML = "";
+  const knopf = (inhalt, titel, tue) => {
+    const b = el("button", null, inhalt);
+    b.type = "button"; b.title = titel;
+    b.setAttribute("aria-label", titel);
+    b.onclick = tue;
+    l.appendChild(b);
+  };
+  knopf(IK_KETTE, "Link", verweisSetzen);
+  l.appendChild(el("span", "tr"));
+  AUSZEICHNUNG.forEach(a => {
+    if (a.merkmal && !kann(a.merkmal)) return;   /* harte Regel 9 */
+    knopf(a.inhalt, a.titel, () => auszeichnen(a.zeichen));
+  });
+}
+
+function leisteVerbergen(){ $("#leiste").classList.remove("an"); }
+
+function leistePruefen(){
+  const l = $("#leiste");
+  if ($("#app").dataset.ansicht === "quelltext"
+      || $("#einstellungen").classList.contains("an")){ leisteVerbergen(); return; }
+  const a = auswahlLesen();
+  if (!a){ leisteVerbergen(); return; }
+  leisteBauen();
+  l.classList.add("an");
+  const b = l.getBoundingClientRect();
+  let links = a.rechteck.left + a.rechteck.width / 2 - b.width / 2;
+  links = Math.max(8, Math.min(links, innerWidth - b.width - 8));
+  /* In der ersten Zeile ist oben kein Platz — dann darunter. Notion
+     tut dasselbe, und es ist mehr Aufwand, als es aussieht. */
+  let oben = a.rechteck.top - b.height - 8;
+  if (oben < 8) oben = a.rechteck.bottom + 8;
+  l.style.left = Math.round(links) + "px";
+  l.style.top  = Math.round(oben) + "px";
+}
+
+/* ---------- Die Blockarten ----------
+   Eine Liste für alles, was eine Blockart auswählbar macht:
+   Blockmenü, Umwandeln, später das Slash-Menü. Das Kürzel steht
+   überall daneben — wer das Menü zweimal benutzt hat, tippt beim
+   dritten Mal die zwei Zeichen und braucht es nicht mehr. */
+const ARTEN = [
+  {art:"absatz", name:"Text",              zeichen:"¶",   kuerzel:"",
+   probe:"Ein einfacher Absatz."},
+  {art:"h1",     name:"Überschrift 1",     zeichen:"H1",  kuerzel:"# ",
+   probe:"# 2 Zielbild"},
+  {art:"h2",     name:"Überschrift 2",     zeichen:"H2",  kuerzel:"## ",
+   probe:"## 2 Zielbild"},
+  {art:"h3",     name:"Überschrift 3",     zeichen:"H3",  kuerzel:"### ",
+   probe:"### 2 Zielbild"},
+  {art:"punkt",  name:"Aufzählung",        zeichen:"•",   kuerzel:"- ",
+   probe:"- Erster Punkt"},
+  {art:"nummer", name:"Nummerierte Liste", zeichen:"1.",  kuerzel:"1. ",
+   probe:"1. Erster Punkt"},
+  {art:"todo",   name:"To-do-Liste",       zeichen:"[ ]", kuerzel:"- [ ] ", merkmal:"todo",
+   urteil:"GFM", probe:"- [ ] Berichte sichten\n- [x] Erledigtes"},
+  {art:"zitat",  name:"Zitat",             zeichen:"»",   kuerzel:"> ",
+   probe:"> Ein abgesetzter Satz."},
+  {art:"code",   name:"Codeblock",         zeichen:"```", kuerzel:"```",
+   probe:"```javascript\nconst n = 1;\n```"},
+  {art:"linie",  name:"Trennlinie",        zeichen:"—",   kuerzel:"---",
+   probe:"---"},
+  /* Die drei jenseits von reinem Markdown. `vorlage` baut die Quelle,
+     wenn ein Block in diese Art umgewandelt wird — sie tragen ihre
+     ganze Quelle im Feld `text` und wären ohne Gerüst unlesbar. */
+  {art:"tabelle", name:"Tabelle",          zeichen:"|",   kuerzel:"| |",
+   merkmal:"tabelle", urteil:"GFM",
+   probe:"| Name | Format |\n| --- | --- |\n| Export | CSV |",
+   vorlage:(t) => "| " + (t || "Spalte") + " | Spalte |\n| --- | --- |\n|  |  |"},
+  {art:"callout", name:"Callout",          zeichen:"!",   kuerzel:"> [!TIP]",
+   merkmal:"callout", urteil:"Dialekt",
+   probe:"> [!TIP]\n> Vier davon sind derselbe Export.",
+   vorlage:(t) => "> [!NOTE]\n> " + (t || "Hinweis")},
+  {art:"toggle",  name:"Toggle-Liste",     zeichen:"›",   kuerzel:"<details>",
+   merkmal:"html", urteil:"HTML",
+   probe:"<details>\n<summary>Entscheidungen</summary>\n\nDer Rumpf.\n\n</details>",
+   vorlage:(t) => "<details>\n<summary>" + (t || "Titel") + "</summary>\n\n\n\n</details>"},
+  /* Kein Blockart, sondern ein Handgriff: Er fragt nach dem Pfad und
+     schreibt den Verweis. Deshalb steht er nur im Slash-Menü —
+     „Umwandeln in Bild" ergäbe keinen Sinn. */
+  {art:"bild",    name:"Bild",             zeichen:"[]",  kuerzel:"![ ]( )",
+   nurSlash:true, probe:"![Das Raster](./bilder/raster.png)",
+   tue:bildEinfuegen}
+];
+
+/* Was die gewählte Stufe nicht kann, steht nicht im Menü — harte
+   Regel 9. Was schon im Text steht, bleibt davon unberührt. */
+function arten(){ return ARTEN.filter(a => !a.merkmal || kann(a.merkmal)); }
+
+/* Die Urteile aus doku/BLOCKKATALOG.md, in einem Satz. */
+const URTEIL_SATZ = {
+  "rein":    "Läuft in jedem Werkzeug der Welt.",
+  "GFM":     "GitHub-Markdown. Sehr verbreitet, aber eine Erweiterung.",
+  "Dialekt": "Bindet die Datei an Werkzeuge, die diesen Dialekt kennen.",
+  "HTML":    "Gültiges Markdown — im nächsten Editor aber rohes HTML statt eines Blocks."
+};
+
+function umwandeln(i, art){
+  const b = Z.bloecke[i];
+  if (b.art === art) return;
+  b.art = art;
+  if (art === "todo"){ if (b.fertig === undefined) b.fertig = false; }
+  else delete b.fertig;
+  if (art !== "code") delete b.sprache;
+  if (LISTE.indexOf(art) < 0) delete b.tiefe;   /* nur Listen sind eingerückt */
+  if (art === "linie") b.text = "";
+  const eintrag = ARTEN.find(a => a.art === art);
+  if (eintrag && eintrag.vorlage) b.text = eintrag.vorlage(b.text.split("\n")[0]);
+  bewahre(); male(i, -1);
+}
+
+/* ---------- Menüs ---------- */
+function menueVerbergen(){ $("#menue").classList.remove("an"); }
+
+/* `eintraege` ist eine Liste aus {ic, nm, ta, tue} und "tr" für einen
+   Trenner, "k:Überschrift" für eine Gruppenzeile. */
+function menueZeigen(eintraege, anker){
+  const m = $("#menue");
+  m.innerHTML = "";
+  eintraege.forEach(e => {
+    if (e === "tr"){ m.appendChild(el("div", "tr")); return; }
+    if (typeof e === "string" && e.slice(0,2) === "k:"){
+      m.appendChild(el("div", "k", esc(e.slice(2)))); return; }
+    const b = el("button", null,
+      '<span class="ic">' + esc(e.ic || "") + '</span>'
+      + '<span class="nm">' + esc(e.nm) + '</span>'
+      + (e.ta ? '<span class="ta">' + esc(e.ta) + '</span>' : ""));
+    b.type = "button";
+    b.setAttribute("role", "menuitem");
+    b.onclick = () => { menueVerbergen(); e.tue(); };
+    m.appendChild(b);
+  });
+  m.classList.add("an");
+  const r = anker.getBoundingClientRect(), g = m.getBoundingClientRect();
+  let links = Math.min(r.left, innerWidth - g.width - 8);
+  let oben  = r.bottom + 6;
+  if (oben + g.height > innerHeight - 8) oben = Math.max(8, r.top - g.height - 6);
+  m.style.left = Math.round(Math.max(8, links)) + "px";
+  m.style.top  = Math.round(oben) + "px";
+}
+
+function blockMenue(i, anker){
+  const b = Z.bloecke[i];
+  if (!b) return;
+  const eintraege = [
+    {ic:"", nm:"Löschen", ta:"Entf", tue:() => {
+      Z.bloecke.splice(i, 1);
+      if (!Z.bloecke.length) Z.bloecke.push({art:"absatz", text:""});
+      bewahre(); male(Math.max(0, i-1), -1);
+      melde("Block gelöscht");
+    }},
+    {ic:"", nm:"Duplizieren", ta:"Strg D", tue:() => {
+      Z.bloecke.splice(i + 1, 0, JSON.parse(JSON.stringify(b)));
+      bewahre(); male(i + 1, -1);
+    }},
+    "tr", "k:Umwandeln in"
+  ];
+  arten().filter(a => !a.nurSlash).forEach(a => eintraege.push(
+    {ic:a.zeichen, nm:a.name + (a.urteil ? "  · " + a.urteil : ""),
+     ta:a.kuerzel.trim(), tue:() => umwandeln(i, a.art)}));
+  menueZeigen(eintraege, anker);
+}
+
+/* ---------- Das Slash-Menü ----------
+   `/` am Blockanfang öffnet die Liste, Weitertippen filtert. Rechts
+   in jeder Zeile das Markdown-Kürzel: Wer das Menü zweimal benutzt
+   hat, tippt beim dritten Mal die zwei Zeichen. Das Menü ist damit
+   nebenbei ein Lehrmittel — und macht sich mit der Zeit selbst
+   überflüssig.
+
+   Es zeigt nur, was gebaut **und** auf der gewählten Stufe möglich
+   ist. Ein Menü, das etwas anbietet, was beim Klick nicht kommt, ist
+   schlimmer als eines, das schweigt. */
+let slashBlock = -1, slashWahl = 0, slashTreffer = [];
+
+function slashOffen(){ return slashBlock >= 0; }
+
+function slashSchliessen(){
+  slashBlock = -1;
+  $("#slash").classList.remove("an");
+}
+
+/* Der Suchbegriff steht im Block selbst: alles hinter dem `/`. */
+function slashBegriff(i){
+  const b = Z.bloecke[i];
+  if (!b || MEHRZEILIG.indexOf(b.art) >= 0) return null;
+  const m = b.text.match(/^\/([^\s]*)$/);
+  return m ? m[1] : null;
+}
+
+function slashMalen(){
+  const begriff = slashBegriff(slashBlock);
+  if (begriff === null){ slashSchliessen(); return; }
+  const suche = begriff.toLowerCase();
+  slashTreffer = arten().filter(a =>
+    !suche || (a.name + " " + a.kuerzel + " " + a.art).toLowerCase().indexOf(suche) >= 0);
+  if (slashWahl >= slashTreffer.length) slashWahl = 0;
+
+  const liste = $("#slash-liste");
+  liste.innerHTML = "";
+  if (!slashTreffer.length){
+    liste.appendChild(el("div", "leer", "Kein Block heißt so."));
+  }
+  slashTreffer.forEach((a, k) => {
+    const b = el("button", k === slashWahl ? "zeig" : null,
+      '<span class="ic">' + esc(a.zeichen) + '</span>'
+      + '<span class="nm">' + esc(a.name) + '</span>'
+      + (a.kuerzel.trim() ? '<span class="ta">' + esc(a.kuerzel.trim()) + '</span>' : ""));
+    b.type = "button";
+    b.setAttribute("role", "option");
+    b.setAttribute("aria-selected", String(k === slashWahl));
+    /* `mousedown` statt `click`: Beim Klick wäre der Block schon aus
+       dem Fokus, und die Auswahl liefe ins Leere. */
+    b.addEventListener("mousedown", (ev) => { ev.preventDefault(); slashWaehlen(k); });
+    b.addEventListener("mousemove", () => {
+      if (slashWahl === k) return;
+      slashWahl = k; slashMalen();
+    });
+    liste.appendChild(b);
+  });
+
+  const a = slashTreffer[slashWahl];
+  const v = $("#slash-vorschau");
+  if (!a){ v.innerHTML = ""; }
+  else {
+    const urteil = a.urteil || "rein";
+    v.innerHTML = '<div class="k">Was in die Datei kommt</div>'
+      + "<pre>" + esc(a.probe || "") + "</pre>"
+      + '<span class="ur">' + esc(urteil) + "</span>"
+      + '<div class="satz">' + esc(URTEIL_SATZ[urteil] || "") + "</div>";
+  }
+
+  const knoten = $('.blk[data-i="' + slashBlock + '"]');
+  if (!knoten){ slashSchliessen(); return; }
+  const m = $("#slash");
+  m.classList.add("an");
+  const r = knoten.getBoundingClientRect(), g = m.getBoundingClientRect();
+  let links = Math.min(r.left, innerWidth - g.width - 8);
+  let oben = r.bottom + 6;
+  if (oben + g.height > innerHeight - 8) oben = Math.max(8, r.top - g.height - 6);
+  m.style.left = Math.round(Math.max(8, links)) + "px";
+  m.style.top  = Math.round(oben) + "px";
+}
+
+function slashWaehlen(k){
+  const a = slashTreffer[k], i = slashBlock;
+  if (!a || i < 0) return;
+  slashSchliessen();
+  const b = Z.bloecke[i];
+  b.text = "";                       /* der Suchbegriff war nie Inhalt */
+  if (a.tue){ aktiv = i; male(i, 0); a.tue(i); return; }
+  if (b.art === a.art){ bewahre(); male(i, -1); }
+  else umwandeln(i, a.art);
+}
+
+/* Gibt `true` zurück, wenn die Taste zum Menü gehörte. */
+function slashTaste(ev){
+  if (!slashOffen()) return false;
+  if (ev.key === "Escape"){ ev.preventDefault(); slashSchliessen(); return true; }
+  if (ev.key === "ArrowDown" || ev.key === "ArrowUp"){
+    ev.preventDefault();
+    if (!slashTreffer.length) return true;
+    slashWahl = (slashWahl + (ev.key === "ArrowDown" ? 1 : -1) + slashTreffer.length)
+              % slashTreffer.length;
+    slashMalen();
+    return true;
+  }
+  if (ev.key === "Enter" || ev.key === "Tab"){
+    if (!slashTreffer.length) return false;
+    ev.preventDefault(); slashWaehlen(slashWahl); return true;
+  }
+  return false;
 }
 
 /* ---------- Ereignisse an der Fläche ---------- */
@@ -624,7 +1810,7 @@ function verdrahte(){
     if (i === aktiv) return;
     if (aktiv >= 0 && Z.bloecke[aktiv]){
       const alt = textVon(aktiv);
-      if (alt) alt.innerHTML = inlineMalen(Z.bloecke[aktiv].text);
+      if (alt) alt.innerHTML = blockInhalt(Z.bloecke[aktiv]);
     }
     aktiv = i;
     const t = blk.querySelector(".txt");
@@ -637,7 +1823,7 @@ function verdrahte(){
     if (aktiv !== i){
       if (aktiv >= 0 && Z.bloecke[aktiv]){
         const alt = textVon(aktiv);
-        if (alt) alt.innerHTML = inlineMalen(Z.bloecke[aktiv].text);
+        if (alt) alt.innerHTML = blockInhalt(Z.bloecke[aktiv]);
       }
       aktiv = i;
       t.textContent = Z.bloecke[i].text;
@@ -650,7 +1836,8 @@ function verdrahte(){
     const blk = t.closest(".blk"); if (!blk) return;
     blk.classList.remove("ueber");
     const i = Number(blk.dataset.i);
-    if (Z.bloecke[i]) t.innerHTML = inlineMalen(Z.bloecke[i].text);
+    if (slashBlock === i) slashSchliessen();
+    if (Z.bloecke[i]) t.innerHTML = blockInhalt(Z.bloecke[i]);
     if (aktiv === i) aktiv = -1;
   });
 
@@ -660,6 +1847,8 @@ function verdrahte(){
     if (!Z.bloecke[i]) return;
     Z.bloecke[i].text = t.textContent;
     if (hilfePruefen(i, t)) return;
+    if (slashOffen()) slashMalen();
+    else if (Z.bloecke[i].text === "/"){ slashBlock = i; slashWahl = 0; slashMalen(); }
     bewahre();
     quelleMalen();
     fussMalen();
@@ -667,6 +1856,7 @@ function verdrahte(){
 
   spalte.addEventListener("keydown", (ev) => {
     const t = ev.target.closest(".txt"); if (!t) return;
+    if (slashTaste(ev)) return;             /* das offene Menü hat Vorrang */
     tasteImBlock(ev, Number(t.closest(".blk").dataset.i), t);
   });
 
@@ -736,6 +1926,23 @@ function verdrahte(){
     Z.bloecke.push({art:"absatz", text:""});
     bewahre(); male(Z.bloecke.length-1, 0);
   });
+
+  /* ---------- Die Leiste ---------- */
+  /* `selectionchange` feuert bei jedem Zeichen. Ein Bild Abstand
+     genügt: Die Leiste muss nicht schneller sein als das Auge. */
+  let leistenUhr = null;
+  document.addEventListener("selectionchange", () => {
+    cancelAnimationFrame(leistenUhr);
+    leistenUhr = requestAnimationFrame(leistePruefen);
+  });
+  /* Ein Klick auf die Leiste darf die Auswahl nicht löschen — sonst
+     wäre beim Loslassen nichts mehr da, worauf der Knopf wirken kann. */
+  $("#leiste").addEventListener("mousedown", (ev) => ev.preventDefault());
+  $("#blatt").addEventListener("scroll", () => { leisteVerbergen(); menueVerbergen(); },
+    {passive:true});
+  document.addEventListener("mousedown", (ev) => {
+    if (!ev.target.closest("#menue") && !ev.target.closest(".griff")) menueVerbergen();
+  });
 }
 
 /* ============================================================
@@ -753,11 +1960,16 @@ function quelltextVerdrahten(){
     ersetze(Z.bloecke, leseMarkdown(q.value));
     bewahre();
     fussMalen();
+    quelleFarbeMalen();
   });
+  /* Rollt das Feld, muss die Farbe darunter mitrollen — sonst steht
+     sie einen Bildschirm daneben. */
+  q.addEventListener("scroll", () => { $("#qfarbe").scrollTop = q.scrollTop; });
   q.addEventListener("blur", () => { if (!q.readOnly) male(); });
 }
 
 function ansicht(name){
+  leisteVerbergen();
   $("#app").dataset.ansicht = name;
   ["schreiben","geteilt","quelltext"].forEach(n =>
     $("#w-" + n).setAttribute("aria-current", String(n === name)));
@@ -766,7 +1978,259 @@ function ansicht(name){
 }
 
 /* ============================================================
-   8 — DATEIEN
+   8 — GLIEDERUNG UND SUCHEN
+
+   Beides beantwortet dieselbe Frage — wo bin ich, und wo ist das,
+   was ich suche. Der Dateibaum aus dem Entwurf beantwortet sie
+   nicht; er ist gestrichen (doku/ENTSCHEIDUNGEN.md, Punkt 2).
+   ============================================================ */
+function gliederungMalen(){
+  const liste = $("#g-liste");
+  liste.innerHTML = "";
+  const kopf = [];
+  Z.bloecke.forEach((b, i) => { if (/^h[123]$/.test(b.art)) kopf.push({b:b, i:i}); });
+  if (!kopf.length){
+    liste.appendChild(el("div", "leer",
+      "Noch keine Überschriften. Tippe <code>## </code> am Zeilenanfang."));
+    return;
+  }
+  kopf.forEach(({b, i}) => {
+    const grad = b.art.slice(1);
+    const z = el("button", "z s" + grad, esc(b.text || "(ohne Text)"));
+    z.type = "button";
+    z.title = b.text;
+    z.onclick = () => {
+      const knoten = $('.blk[data-i="' + i + '"]');
+      if (knoten) knoten.scrollIntoView({block:"center"});
+      setzeFokus(i, 0);
+    };
+    liste.appendChild(z);
+  });
+}
+
+/* GitHubs Ankerform: klein geschrieben, Satzzeichen raus, Leerzeichen
+   zu Strichen. Buchstaben mit Umlaut bleiben — sie sind Buchstaben. */
+const anker = (t) => String(t || "").toLowerCase().trim()
+  .replace(/[^\p{L}\p{N} _-]/gu, "").replace(/\s+/g, "-");
+
+function inhaltEinfuegen(){
+  const kopf = [];
+  Z.bloecke.forEach((b, i) => { if (/^h[123]$/.test(b.art) && b.text) kopf.push(b); });
+  if (!kopf.length){ melde("Keine Überschriften — nichts zu verzeichnen."); return; }
+  /* Reine Verweise, keine Sonderschreibweise: Das Verzeichnis ist
+     hinterher gewöhnlicher Markdown-Text und lässt sich von Hand
+     ändern wie jede andere Liste. */
+  const flach = Math.min.apply(null, kopf.map(b => Number(b.art.slice(1))));
+  const zeilen = kopf.map(b =>
+    "  ".repeat(Number(b.art.slice(1)) - flach) + "- [" + b.text + "](#" + anker(b.text) + ")");
+  const neu = leseMarkdown(zeilen.join("\n"));
+  /* Hinter die erste Überschrift, sonst ganz nach oben — dort sucht
+     man ein Inhaltsverzeichnis. */
+  let wo = 0;
+  for (let i = 0; i < Z.bloecke.length; i++){
+    if (/^h[123]$/.test(Z.bloecke[i].art)){ wo = i + 1; break; }
+  }
+  Z.bloecke.splice(wo, 0, ...neu);
+  bewahre(); male(wo, 0);
+  melde(neu.length + " Überschriften als Verzeichnis eingefügt");
+}
+
+/* ---------- Suchen ---------- */
+let suchWort = "", suchStellen = [], suchWahl = 0;
+
+function suchRechnen(){
+  suchStellen = [];
+  if (!suchWort) return;
+  const wort = suchWort.toLowerCase();
+  Z.bloecke.forEach((b, i) => {
+    const t = String(b.text || "").toLowerCase();
+    let k = t.indexOf(wort);
+    while (k >= 0){ suchStellen.push({i:i, pos:k}); k = t.indexOf(wort, k + wort.length); }
+  });
+  if (suchWahl >= suchStellen.length) suchWahl = 0;
+}
+
+function suchZahlMalen(){
+  $("#such-zahl").textContent = !suchWort ? ""
+    : suchStellen.length ? (suchWahl + 1) + " von " + suchStellen.length
+    : "kein Fund";
+}
+
+/* Die Funde werden **im Baum** markiert, nicht im HTML-Text: Ein
+   Ersetzen auf der Zeichenkette träfe sonst auch das, was in einem
+   Attribut oder Elementnamen steht. */
+function fundeMarkieren(knoten, wort){
+  const suche = wort.toLowerCase();
+  const gehe = (n) => {
+    if (n.nodeType === 3){
+      const t = n.nodeValue, k = t.toLowerCase().indexOf(suche);
+      if (k < 0) return;
+      const treffer = n.splitText(k);
+      treffer.splitText(wort.length);
+      const m = document.createElement("em");
+      m.className = "fund";
+      m.textContent = treffer.nodeValue;
+      treffer.parentNode.replaceChild(m, treffer);
+      gehe(m.nextSibling);                    /* der Rest der Zeile */
+      return;
+    }
+    if (n && n.nodeType === 1 && n.className !== "fund")
+      Array.prototype.slice.call(n.childNodes).forEach(gehe);
+  };
+  Array.prototype.slice.call(knoten.childNodes).forEach(gehe);
+}
+
+function fundeZeigen(){
+  if (!suchWort) return;
+  $("#spalte").querySelectorAll(".blk").forEach(n => {
+    if (Number(n.dataset.i) === aktiv) return;   /* dort steht Rohtext */
+    const t = n.querySelector(".txt");
+    if (t) fundeMarkieren(t, suchWort);
+  });
+}
+
+function suchSpringen(k){
+  if (!suchStellen.length) return;
+  suchWahl = (k + suchStellen.length) % suchStellen.length;
+  const st = suchStellen[suchWahl];
+  const knoten = $('.blk[data-i="' + st.i + '"]');
+  if (knoten) knoten.scrollIntoView({block:"center"});
+  setzeFokus(st.i, st.pos);
+  suchZahlMalen();
+}
+
+function suchenVerdrahten(){
+  const kasten = $("#suchen"), feld = $("#such-feld");
+  const zu = () => {
+    kasten.classList.remove("an");
+    suchWort = ""; suchStellen = []; suchZahlMalen(); male();
+  };
+  $("#such-zu").onclick = zu;
+  $("#such-vor").onclick = () => suchSpringen(suchWahl + 1);
+  $("#such-zurueck").onclick = () => suchSpringen(suchWahl - 1);
+  feld.addEventListener("input", () => {
+    suchWort = feld.value; suchWahl = 0;
+    suchRechnen(); suchZahlMalen();
+    const merk = aktiv; aktiv = -1; male(); aktiv = merk;
+  });
+  feld.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape"){ ev.preventDefault(); zu(); return; }
+    if (ev.key === "Enter"){
+      ev.preventDefault();
+      suchSpringen(suchWahl + (ev.shiftKey ? -1 : 1));
+      feld.focus();
+    }
+  });
+  return () => {
+    kasten.classList.add("an");
+    feld.select(); feld.focus();
+  };
+}
+
+/* ============================================================
+   9 — EINSTELLUNGEN
+
+   Bisher steht hier nur die Markdown-Stufe. Sie gehört in die
+   Einstellungen und nicht in den Code: Dieselbe Fläche, andere
+   Ausgabe — doku/ENTSCHEIDUNGEN.md, Punkt 1.
+   ============================================================ */
+const THEMEN = [
+  ["hell",   "Hell",   "Die Vorgabe. Heller Grund, dunkle Schrift."],
+  ["dunkel", "Dunkel",
+   "Dunkler Grund. <b>Der Druck bleibt davon unberührt</b> — Papier ist weiß, und "
+   + "eine dunkle Fläche darauf kostet nur Farbe."]
+];
+
+const SATZARTEN = [
+  ["links",     "Flattersatz",
+   "Die Vorgabe. Gleiche Wortabstände, ausgefranster rechter Rand."],
+  ["blocksatz", "Blocksatz",
+   "Beide Ränder bündig. In einer schmalen Spalte entstehen dabei Lücken zwischen den "
+   + "Wörtern — der Browser trennt nur, wo die Sprache es erlaubt. "
+   + "<b>In der Datei steht davon nichts.</b>"]
+];
+
+const DRUCKARTEN = [
+  ["schlicht",   "Schlicht",
+   "Die Vorgabe. Nüchtern, wenig Zierrat, spart Papier."],
+  ["technik",    "Technische Doku",
+   "Enger Satz, gerahmte Codeblöcke, Tabellen mit Linien, jede Überschrift 1 auf einer "
+   + "neuen Seite. <b>Nummeriert die Überschriften selbst</b> — aber nur die, die noch "
+   + "keine Nummer tragen. Steht „1 Bestandsaufnahme“ schon im Text, bleibt es dabei."],
+  ["magazin",    "Magazin",
+   "Serifenschrift, schmale Spalte, große Überschriften, Blocksatz. Für Texte, die "
+   + "gelesen und nicht nachgeschlagen werden."],
+  ["manuskript", "Manuskript",
+   "Weiter Durchschuss und ein breiter Rand zum Hineinschreiben. Für Entwürfe, die auf "
+   + "Papier bearbeitet werden."]
+];
+
+/* Vier Gruppen, ein Bauplan. `wurzel` heißt: Die Einstellung steht als
+   Merkmal am Wurzelelement, und der Stil richtet sich danach — dann
+   braucht es kein Neuzeichnen. Die Stufe dagegen ändert, was der
+   Editor **anzeigt**, und verlangt eines. */
+const EINSTELLUNGEN = [
+  {feld:"stufe", etikett:"Markdown-Stufe",   werte:STUFEN,     malen:true},
+  {feld:"thema", etikett:"Thema",            werte:THEMEN,     wurzel:true},
+  {feld:"satz",  etikett:"Textausrichtung",  werte:SATZARTEN,  wurzel:true},
+  {feld:"druck", etikett:"Druck-Layout",     werte:DRUCKARTEN, wurzel:true}
+];
+
+function wurzelSetzen(){
+  const w = document.documentElement;
+  w.dataset.thema = Z.thema;
+  w.dataset.satz  = Z.satz;
+  w.dataset.druck = Z.druck;
+}
+
+function einstellungenMalen(){
+  const ziel = $("#ein-gruppen");
+  ziel.innerHTML = "";
+  EINSTELLUNGEN.forEach(g => {
+    const kasten = el("div", "gruppe");
+    kasten.appendChild(el("div", "etikett", esc(g.etikett)));
+    const wahl = el("div", "wahl");
+    wahl.setAttribute("role", "group");
+    wahl.setAttribute("aria-label", g.etikett);
+    g.werte.forEach(([schluessel, name]) => {
+      const b = el("button", null, esc(name));
+      b.type = "button";
+      b.setAttribute("aria-pressed", String(schluessel === Z[g.feld]));
+      b.onclick = () => {
+        if (schluessel === Z[g.feld]) return;
+        Z[g.feld] = schluessel;
+        bewahreSofort();
+        if (g.wurzel) wurzelSetzen();
+        einstellungenMalen();
+        if (g.malen) male();
+        melde(g.etikett + ": " + name);
+      };
+      wahl.appendChild(b);
+    });
+    kasten.appendChild(wahl);
+    const jetzt = g.werte.find(x => x[0] === Z[g.feld]);
+    kasten.appendChild(el("div", "erklaerung", jetzt ? jetzt[2] : ""));
+    ziel.appendChild(kasten);
+  });
+}
+
+function einstellungenVerdrahten(){
+  const ueber = $("#einstellungen");
+  const zu = () => ueber.classList.remove("an");
+  $("#ein-auf").onclick = () => {
+    einstellungenMalen(); ueber.classList.add("an"); $("#ein-zu").focus(); };
+  $("#ein-zu").onclick = zu;
+  /* Ein Klick daneben schließt, ein Klick auf die Karte nicht. */
+  ueber.addEventListener("mousedown", (ev) => { if (ev.target === ueber) zu(); });
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key !== "Escape") return;
+    if (ueber.classList.contains("an")) zu();
+    menueVerbergen(); leisteVerbergen(); slashSchliessen();
+  });
+}
+
+/* ============================================================
+  10 — DATEIEN
 
    Edge erlaubt aus einer lokal geöffneten Datei **keinen** direkten
    Dateizugriff; die File System Access API ist damit keine Option.
@@ -803,6 +2267,17 @@ function dateienVerdrahten(){
     melde("Gesichert: " + a.download);
   };
 
+  /* Der Browser kann aus jedem Druck ein PDF machen — „Als PDF
+     speichern" steht in seinem eigenen Dialog. Das Layout dafür
+     liefert der Druckstil; ein eigener Erzeuger wäre eine fremde
+     Bibliothek und ist ausgeschlossen (doku/ENTSCHEIDUNGEN.md,
+     Punkt 10). */
+  $("#pdf").onclick = () => {
+    leisteVerbergen(); menueVerbergen(); slashSchliessen();
+    melde("Im Druckdialog „Als PDF speichern“ wählen.");
+    setTimeout(() => window.print(), 260);
+  };
+
   $("#neu").onclick = () => {
     if (schreibeMarkdown(Z.bloecke).trim()
         && !confirm("Der jetzige Text geht verloren.\n\nOK = neu anfangen, Abbrechen = zurück"))
@@ -821,13 +2296,31 @@ function dateienVerdrahten(){
 }
 
 /* ============================================================
-   9 — TASTATUR UND START
+  11 — TASTATUR UND START
    ============================================================ */
 document.addEventListener("keydown", (ev) => {
   if (!(ev.ctrlKey || ev.metaKey)) return;
   const k = ev.key.toLowerCase();
   if (k === "s"){ ev.preventDefault(); $("#sichern").click(); }
   if (k === "o"){ ev.preventDefault(); $("#oeffnen").click(); }
+  /* Ohne diese drei setzt das Textfeld von sich aus <b>, <i> und <u>
+     in den Block — und schriebe damit HTML, wo Markdown stehen soll. */
+  /* Ohne preventDefault nimmt das Textfeld selbst zurück — und zwar
+     einen Stand, den es aus dem Neuzeichnen von `male()` nie richtig
+     mitbekommen hat. */
+  if (k === "z" && !ev.shiftKey){ ev.preventDefault(); zurueck(); return; }
+  if (k === "y" || (k === "z" && ev.shiftKey)){ ev.preventDefault(); wieder(); return; }
+  if (k === "d" && aktiv >= 0 && Z.bloecke[aktiv]){
+    ev.preventDefault();
+    Z.bloecke.splice(aktiv + 1, 0, JSON.parse(JSON.stringify(Z.bloecke[aktiv])));
+    bewahre(); male(aktiv + 1, -1);
+  }
+  if (k === "b"){ ev.preventDefault(); auszeichnen("**"); }
+  if (k === "i"){ ev.preventDefault(); auszeichnen("*"); }
+  if (k === "u"){
+    ev.preventDefault();
+    melde("Markdown kennt kein Unterstreichen. Fett: Strg B, kursiv: Strg I.");
+  }
   if (k === "e"){
     ev.preventDefault();
     ansicht($("#app").dataset.ansicht === "schreiben" ? "geteilt" : "schreiben");
@@ -835,32 +2328,64 @@ document.addEventListener("keydown", (ev) => {
 });
 
 const START = "# Willkommen\n\n"
-  + "Dies ist ein **Gerüst**, kein fertiger Editor. Was schon geht und was noch\n"
-  + "fehlt, steht in `STAND.md`; wie es aussehen soll, in `mockups/`.\n\n"
-  + "## Was hier schon funktioniert\n\n"
-  + "- [x] Blöcke aus Markdown lesen und wieder als Markdown schreiben\n"
-  + "- [x] Eingabehilfen: `# `, `- `, `1. `, `- [ ] `, `> ` und `---`\n"
-  + "- [x] Der Block unter der Schreibmarke zeigt seinen Rohtext\n"
-  + "- [ ] Slash-Menü, Auswahlleiste, Umwandeln — Schritt 2 und 3\n\n"
+  + "Ein Markdown-Editor, der sich wie Notion bedienen lässt und trotzdem nichts\n"
+  + "anderes schreibt als eine `.md`-Datei.\n\n"
+  + "## Die drei Griffe\n\n"
+  + "1. Tippe `/` am Zeilenanfang — die Liste aller Blöcke, mit dem\n"
+  + "   Markdown-Kürzel daneben und einer Vorschau, *was in die Datei kommt*.\n"
+  + "2. Markiere Text — die Leiste kommt zur Auswahl, statt am Rand zu warten.\n"
+  + "3. Der Griff links am Absatz: ziehen zum Verschieben, klicken für Löschen,\n"
+  + "   Duplizieren und **Umwandeln in**.\n\n"
   + "> Der Text ist immer Rohtext. Gespeichert wird nie etwas anderes als Markdown.\n\n"
+  + "## Was sonst noch da ist\n\n"
+  + "- Eingabehilfen: `# `, `- `, `1. `, `> `, ` ``` ` und `---`\n"
+  + "- `Tab` rückt Listen ein, `Umschalt+Tab` wieder aus\n"
+  + "- `Strg+F` sucht im Dokument, `Strg+Z` nimmt auch ganze Blöcke zurück\n"
+  + "- Rechts die Gliederung; darunter ein Knopf für das Inhaltsverzeichnis\n"
+  + "- Der Knopf **PDF** öffnet den Druckdialog — vier Layouts in den Einstellungen\n\n"
   + "```javascript\n"
   + "const bloecke = leseMarkdown(text);\n"
   + "console.assert(schreibeMarkdown(bloecke) === text);\n"
   + "```\n\n"
   + "---\n\n"
-  + "Ziehe einen Block am Griff links, um ihn zu verschieben.\n";
+  + "In den **Einstellungen** steht die Markdown-Stufe. Auf `Rein` bietet der\n"
+  + "Editor nur an, was in jedem Werkzeug der Welt läuft — Tabellen, To-dos und\n"
+  + "Hinweiskästen kommen erst ab `GitHub` dazu.\n";
 
 function start(){
   if (!lade()) ersetze(Z.bloecke, leseMarkdown(START));
   verdrahte();
   quelltextVerdrahten();
   dateienVerdrahten();
+  einstellungenVerdrahten();
+  const suchenOeffnen = suchenVerdrahten();
+  $("#g-inhalt").onclick = inhaltEinfuegen;
+  $("#g-auf").onclick = () => {
+    const app = $("#app");
+    const aus = app.dataset.gliederung === "aus";
+    app.dataset.gliederung = aus ? "an" : "aus";
+    $("#g-auf").setAttribute("aria-pressed", String(aus));
+    try { localStorage.setItem(SCHLUESSEL + "-gliederung", app.dataset.gliederung); }
+    catch (e) { /* egal */ }
+  };
+  try {
+    $("#app").dataset.gliederung = localStorage.getItem(SCHLUESSEL + "-gliederung") || "an";
+  } catch (e) { $("#app").dataset.gliederung = "an"; }
+  $("#g-auf").setAttribute("aria-pressed",
+    String($("#app").dataset.gliederung !== "aus"));
+  document.addEventListener("keydown", (ev) => {
+    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === "f"){
+      ev.preventDefault(); suchenOeffnen();
+    }
+  });
   ["schreiben","geteilt","quelltext"].forEach(n => {
     $("#w-" + n).onclick = () => ansicht(n); });
   let gemerkt = "schreiben";
   try { gemerkt = localStorage.getItem(SCHLUESSEL + "-ansicht") || "schreiben"; }
   catch (e) { /* egal */ }
+  wurzelSetzen();
   ansicht(gemerkt);
+  merken();                 /* der Anfangsstand, sonst führt das erste Rückgängig ins Leere */
   male();
 }
 start();

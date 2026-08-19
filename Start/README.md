@@ -11,7 +11,7 @@ Abhängigkeiten.
 editor.html          die Anwendung
 mockups/             sieben Entwürfe — der Sollzustand
 doku/                Konzept, Blockkatalog, Entscheidungen, Roadmap
-werkzeug/            Prüflauf, Browserprobe, Generator für die Entwürfe
+werkzeug/            Prüflauf, Browserproben, Generator für die Entwürfe
 ```
 
 ## Anfangen
@@ -20,6 +20,7 @@ werkzeug/            Prüflauf, Browserprobe, Generator für die Entwürfe
 node werkzeug/lage.mjs        # wo steht das Projekt
 node werkzeug/pruefen.mjs     # Regelprüfung
 node werkzeug/schau.mjs       # im echten Browser ansehen
+node werkzeug/probe.mjs       # die Bedienung im echten Browser proben
 ```
 
 `editor.html` per Doppelklick öffnen. `mockups/index.html` zeigt, wie
@@ -30,11 +31,28 @@ es einmal aussehen soll.
 Blöcke aus Markdown lesen und verlustfrei wieder schreiben.
 Eingabehilfen (`# `, `- `, `1. `, `- [ ] `, `> `, ` ``` `, `---`).
 Der Block unter der Schreibmarke zeigt seinen **Rohtext**, alle anderen
-das Ergebnis. Enter teilt, Backspace verschmilzt. Blöcke am Griff
-ziehen. Drei Ansichten: Schreiben, Geteilt, Quelltext. Öffnen über die
-Dateiauswahl, Sichern über den Download, Arbeitsstand in localStorage.
+das Ergebnis. Enter teilt, Backspace verschmilzt.
 
-Was fehlt, steht in `STAND.md` und `doku/ROADMAP.md`.
+**Die drei Griffe:** `/` öffnet das Slash-Menü — mit dem Kürzel in
+jeder Zeile und einer Vorschau, *was in die Datei kommt*. Text
+markieren holt die Auswahlleiste zum Text. Der Griff links am Absatz
+zieht ihn an eine andere Stelle oder öffnet Löschen, Duplizieren und
+**Umwandeln in**.
+
+Dazu: `Tab` rückt Listen ein. Tabelle, Callout und Toggle, jeder mit
+sichtbarem Urteil. Der Dialektschalter `Rein · GitHub · Obsidian ·
+Pandoc` — dieselbe Fläche, andere Ausgabe. Gliederung rechts, Suche im
+Dokument, Inhaltsverzeichnis auf Knopfdruck. Rückgängig über
+Blockgrenzen. Zweites Thema, Blocksatz und vier Druck-Layouts —
+Schlicht, Technische Doku, Magazin, Manuskript; der Knopf **PDF**
+öffnet den Druckdialog.
+
+Drei Ansichten: Schreiben, Geteilt, Quelltext — der Quelltext
+**farbig**, damit man die Auszeichnung sieht, ohne sie zu suchen.
+Öffnen über die Dateiauswahl, Sichern über den Download, Arbeitsstand
+in localStorage.
+
+Was noch offen ist, steht in `STAND.md`.
 
 ## Der Kern in einem Satz
 
