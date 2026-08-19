@@ -17,22 +17,22 @@ Für jeden Block, den Notion kann, muss dieser Editor entscheiden: weglassen, in
 | Text in Code | `` `…` `` | `` Der Wert `localStorage` `` | rein | gebaut |
 | Fett, kursiv | ` ** * ` | ` **fett** und *kursiv* ` | rein | gebaut |
 | Durchgestrichen | ` ~~ ` | ` ~~verworfen~~ ` | GFM | gebaut |
-| Unterstrichen | — | ` <u>unterstrichen</u> ` | HTML | offen |
+| Unterstrichen | — | ` <u>unterstrichen</u> ` | HTML | gestrichen |
 | Link | ` [ ]( ) ` | ` [Schnittstellen](./Schnittstellen.md) ` | rein | gebaut |
 | Bild | ` ![ ]( ) ` | ` ![Das Raster](./bilder/raster.png) ` | rein | offen |
 | Tabelle | ` \| ` | ` \| Name \| Format \| `<br>` \| --- \| --- \| `<br>` \| Export \| CSV \| ` | GFM | offen |
 | Callout | ` 💡 ` | ` > [!TIP] `<br>` > Vier davon sind derselbe Export. ` | Dialekt | offen |
 | Toggle-Liste | ` › ` | ` <details> `<br>` <summary>Entscheidungen</summary> `<br><br>` … `<br><br>` </details> ` | HTML | offen |
 | Markierter Text | ` == ` | ` ==elf Jahre== ` | Dialekt | gebaut |
-| Farbiger Text | — | ` <span style="color:#c0392b">dringend</span> ` | HTML | offen |
-| Erwähnung | ` @ [[ ]] ` | ` [[Kai Richter]] ` | Dialekt | offen |
+| Farbiger Text | — | ` <span style="color:#c0392b">dringend</span> ` | HTML | gestrichen |
+| Erwähnung | ` @ [[ ]] ` | ` [[Kai Richter]] ` | Dialekt | gestrichen |
 | Lesezeichen | — | ` [Handbuch](https://conf.firma.de/hb) ` | rein | offen |
 | Inhaltsverzeichnis | — | ` <!-- inhalt -->   ← oder beim Speichern erzeugt ` | Dialekt | offen |
-| Eigenschaften | ` --- ` | ` --- `<br>` status: laeuft `<br>` datum: 2026-08-19 `<br>` --- ` | Dialekt | offen |
-| Spalten | — | — | geht nicht | offen |
-| Kommentar am Text | — | — | geht nicht | offen |
-| Synchronisierter Block | — | — | geht nicht | offen |
-| Datenbank | — | — | geht nicht | offen |
+| Eigenschaften | ` --- ` | ` --- `<br>` status: laeuft `<br>` datum: 2026-08-19 `<br>` --- ` | Dialekt | vertagt |
+| Spalten | — | — | geht nicht | gestrichen |
+| Kommentar am Text | — | — | geht nicht | gestrichen |
+| Synchronisierter Block | — | — | geht nicht | gestrichen |
+| Datenbank | — | — | geht nicht | gestrichen |
 
 ## Was die Urteile bedeuten
 
@@ -44,4 +44,6 @@ Für jeden Block, den Notion kann, muss dieser Editor entscheiden: weglassen, in
 
 ## Stand
 
-**13 von 27 Blöcken sind gebaut.** Welcher Schritt welchen bringt, steht in `doku/ROADMAP.md`.
+**13 von 27 Blöcken sind gebaut.** 7 sind gestrichen, 1 ist vertagt — übrig bleiben 6 offene.
+
+Welcher Schritt welchen bringt, steht in `doku/ROADMAP.md`. Was **gestrichen** heißt und warum, steht in `doku/ENTSCHEIDUNGEN.md`, Punkt 1 und 11; **vertagt** in Punkt 12.

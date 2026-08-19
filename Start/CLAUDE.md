@@ -25,10 +25,17 @@ oder das Format kaputt.
 
 1. **Eine Datei.** Alles in `editor.html`. Kein Build, kein Bundler,
    keine separate `.js` oder `.css`.
-2. **Keine externen Abhängigkeiten.** Kein `<script src>`, kein
-   `<link>`, kein `@import`, kein CDN, kein Netzzugriff, keine
-   Webfonts. Auch keine Markdown-Bibliothek — der Umwandler steht in
-   Abschnitt 4 und wird von Hand gepflegt.
+2. **Keine externen Abhängigkeiten, kein Netz.** Kein `<script src>`,
+   kein `<link>`, kein `@import`, kein CDN, keine Webfonts. Auch keine
+   Markdown-Bibliothek und kein PDF-Erzeuger — der Umwandler steht in
+   Abschnitt 4 und wird von Hand gepflegt, das PDF kommt aus dem
+   Druckdialog des Browsers.
+
+   **Die Anwendung greift zu keinem Zeitpunkt auf das Internet zu.**
+   Nicht beim Start, nicht beim Sichern, nicht für Schriften, nicht
+   für Aktualisierungen. Das schließt KI-Funktionen aus: Sie
+   bräuchten eine Verbindung und einen Zugangsschlüssel. Ausdrücklich
+   bestätigt im August 2026.
 3. **Nur Systemschriften.** Auf Windows greift Segoe UI.
 4. **`color-scheme: light` in `:root`.** Ohne diese Zeile färbt Windows
    im Dunkelmodus Scrollbalken und Formularfelder selbst ein — schwarz.

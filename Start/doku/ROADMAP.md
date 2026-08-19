@@ -8,6 +8,11 @@ sieht** (welcher Entwurf unter `mockups/`) und was **ausdrücklich
 nicht** dazugehört. Der letzte Punkt ist der wichtigste — ohne ihn
 wächst jeder Schritt, bis er nicht mehr zu prüfen ist.
 
+**Diese Fassung beruht auf der Durchsprache vom August 2026.** Jeder
+Punkt darin ist einzeln bestätigt, zurückgestellt oder gestrichen
+worden; die Begründungen stehen in `doku/ENTSCHEIDUNGEN.md`,
+Punkt 8 bis 12.
+
 ---
 
 ## Schritt 1 — Das Gerüst · **erledigt**
@@ -19,29 +24,76 @@ Drei Ansichten. Öffnen, Sichern, localStorage.
 
 **Entwurf:** `mockups/schreiben.html`, `mockups/quelltext.html`
 
-**Nicht dazu:** alles Übrige.
+---
+
+## Schritt 2 — Der Dialektschalter
+
+**Vorgezogen.** In der Roadmap stand er als Schritt 6; die Durchsprache
+hat Callout, Toggle und Tabelle bestätigt, und harte Regel 9 verlangt
+den Schalter, bevor einer davon gebaut werden darf.
+
+`Rein · GitHub · Obsidian · Pandoc` in den Einstellungen. Dieselbe
+Fläche, andere Ausgabe. Was die gewählte Stufe nicht kann, wird gar
+nicht erst angeboten.
+
+**Entwurf:** `mockups/grenzen.html`
+
+**Nicht dazu:** eine zweite Datei neben der `.md`.
 
 ---
 
-## Schritt 2 — Die Auswahlleiste
+## Schritt 3 — Die Auswahlleiste
 
-Text markieren, und über der Auswahl steht eine Leiste: `Text ▾`,
-Link, Kommentar, **B** *I* ~~S~~, `Code`, Farbe. Sie kommt zum Text,
-statt am Fensterrand zu warten.
+Text markieren, und über der Auswahl steht eine Leiste: **B** *I*
+~~S~~, `Code`, Link, Textmarker. Sie kommt zum Text, statt am
+Fensterrand zu warten.
 
 Die Knöpfe setzen **Zeichen in den Rohtext**, nichts anderes:
-`**` um die Auswahl, `*`, `~~`, Rückstriche. `U` steht blass darin —
-Markdown kennt kein Unterstreichen, und ein fehlender Knopf wird
-gesucht, ein abgeschalteter nicht.
+`**` um die Auswahl, `*`, `~~`, Rückstriche, `[…](…)`, `==`.
+Der Textmarker hängt an der Stufe aus Schritt 2.
 
 **Entwurf:** `mockups/auswahl.html`
 
-**Nicht dazu:** das Umwandeln-Menü (Schritt 4), Farbe (Schritt 6 —
-sie braucht erst den Dialektschalter).
+**Nicht dazu:** der Kommentar-Knopf — gestrichen, siehe
+`doku/ENTSCHEIDUNGEN.md` Punkt 8. Farbe und Unterstreichen —
+gestrichen, siehe Punkt 11.
 
 ---
 
-## Schritt 3 — Das Slash-Menü
+## Schritt 4 — Blockmenü, Umwandeln, Einrücken
+
+Der Griff `⠿` öffnet ein Menü: Löschen, Duplizieren, Umwandeln in.
+„Umwandeln in" ändert die Art, ohne die Zeile anzufassen — der Griff,
+den ein reines Textfeld grundsätzlich nicht hat.
+
+Dazu `Tab` und `Umschalt+Tab` zum Ein- und Ausrücken von Listen. Das
+verlangt eine `stufe` am Block und eine Erweiterung **beider**
+Richtungen des Umwandlers.
+
+**Entwurf:** `mockups/auswahl.html`
+
+**Nicht dazu:** „Link kopieren" und „Verschieben nach" — gestrichen,
+siehe `doku/ENTSCHEIDUNGEN.md` Punkt 11. Das `+` am Griff steht schon
+seit Schritt 1.
+
+---
+
+## Schritt 5 — Callout, Toggle, Tabelle
+
+Die drei Blöcke, an denen sich entscheidet, wie ernst dieses Projekt
+seine neunte Regel nimmt. Callout ist ein Dialekt (`> [!TIP]`), Toggle
+ist HTML (`<details>`), die Tabelle ist GFM.
+
+Alle drei sind bestätigt — und alle drei hängen am Schalter aus
+Schritt 2.
+
+**Entwurf:** `mockups/bloecke.html`, `mockups/grenzen.html`
+
+**Nicht dazu:** Spalten. Die gehen nicht, und das bleibt so.
+
+---
+
+## Schritt 6 — Das Slash-Menü
 
 `/` am Blockanfang öffnet die Liste, Weitertippen filtert. Rechts in
 jeder Zeile das Markdown-Kürzel — das Menü ist damit nebenbei ein
@@ -53,91 +105,67 @@ samt Urteil aus `doku/BLOCKKATALOG.md`. Das ist der Unterschied
 zwischen einem Werkzeug, dem man traut, und einem, das hinter dem
 Rücken HTML schreibt.
 
+**Steht bewusst hinter Schritt 5:** Das Menü zeigt nur, was gebaut
+ist — sonst verspricht es etwas, das beim Klick nicht kommt.
+
 **Entwurf:** `mockups/slash.html`
 
-**Nicht dazu:** Blöcke, die es noch nicht gibt. Das Menü zeigt nur,
-was gebaut ist — sonst verspricht es etwas, das beim Klick nicht
-kommt.
+---
+
+## Schritt 7 — Sich zurechtfinden
+
+Rechts die Gliederung aus den Überschriften, die springt. Dazu die
+Suche im Dokument (`Strg+F` im Editor, nicht im Browser — die
+Browsersuche findet den Rohtext eines Blocks nicht) und ein
+Inhaltsverzeichnis, das sich aus den Überschriften erzeugen lässt.
+
+**Entwurf:** `mockups/schreiben.html`, rechte Spalte
+
+**Nicht dazu:** der Dateibaum links. Gestrichen, siehe
+`doku/ENTSCHEIDUNGEN.md` Punkt 2.
 
 ---
 
-## Schritt 4 — Blockmenü, Umwandeln, Einrücken
+## Schritt 8 — Bild und Rückgängig
 
-Der Griff `⠿` öffnet ein Menü: Löschen, Duplizieren, Umwandeln in,
-Link kopieren, Verschieben nach. „Umwandeln in" ändert die Art, ohne
-die Zeile anzufassen — der Griff, den ein reines Textfeld
-grundsätzlich nicht hat.
+Bild einfügen als **Verweis** (`![Titel](bild.png)`), nicht
+eingebettet — sonst ist die Datei kein lesbarer Text mehr.
 
-Dazu `Tab` und `Umschalt+Tab` zum Ein- und Ausrücken von Listen. Das
-verlangt eine `stufe` am Block und eine Erweiterung beider Richtungen
-des Umwandlers.
-
-**Entwurf:** `mockups/auswahl.html`, Musterbogen unten
-
-**Nicht dazu:** verschachtelte Blöcke unter einem Toggle.
+Rückgängig über Blockgrenzen hinweg. Der einzige Punkt der ganzen
+Liste, bei dem ohne ihn Arbeit verloren gehen kann: Ein gelöschter
+oder verschobener Block kommt mit `Strg+Z` derzeit nicht zurück.
 
 ---
 
-## Schritt 5 — Callout, Toggle, Tabelle
+## Schritt 9 — Aussehen und Druck
 
-Die drei Blöcke, an denen sich entscheidet, wie ernst dieses Projekt
-seine neunte Regel nimmt. Callout ist ein Dialekt (`> [!TIP]`), Toggle
-ist HTML (`<details>`), die Tabelle ist GFM.
+Zweites Thema (dunkel). Blocksatz als **Anzeige-Einstellung**, nicht
+als Merkmal des Textes.
 
-Alle drei kommen **zusammen mit dem Dialektschalter** oder gar nicht.
+Drei Druck-Layouts, umschaltbar: **Schlicht** (Vorgabe),
+**Technische Doku**, **Manuskript**. Der Knopf **PDF** öffnet den
+Druckdialog — dort wählt der Nutzer „Als PDF speichern".
 
-**Entwurf:** `mockups/bloecke.html`, `mockups/grenzen.html`
-
-**Nicht dazu:** Spalten. Die gehen nicht, und das bleibt so.
-
----
-
-## Schritt 6 — Der Dialektschalter
-
-`Rein · GitHub · Obsidian · Pandoc` in den Einstellungen. Dieselbe
-Fläche, andere Ausgabe. Das Slash-Menü blendet aus, was die gewählte
-Stufe nicht kann, statt es anzubieten und hinterher zu enttäuschen.
-
-Damit werden auch Farbe, Marker und Erwähnung möglich — jede an ihrer
-Stufe.
-
-**Entwurf:** `mockups/grenzen.html`
-
-**Nicht dazu:** eine zweite Datei neben der `.md`. Siehe
-`doku/ENTSCHEIDUNGEN.md`, Punkt 1.
+Begründung für beides in `doku/ENTSCHEIDUNGEN.md`, Punkt 9 und 10.
 
 ---
 
-## Schritt 7 — Frontmatter als Eigenschaften
+## Zurückgestellt
 
-Der YAML-Kopf sieht aus wie Notions Eigenschaftenzeilen: links das
-Etikett, rechts der Wert. Ein Klick auf die Fußzeile zeigt wieder den
-Rohtext.
+**Frontmatter als Eigenschaften.** Der YAML-Kopf als Notions
+Eigenschaftenzeilen. Nicht abgelehnt, vertagt — er nützt vor allem
+beim Verwalten vieler Dateien, und einen Ordnerbaum wird es nicht
+geben. Siehe `doku/ENTSCHEIDUNGEN.md`, Punkt 12.
 
-**Entwurf:** `mockups/schreiben.html`, oberer Teil
+Bis dahin bleibt ein vorhandener YAML-Kopf unangetastet als Rohtext
+stehen.
 
-**Nicht dazu:** ein YAML-Parser für alles. Flache Schlüssel mit Text,
-Zahl, Datum und Liste reichen; was er nicht versteht, bleibt Rohtext
-und wird unverändert zurückgeschrieben.
+## Gestrichen
 
----
+Ordnerbaum · Kommentare am Text · farbiger Text · unterstrichen ·
+Erwähnung `[[Name]]` · „Link kopieren" · „Verschieben nach" · Spalten ·
+synchronisierte Blöcke · Datenbanken · zweite Datei · lokaler Server ·
+Rich-Text-Modell · KI-Funktionen.
 
-## Schritt 8 — Gliederung und Dateien
-
-Rechts die Gliederung aus den Überschriften, die springt. Links der
-Ordner statt Notions Seitenbaum.
-
-**Hier liegt die offene Frage aus `doku/ENTSCHEIDUNGEN.md`, Punkt 2:**
-Ein Ordnerbaum lässt sich über `<input webkitdirectory>` lesen, aber
-nicht zurückschreiben. Was das für den Editor heißt, wird **vor**
-diesem Schritt entschieden, nicht darin.
-
-**Entwurf:** `mockups/schreiben.html`
-
----
-
-## Später, ohne Reihenfolge
-
-Bild einfügen (als Verweis, nicht eingebettet — sonst ist die Datei
-kein Text mehr). Suchen im Dokument. Zweites Thema (dunkel). Druckbild.
-Mehrere Dateien nebeneinander. Rückgängig über Blockgrenzen hinweg.
+Jeder Punkt mit Begründung in `doku/ENTSCHEIDUNGEN.md`. Sie stehen
+hier, damit die Frage nicht alle drei Monate neu gestellt wird.

@@ -450,39 +450,6 @@ function rahmen({datei, titel, hinweis, inhalt, gewinn, verlust, zusatz, unten})
   +(unten||"");
 }
 
-/* ---------- Der Dateibaum ----------
-   Notions Seitenbaum wird hier zu dem, was ein Markdown-Editor
-   wirklich hat: einem Ordner voller Dateien. Das ist die ehrlichste
-   Entsprechung — eine Seite ist eine Datei, eine Unterseite eine
-   Datei im Unterordner. */
-function baum(aktiv){
-  const z=(kl,em,nm,extra="")=>'<div class="ed-z '+kl+(nm===aktiv?" an":"")+'">'
-    +'<span class="dre">'+(kl.includes("ord")?IK.chev:"")+'</span>'
-    +'<span class="em">'+em+'</span><span class="nm">'+esc(nm)+'</span>'+extra+'</div>';
-  return '<div class="ed-baum">'
-  +'<div class="ed-wurzel">'+IK.ordner+'Notizbuch<span class="ch">'+IK.chevU+'</span></div>'
-  +'<div class="ed-such">'+IK.lupe+'Suchen<kbd>Strg K</kbd></div>'
-  +'<div class="ed-sek">Ordner<span class="sp"></span>'+IK.plus+'</div>'
-  +z("ord","📁","Projekte")
-  +z("k1","📄","Ablösung Altsystem.md")
-  +z("k1","📄","Schnittstellen.md")
-  +z("k1 ord","📁","Anhänge")
-  +z("ord","📁","Notizen")
-  +z("k1","📄","Preismodell Staffeln.md")
-  +z("k1","📄","Wettbewerbs-Research.md")
-  +z("ord","📁","Vorlagen")
-  +z("k1","📄","Telefonnotiz.md")
-  +z("k1","📄","Protokoll.md")
-  +'<div class="ed-sek">Zuletzt<span class="sp"></span></div>'
-  +'<div class="ed-z"><span class="dre"></span><span class="em">📄</span>'
-    +'<span class="nm">Ablösung Altsystem.md</span><span class="kb">vor 4 Min.</span></div>'
-  +'<div class="ed-fuss">'
-  +'<div class="ed-z"><span class="dre"></span>'+IK.plus+'<span class="nm">Neue Datei</span></div>'
-  +'<div class="ed-z"><span class="dre"></span>'+IK.punkte
-    +'<span class="nm">Einstellungen</span></div>'
-  +'</div></div>';
-}
-
 function kopfzeile(rechtsExtra, ansicht){
   const s = a => '<span'+(a===ansicht?' class="an"':"")+'>'+esc(a)+'</span>';
   return '<div class="ed-kopf">'
@@ -693,14 +660,18 @@ const QUELLE = [
 /* ============================================================
    1 — SCHREIBEN
    Der Editor in Ruhe. Alles, was Notion an einer Seite zeigt, auf
-   eine Markdown-Datei übertragen: Dateibaum statt Seitenbaum,
-   Frontmatter statt Eigenschaften, Blöcke statt Zeilen.
+   eine Markdown-Datei übertragen: Blöcke statt Zeilen, Gliederung
+   statt Seitenbaum, Frontmatter statt Eigenschaften.
+
+   Notions Seitenbaum hat hier keine Entsprechung: Ein Ordner liesse
+   sich im Browser lesen, aber nicht zurueckschreiben. Eine Datei,
+   ein Fenster — doku/ENTSCHEIDUNGEN.md, Punkt 2.
    ============================================================ */
 function seiteSchreiben(){
   const inhalt =
    '<div class="ed hoch">'
   +kopfzeile(null,"Schreiben")
-  +'<div class="ed-rumpf">'+baum("Ablösung Altsystem.md")
+  +'<div class="ed-rumpf">'
   +'<div class="ed-blatt"><div class="ed-deck"></div><div class="ed-seite">'
   +'<span class="ed-icon">🗂️</span>'
   +'<div class="ed-titel">Ablösung Altsystem</div>'
@@ -713,8 +684,9 @@ function seiteSchreiben(){
 
   return rahmen({
     datei:"schreiben", titel:"Schreiben", inhalt,
-    hinweis:'<b>Der Editor in Ruhe.</b> Links der Ordner statt Notions Seitenbaum — eine '
-     +'Seite ist eine Datei, eine Unterseite eine Datei im Unterordner. Oben das '
+    hinweis:'<b>Der Editor in Ruhe.</b> Kein Seitenbaum links — ein Ordner liesse sich '
+     +'im Browser zwar lesen, aber nicht zurückschreiben, und ein Baum, der das '
+     +'verschweigt, verspricht mehr als er hält. Eine Datei, ein Fenster. Oben das '
      +'YAML-Frontmatter, gezeigt als Notions Eigenschaftenzeilen. In der Mitte die '
      +'708 Pixel breite Schreibspalte mit dem Blockgriff links am Zeiger. Rechts die '
      +'Gliederung, unten eine Fußleiste — die hat Notion nicht, eine Datei braucht sie.',
@@ -742,8 +714,9 @@ function seiteSchreiben(){
       '<b>Das Kopfbild und das Symbol</b> haben in Markdown keinen Ort. Sie müssten ins '
       +'Frontmatter (<code>cover:</code>, <code>icon:</code>) und wären damit ein Dialekt, '
       +'den nur dieser Editor versteht.',
-      '<b>Die Kommentarmarkierung</b> in „Offene Fragen" ist gelb unterlegt. In der Datei '
-      +'steht davon nichts — siehe Grenzen.'
+      '<b>Die gelbe Markierung</b> in „Offene Fragen" ist der Textmarker '
+      +'<code>==so==</code> — ein Dialekt, der am Schalter hängt. Kommentare am Text sind '
+      +'gestrichen: doku/ENTSCHEIDUNGEN.md, Punkt 8.'
     ]});
 }
 
@@ -793,7 +766,7 @@ function seiteSlash(){
   const inhalt =
    '<div class="ed" style="height:880px">'
   +kopfzeile(null,"Schreiben")
-  +'<div class="ed-rumpf">'+baum("Ablösung Altsystem.md")
+  +'<div class="ed-rumpf">'
   +'<div class="ed-blatt"><div class="ed-seite" style="padding-top:26px">'
   +'<div class="ed-titel" style="font-size:32px">Ablösung Altsystem</div>'
   +'<div class="b">'+griff+'Das Altsystem läuft seit elf Jahren und trägt noch immer '
@@ -855,25 +828,21 @@ function seiteAuswahl(){
   +'<span class="kn">Text'+IK.chevU+'</span>'
   +'<span class="tr"></span>'
   +'<span class="kn">'+IK.kette+'Link</span>'
-  +'<span class="kn">'+IK.sprech+'Kommentar</span>'
   +'<span class="tr"></span>'
   +'<span class="kn"><b>B</b></span>'
   +'<span class="kn"><i>I</i></span>'
-  /* Unterstreichen steht hier blass: Markdown kennt es nicht. Genau
-     dieselbe Entscheidung stand schon in der Formatierungsleiste,
-     aus der dieser Entwurf hervorging. */
-  +'<span class="kn aus1"><u>U</u></span>'
   +'<span class="kn"><s>S</s></span>'
   +'<span class="kn">'+IK.code+'</span>'
-  +'<span class="tr"></span>'
-  +'<span class="kn">A'+IK.chevU+'</span>'
+  /* Der Textmarker haengt an der Stufe: `==markiert==` ist ein
+     Dialekt. Auf der Stufe „Rein" blendet ihn der Schalter aus. */
+  +'<span class="kn"><span class="markiert">A</span></span>'
   +'<span class="kn">'+IK.punkte+'</span>'
   +'</div>';
 
   const inhalt =
    '<div class="ed" style="height:560px">'
   +kopfzeile(null,"Schreiben")
-  +'<div class="ed-rumpf">'+baum("Ablösung Altsystem.md")
+  +'<div class="ed-rumpf">'
   +'<div class="ed-blatt"><div class="ed-seite" style="padding-top:56px">'
   +'<div class="ed-titel" style="font-size:32px">Ablösung Altsystem</div>'
   +'<div class="ankr" style="position:relative;margin-top:74px">'+leiste
@@ -913,33 +882,10 @@ function seiteAuswahl(){
     +mz("⌘","Codeblock","","```")
     +'</div>';
 
-  const farben = '<div class="mn farben" style="position:relative;width:250px">'
-    +'<div class="k">Schriftfarbe</div>'
-    +'<div class="z"><span class="pr" style="color:rgb(55,53,47)">A</span>'
-      +'<span class="t">Standard</span></div>'
-    +'<div class="z"><span class="pr" style="color:rgb(120,119,116)">A</span>'
-      +'<span class="t">Grau</span></div>'
-    +'<div class="z"><span class="pr" style="color:rgb(212,76,71)">A</span>'
-      +'<span class="t">Rot</span></div>'
-    +'<div class="tr"></div>'
-    +'<div class="k">Hintergrund</div>'
-    +'<div class="z"><span class="pr" style="background:rgb(251,243,196)">A</span>'
-      +'<span class="t">Gelb markiert</span></div>'
-    +'<div class="z"><span class="pr" style="background:rgb(211,229,239)">A</span>'
-      +'<span class="t">Blau markiert</span></div>'
-    +'<div class="z"><span class="pr" style="background:rgb(219,237,219)">A</span>'
-      +'<span class="t">Grün markiert</span></div>'
-    +'</div>';
-
   const blockmenue = '<div class="mn" style="position:relative;width:270px">'
     +mz("🗑","Löschen","","Entf")
     +mz("⧉","Duplizieren","","Strg D")
     +mz("↻","Umwandeln in","","")
-    +mz("🔗","Link kopieren","","")
-    +'<div class="tr"></div>'
-    +mz("💬","Kommentar","","Strg ⇧ M")
-    +mz("🎨","Farbe","","")
-    +mz("↕","Verschieben nach","","")
     +'<div class="tr"></div>'
     +'<div style="padding:7px 9px;font-size:11.5px;color:rgba(55,53,47,.42);line-height:1.5">'
     +'Zuletzt bearbeitet: heute, 11:20<br>Block 12 von 34 · Absatz</div>'
@@ -956,8 +902,6 @@ function seiteAuswahl(){
   +'<div><div style="font-size:12px;color:#8a857a;margin-bottom:8px;'
     +'text-transform:uppercase;letter-spacing:.05em">Umwandeln in</div>'+umwandeln+'</div>'
   +'<div><div style="font-size:12px;color:#8a857a;margin-bottom:8px;'
-    +'text-transform:uppercase;letter-spacing:.05em">Farbe</div>'+farben+'</div>'
-  +'<div><div style="font-size:12px;color:#8a857a;margin-bottom:8px;'
     +'text-transform:uppercase;letter-spacing:.05em">Blockgriff ⠿</div>'+blockmenue+'</div>'
   +'</div>';
 
@@ -965,28 +909,31 @@ function seiteAuswahl(){
     datei:"auswahl", titel:"Auswahl & Menüs", inhalt, unten,
     hinweis:'<b>Text markieren, und die Leiste steht darüber.</b> Kein Menüband am '
      +'Fensterrand, keine Werkzeugleiste über dem Feld — die Bedienung kommt zum Text. '
-     +'Ein Knopf ist blass: <b>U für Unterstreichen.</b> Markdown kennt es nicht, und '
-     +'genau so stand es schon in der Formatierungsleiste, aus der dieser Entwurf '
-     +'hervorging. Er bleibt sichtbar und abgeschaltet, statt zu fehlen — sonst sucht '
-     +'man ihn.',
+     +'Jeder Knopf setzt <b>Zeichen in den Rohtext</b>: <code>**</code> um die Auswahl, '
+     +'<code>*</code>, <code>~~</code>, Rückstriche, <code>[…](…)</code>. Was kein '
+     +'Markdown ist, steht nicht auf der Leiste — Unterstreichen, Farbe und Kommentar '
+     +'sind gestrichen (doku/ENTSCHEIDUNGEN.md, Punkt 8 und 11).',
     gewinn:[
       '<b>Die Leiste kommt zum Text.</b> Eine feste Werkzeugleiste über dem Feld zwingt '
       +'bei jedem Wort denselben Weg hin und zurück.',
       '<b>„Umwandeln in" statt neu tippen.</b> Ein Absatz wird eine Überschrift, eine '
       +'Aufzählung wird eine To-do-Liste — ohne die Zeile anzufassen. Das ist der Griff, '
       +'den ein reines Textfeld grundsätzlich nicht hat.',
-      '<b>Das Blockmenü sammelt alles an einer Stelle</b>: löschen, duplizieren, '
-      +'verschieben, umwandeln, färben. Sieben Einträge statt sieben Tastenkombinationen.',
-      '<b>Abgeschaltete Knöpfe lehren mit.</b> Das blasse <code>U</code> sagt „gibt es '
-      +'nicht", ohne dass jemand danach sucht.'
+      '<b>Das Blockmenü sammelt an einer Stelle, was den Block als Ganzes betrifft</b>: '
+      +'löschen, duplizieren, umwandeln. Drei Einträge, die alle etwas tun — kein '
+      +'Eintrag, der nur so aussieht.',
+      '<b>Was nicht draufsteht, lehrt auch.</b> Die Leiste zeigt genau die sechs '
+      +'Auszeichnungen, die Markdown kennt. Wer Unterstreichen sucht, findet es nicht — '
+      +'und lernt daran, dass es das nicht gibt.'
     ],
     verlust:[
-      '<b>Farbe ist kein Markdown.</b> Rot und Gelb-markiert brauchen <code>&lt;span '
-      +'style&gt;</code> oder <code>==markiert==</code>. Das eine ist HTML, das andere ein '
-      +'Dialekt. Beide stehen im Farbmenü, ohne dass es dort steht — der einzige Ort, an '
-      +'dem dieser Entwurf schummelt.',
-      '<b>Kommentare gibt es in einer .md-Datei nicht.</b> Der Knopf steht da und '
-      +'verspricht etwas, das ohne zweite Datei nicht zu halten ist.',
+      '<b>Farbe ist kein Markdown</b> und deshalb gestrichen: Sie bräuchte '
+      +'<code>&lt;span style&gt;</code> mitten im Satz. Geblieben ist der Textmarker '
+      +'<code>==so==</code> — auch ein Dialekt, aber einer, der lesbar bleibt, wenn ihn '
+      +'niemand versteht. Er hängt am Schalter.',
+      '<b>Kommentare gibt es in einer .md-Datei nicht.</b> Der Knopf ist deshalb aus '
+      +'diesem Entwurf entfernt worden — er versprach etwas, das ohne zweite Datei '
+      +'nicht zu halten ist.',
       '<b>Durchgestrichen</b> (<code>~~so~~</code>) ist GFM, nicht Markdown. In Pandoc '
       +'ohne Erweiterung kommt es als Text an.',
       '<b>Die Leiste verdeckt die Zeile darüber.</b> Bei Auswahl in der ersten Zeile '
@@ -1181,7 +1128,7 @@ function seiteQuelltext(){
   const inhalt =
    '<div class="ed hoch">'
   +kopfzeile(null,"Geteilt")
-  +'<div class="ed-rumpf">'+baum("Ablösung Altsystem.md")
+  +'<div class="ed-rumpf">'
   +'<div class="ed-blatt"><div class="ed-seite" style="padding:26px 40px 60px;max-width:none">'
   +'<div class="ed-titel" style="font-size:30px">Ablösung Altsystem</div>'
   +dokument({ende:false})
@@ -1305,8 +1252,8 @@ function seiteGrenzen(){
    7 — DIE ÜBERSICHT
    ============================================================ */
 const KARTEN = [
-  ["schreiben","🗂️","Schreiben","Der Editor in Ruhe: Ordner statt Seitenbaum, Frontmatter "
-   +"als Eigenschaften, Blockgriff am Zeiger, Gliederung rechts, Fußleiste unten."],
+  ["schreiben","🗂️","Schreiben","Der Editor in Ruhe: Frontmatter als Eigenschaften, "
+   +"Blockgriff am Zeiger, Gliederung rechts, Fußleiste unten. Kein Seitenbaum."],
   ["slash","⌨️","Slash-Menü",'„/" mitten im Text. Links die Blöcke mit ihrem '
    +'Markdown-Kürzel, rechts die Vorschau — und die zeigt, was in die Datei kommt.'],
   ["auswahl","🖍️","Auswahl & Menüs",'Die schwebende Leiste über der Auswahl, dazu der '
@@ -1416,6 +1363,20 @@ const GEBAUT = ["Text","Überschrift 1–3","Aufzählung","Nummerierte Liste","T
   "Zitat","Trennlinie","Codeblock","Text in Code","Fett, kursiv","Durchgestrichen",
   "Markierter Text","Link"];
 
+/* Bewusst gestrichen. Sie bleiben in der Tabelle stehen, damit die
+   Frage nicht alle drei Monate neu gestellt wird — die Begründungen
+   in doku/ENTSCHEIDUNGEN.md, Punkt 1 und 11. */
+const GESTRICHEN = ["Unterstrichen","Farbiger Text","Erwähnung","Spalten",
+  "Kommentar am Text","Synchronisierter Block","Datenbank"];
+
+/* Nicht abgelehnt, vertagt — doku/ENTSCHEIDUNGEN.md, Punkt 12. */
+const VERTAGT = ["Eigenschaften"];
+
+const stand = (nm) => GEBAUT.indexOf(nm) >= 0     ? "gebaut"
+                    : GESTRICHEN.indexOf(nm) >= 0 ? "gestrichen"
+                    : VERTAGT.indexOf(nm) >= 0    ? "vertagt"
+                    :                               "offen";
+
 function blockkatalog(){
   /* Ein Codespan braucht mehr Rueckstriche als der laengste Lauf
      darin — sonst zerfaellt genau die Zeile, die einen Codeblock
@@ -1435,7 +1396,7 @@ function blockkatalog(){
        genau das steht dort nicht. */
     roh(md).split("\n").map((z) => z ? mono(z) : "").join("<br>"),
     URTEIL_TEXT[ur],
-    GEBAUT.indexOf(nm) >= 0 ? "gebaut" : "offen"
+    stand(nm)
   ].join(" | ") + " |";
 
   const zahl = (k) => KATALOG.filter(z => z[4] === k).length;
@@ -1461,7 +1422,12 @@ function blockkatalog(){
   + zahl("nein") + " Blöcke. Siehe `doku/ENTSCHEIDUNGEN.md`, Punkt 1.\n\n"
   + "## Stand\n\n"
   + "**" + GEBAUT.length + " von " + KATALOG.length + " Blöcken sind gebaut.** "
-  + "Welcher Schritt welchen bringt, steht in `doku/ROADMAP.md`.\n";
+  + GESTRICHEN.length + " sind gestrichen, " + VERTAGT.length + " ist vertagt — "
+  + "übrig bleiben " + (KATALOG.length - GEBAUT.length - GESTRICHEN.length
+      - VERTAGT.length) + " offene.\n\n"
+  + "Welcher Schritt welchen bringt, steht in `doku/ROADMAP.md`. Was **gestrichen** "
+  + "heißt und warum, steht in `doku/ENTSCHEIDUNGEN.md`, Punkt 1 und 11; **vertagt** "
+  + "in Punkt 12.\n";
 }
 
 mkdirSync("doku", { recursive: true });
