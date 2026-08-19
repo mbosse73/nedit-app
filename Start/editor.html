@@ -238,6 +238,25 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 .menue .tr{height:1px;background:var(--linie2);margin:5px 2px}
 .menue .leer{padding:9px;font-size:13px;color:var(--tinte3)}
 
+/* Das Slash-Menü hat eine zweite Spalte, die Notion nicht hat: Sie
+   zeigt nicht, wie der Block aussieht, sondern **was in die Datei
+   kommt** — und ob das überall läuft. Für einen Markdown-Editor ist
+   das der Unterschied zwischen einem Werkzeug, dem man traut, und
+   einem, das hinter dem Rücken HTML schreibt. */
+.menue.slash{width:min(620px,94vw);padding:0;overflow:hidden}
+.menue.slash.an{display:flex}
+.menue.slash .liste{flex:1;min-width:0;max-height:344px;overflow-y:auto;padding:5px}
+.menue.slash .vorschau{width:266px;flex-shrink:0;border-left:1px solid var(--linie2);
+  background:var(--rand);padding:13px 14px;font-size:12.5px;color:var(--tinte2)}
+.menue.slash .vorschau .k{padding:0 0 7px}
+.menue.slash .vorschau pre{background:var(--grund);border:1px solid var(--linie);
+  border-radius:var(--rad);padding:8px 10px;font-family:var(--fest);font-size:11.5px;
+  line-height:1.55;white-space:pre-wrap;word-break:break-word;color:var(--tinte)}
+.menue.slash .vorschau .ur{display:inline-block;margin-top:11px;font-size:10px;
+  letter-spacing:.05em;text-transform:uppercase;border-radius:3px;padding:2px 6px;
+  background:var(--grund);border:1px solid var(--linie);color:var(--tinte2)}
+.menue.slash .vorschau .satz{margin-top:8px;line-height:1.55}
+
 /* ---------- Einstellungen ----------
    Hängt an body, nicht an .app: Der Überzug soll über allem liegen
    und von keinem Ansichtsumschalter erwischt werden — dieselbe
@@ -321,6 +340,10 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 
 <div class="leiste" id="leiste" role="toolbar" aria-label="Auszeichnung"></div>
 <div class="menue" id="menue" role="menu" aria-label="Menü"></div>
+<div class="menue slash" id="slash" role="listbox" aria-label="Block einfügen">
+  <div class="liste" id="slash-liste"></div>
+  <div class="vorschau" id="slash-vorschau"></div>
+</div>
 
 <div class="zettel" id="zettel" role="status" aria-live="polite"></div>
 
@@ -1101,33 +1124,54 @@ function leistePruefen(){
    überall daneben — wer das Menü zweimal benutzt hat, tippt beim
    dritten Mal die zwei Zeichen und braucht es nicht mehr. */
 const ARTEN = [
-  {art:"absatz", name:"Text",              zeichen:"¶",   kuerzel:""},
-  {art:"h1",     name:"Überschrift 1",     zeichen:"H1",  kuerzel:"# "},
-  {art:"h2",     name:"Überschrift 2",     zeichen:"H2",  kuerzel:"## "},
-  {art:"h3",     name:"Überschrift 3",     zeichen:"H3",  kuerzel:"### "},
-  {art:"punkt",  name:"Aufzählung",        zeichen:"•",   kuerzel:"- "},
-  {art:"nummer", name:"Nummerierte Liste", zeichen:"1.",  kuerzel:"1. "},
-  {art:"todo",   name:"To-do-Liste",       zeichen:"[ ]", kuerzel:"- [ ] ", merkmal:"todo"},
-  {art:"zitat",  name:"Zitat",             zeichen:"»",   kuerzel:"> "},
-  {art:"code",   name:"Codeblock",         zeichen:"```", kuerzel:"```"},
-  {art:"linie",  name:"Trennlinie",        zeichen:"—",   kuerzel:"---"},
+  {art:"absatz", name:"Text",              zeichen:"¶",   kuerzel:"",
+   probe:"Ein einfacher Absatz."},
+  {art:"h1",     name:"Überschrift 1",     zeichen:"H1",  kuerzel:"# ",
+   probe:"# 2 Zielbild"},
+  {art:"h2",     name:"Überschrift 2",     zeichen:"H2",  kuerzel:"## ",
+   probe:"## 2 Zielbild"},
+  {art:"h3",     name:"Überschrift 3",     zeichen:"H3",  kuerzel:"### ",
+   probe:"### 2 Zielbild"},
+  {art:"punkt",  name:"Aufzählung",        zeichen:"•",   kuerzel:"- ",
+   probe:"- Erster Punkt"},
+  {art:"nummer", name:"Nummerierte Liste", zeichen:"1.",  kuerzel:"1. ",
+   probe:"1. Erster Punkt"},
+  {art:"todo",   name:"To-do-Liste",       zeichen:"[ ]", kuerzel:"- [ ] ", merkmal:"todo",
+   urteil:"GFM", probe:"- [ ] Berichte sichten\n- [x] Erledigtes"},
+  {art:"zitat",  name:"Zitat",             zeichen:"»",   kuerzel:"> ",
+   probe:"> Ein abgesetzter Satz."},
+  {art:"code",   name:"Codeblock",         zeichen:"```", kuerzel:"```",
+   probe:"```javascript\nconst n = 1;\n```"},
+  {art:"linie",  name:"Trennlinie",        zeichen:"—",   kuerzel:"---",
+   probe:"---"},
   /* Die drei jenseits von reinem Markdown. `vorlage` baut die Quelle,
      wenn ein Block in diese Art umgewandelt wird — sie tragen ihre
      ganze Quelle im Feld `text` und wären ohne Gerüst unlesbar. */
   {art:"tabelle", name:"Tabelle",          zeichen:"|",   kuerzel:"| |",
    merkmal:"tabelle", urteil:"GFM",
+   probe:"| Name | Format |\n| --- | --- |\n| Export | CSV |",
    vorlage:(t) => "| " + (t || "Spalte") + " | Spalte |\n| --- | --- |\n|  |  |"},
   {art:"callout", name:"Callout",          zeichen:"!",   kuerzel:"> [!TIP]",
    merkmal:"callout", urteil:"Dialekt",
+   probe:"> [!TIP]\n> Vier davon sind derselbe Export.",
    vorlage:(t) => "> [!NOTE]\n> " + (t || "Hinweis")},
   {art:"toggle",  name:"Toggle-Liste",     zeichen:"›",   kuerzel:"<details>",
    merkmal:"html", urteil:"HTML",
+   probe:"<details>\n<summary>Entscheidungen</summary>\n\nDer Rumpf.\n\n</details>",
    vorlage:(t) => "<details>\n<summary>" + (t || "Titel") + "</summary>\n\n\n\n</details>"}
 ];
 
 /* Was die gewählte Stufe nicht kann, steht nicht im Menü — harte
    Regel 9. Was schon im Text steht, bleibt davon unberührt. */
 function arten(){ return ARTEN.filter(a => !a.merkmal || kann(a.merkmal)); }
+
+/* Die Urteile aus doku/BLOCKKATALOG.md, in einem Satz. */
+const URTEIL_SATZ = {
+  "rein":    "Läuft in jedem Werkzeug der Welt.",
+  "GFM":     "GitHub-Markdown. Sehr verbreitet, aber eine Erweiterung.",
+  "Dialekt": "Bindet die Datei an Werkzeuge, die diesen Dialekt kennen.",
+  "HTML":    "Gültiges Markdown — im nächsten Editor aber rohes HTML statt eines Blocks."
+};
 
 function umwandeln(i, art){
   const b = Z.bloecke[i];
@@ -1195,6 +1239,116 @@ function blockMenue(i, anker){
   menueZeigen(eintraege, anker);
 }
 
+/* ---------- Das Slash-Menü ----------
+   `/` am Blockanfang öffnet die Liste, Weitertippen filtert. Rechts
+   in jeder Zeile das Markdown-Kürzel: Wer das Menü zweimal benutzt
+   hat, tippt beim dritten Mal die zwei Zeichen. Das Menü ist damit
+   nebenbei ein Lehrmittel — und macht sich mit der Zeit selbst
+   überflüssig.
+
+   Es zeigt nur, was gebaut **und** auf der gewählten Stufe möglich
+   ist. Ein Menü, das etwas anbietet, was beim Klick nicht kommt, ist
+   schlimmer als eines, das schweigt. */
+let slashBlock = -1, slashWahl = 0, slashTreffer = [];
+
+function slashOffen(){ return slashBlock >= 0; }
+
+function slashSchliessen(){
+  slashBlock = -1;
+  $("#slash").classList.remove("an");
+}
+
+/* Der Suchbegriff steht im Block selbst: alles hinter dem `/`. */
+function slashBegriff(i){
+  const b = Z.bloecke[i];
+  if (!b || MEHRZEILIG.indexOf(b.art) >= 0) return null;
+  const m = b.text.match(/^\/([^\s]*)$/);
+  return m ? m[1] : null;
+}
+
+function slashMalen(){
+  const begriff = slashBegriff(slashBlock);
+  if (begriff === null){ slashSchliessen(); return; }
+  const suche = begriff.toLowerCase();
+  slashTreffer = arten().filter(a =>
+    !suche || (a.name + " " + a.kuerzel + " " + a.art).toLowerCase().indexOf(suche) >= 0);
+  if (slashWahl >= slashTreffer.length) slashWahl = 0;
+
+  const liste = $("#slash-liste");
+  liste.innerHTML = "";
+  if (!slashTreffer.length){
+    liste.appendChild(el("div", "leer", "Kein Block heißt so."));
+  }
+  slashTreffer.forEach((a, k) => {
+    const b = el("button", k === slashWahl ? "zeig" : null,
+      '<span class="ic">' + esc(a.zeichen) + '</span>'
+      + '<span class="nm">' + esc(a.name) + '</span>'
+      + (a.kuerzel.trim() ? '<span class="ta">' + esc(a.kuerzel.trim()) + '</span>' : ""));
+    b.type = "button";
+    b.setAttribute("role", "option");
+    b.setAttribute("aria-selected", String(k === slashWahl));
+    /* `mousedown` statt `click`: Beim Klick wäre der Block schon aus
+       dem Fokus, und die Auswahl liefe ins Leere. */
+    b.addEventListener("mousedown", (ev) => { ev.preventDefault(); slashWaehlen(k); });
+    b.addEventListener("mousemove", () => {
+      if (slashWahl === k) return;
+      slashWahl = k; slashMalen();
+    });
+    liste.appendChild(b);
+  });
+
+  const a = slashTreffer[slashWahl];
+  const v = $("#slash-vorschau");
+  if (!a){ v.innerHTML = ""; }
+  else {
+    const urteil = a.urteil || "rein";
+    v.innerHTML = '<div class="k">Was in die Datei kommt</div>'
+      + "<pre>" + esc(a.probe || "") + "</pre>"
+      + '<span class="ur">' + esc(urteil) + "</span>"
+      + '<div class="satz">' + esc(URTEIL_SATZ[urteil] || "") + "</div>";
+  }
+
+  const knoten = $('.blk[data-i="' + slashBlock + '"]');
+  if (!knoten){ slashSchliessen(); return; }
+  const m = $("#slash");
+  m.classList.add("an");
+  const r = knoten.getBoundingClientRect(), g = m.getBoundingClientRect();
+  let links = Math.min(r.left, innerWidth - g.width - 8);
+  let oben = r.bottom + 6;
+  if (oben + g.height > innerHeight - 8) oben = Math.max(8, r.top - g.height - 6);
+  m.style.left = Math.round(Math.max(8, links)) + "px";
+  m.style.top  = Math.round(oben) + "px";
+}
+
+function slashWaehlen(k){
+  const a = slashTreffer[k], i = slashBlock;
+  if (!a || i < 0) return;
+  slashSchliessen();
+  const b = Z.bloecke[i];
+  b.text = "";                       /* der Suchbegriff war nie Inhalt */
+  if (b.art === a.art){ bewahre(); male(i, -1); }
+  else umwandeln(i, a.art);
+}
+
+/* Gibt `true` zurück, wenn die Taste zum Menü gehörte. */
+function slashTaste(ev){
+  if (!slashOffen()) return false;
+  if (ev.key === "Escape"){ ev.preventDefault(); slashSchliessen(); return true; }
+  if (ev.key === "ArrowDown" || ev.key === "ArrowUp"){
+    ev.preventDefault();
+    if (!slashTreffer.length) return true;
+    slashWahl = (slashWahl + (ev.key === "ArrowDown" ? 1 : -1) + slashTreffer.length)
+              % slashTreffer.length;
+    slashMalen();
+    return true;
+  }
+  if (ev.key === "Enter" || ev.key === "Tab"){
+    if (!slashTreffer.length) return false;
+    ev.preventDefault(); slashWaehlen(slashWahl); return true;
+  }
+  return false;
+}
+
 /* ---------- Ereignisse an der Fläche ---------- */
 function verdrahte(){
   const spalte = $("#spalte");
@@ -1235,6 +1389,7 @@ function verdrahte(){
     const blk = t.closest(".blk"); if (!blk) return;
     blk.classList.remove("ueber");
     const i = Number(blk.dataset.i);
+    if (slashBlock === i) slashSchliessen();
     if (Z.bloecke[i]) t.innerHTML = blockInhalt(Z.bloecke[i]);
     if (aktiv === i) aktiv = -1;
   });
@@ -1245,6 +1400,8 @@ function verdrahte(){
     if (!Z.bloecke[i]) return;
     Z.bloecke[i].text = t.textContent;
     if (hilfePruefen(i, t)) return;
+    if (slashOffen()) slashMalen();
+    else if (Z.bloecke[i].text === "/"){ slashBlock = i; slashWahl = 0; slashMalen(); }
     bewahre();
     quelleMalen();
     fussMalen();
@@ -1252,6 +1409,7 @@ function verdrahte(){
 
   spalte.addEventListener("keydown", (ev) => {
     const t = ev.target.closest(".txt"); if (!t) return;
+    if (slashTaste(ev)) return;             /* das offene Menü hat Vorrang */
     tasteImBlock(ev, Number(t.closest(".blk").dataset.i), t);
   });
 
@@ -1406,7 +1564,7 @@ function einstellungenVerdrahten(){
   document.addEventListener("keydown", (ev) => {
     if (ev.key !== "Escape") return;
     if (ueber.classList.contains("an")) zu();
-    menueVerbergen(); leisteVerbergen();
+    menueVerbergen(); leisteVerbergen(); slashSchliessen();
   });
 }
 
