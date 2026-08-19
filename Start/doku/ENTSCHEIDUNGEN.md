@@ -289,3 +289,69 @@ Der Suchtreffer hat jetzt ein eigenes Token `--fund` in Hellorange.
 Der Prüflauf rechnet für beide Töne nach, dass der Text darauf über
 4,5 : 1 bleibt — in beiden Themen.
 
+---
+
+## 15 · Fortsetzungszeilen gehören zum Listenpunkt
+
+Bis August 2026 las `leseMarkdown` jede Zeile für sich. Eine
+eingerückte Folgezeile ohne eigenes Listenzeichen wurde damit ein
+eigener Absatz — und weil ein Absatz die Liste unterbricht, fing die
+Nummerierung danach wieder bei `1.` an. Der mitgelieferte Starttext
+schrieb sich selbst als `1. 1. 2.` zurück.
+
+Jetzt gilt: **Eine eingerückte Zeile ohne eigenes Zeichen, direkt
+hinter einem Listenpunkt, gehört zu ihm.** Drei Bedingungen, alle
+nötig:
+
+1. Die Zeile beginnt mit Leerzeichen oder Tabulator.
+2. Es ist kein Absatz offen.
+3. Die Zeile davor war nicht leer — **nach einer Leerzeile ist der
+   Punkt zu Ende.**
+
+Der Block trägt die Fortsetzung dann als zweite Zeile in seinem Feld
+`text`. Das ist keine Neuerung: Ein Absatz aus mehreren Zeilen tat das
+schon immer.
+
+**Der Preis ist eine Normalisierung.** Beim Zurückschreiben wird die
+Fortsetzung auf die Spalte des Inhalts gerückt — genau so weit, wie
+das Listenzeichen breit ist (`- ` zwei, `1. ` drei, `- [ ] ` sechs
+Zeichen). Wer eine Datei mit anderer Einrückung öffnet, bekommt sie
+vereinheitlicht zurück. Das ist derselbe Handel, den der Editor schon
+bei `*` → `-` und bei der Neuvergabe der Nummern eingeht: Der Text
+bleibt, die Schreibweise wird die des Editors.
+
+Was **nicht** angehängt wird: eine nicht eingerückte Folgezeile. Der
+weiche Umbruch mitten in einem Fließtextabsatz (`lazy continuation`)
+bleibt außen vor — er würde den nächsten Absatz verschlucken.
+
+Sechs Proben in `werkzeug/pruefen.mjs` sichern das ab, darunter eine
+Gegenprobe mit Leerzeile.
+
+---
+
+## 16 · Der Quelltext warnt, wo die Datei sich bindet
+
+Die Farbe im Quelltext sagt, **was** eine Stelle ist. Sie sagt nicht,
+**wo es klemmt**, wenn die Datei woanders geöffnet wird — und genau
+das ist die Frage, die man sich in der Dateiansicht stellt.
+
+Zeilen jenseits des reinen Markdown sind deshalb warm hinterlegt, mit
+einem Zettel am rechten Rand: `GFM`, `Dialekt` oder `HTML`. Die
+Urteile kommen aus derselben Tabelle `URTEIL` wie das Urteil am Block
+und im Slash-Menü; sie können nicht auseinanderlaufen.
+
+Drei Festlegungen dazu:
+
+* **Ein Zettel je Bereich, nicht je Zeile.** Eine Tabelle aus fünf
+  Zeilen sagt einmal `GFM`.
+* **Das stärkere Urteil gewinnt.** Ein To-do mit einem `[[Wiki-Link]]`
+  darin ist nicht `GFM`, sondern `Dialekt` — es braucht Obsidian.
+* **Der Zettel steht außerhalb des Textflusses** (`position:absolute`).
+  Im Fluss verschöbe er den Umbruch, und die Farbschicht stünde ab
+  dort neben der Schreibmarke — siehe Punkt 13.
+
+Gewarnt wird nach dem, was `leseMarkdown` aus der Zeile machen würde.
+Die beiden Auszeichnungen im Text (`~~…~~`, `==…==`) hängen zusätzlich
+an der Stufe: Was der Editor nicht als Auszeichnung liest, meldet er
+auch nicht — harte Regel 9.
+

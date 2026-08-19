@@ -173,7 +173,9 @@ function verhaeltnis(a, b){
                  ["blau", 3.0, "rand"],       /* Auszeichnungszeichen im Quelltext */
                  ["q-l", 4.5, "rand"],        /* Verweisziel im Quelltext */
                  ["tinte", 4.5, "fund"],      /* Text auf dem Suchtreffer */
-                 ["tinte", 4.5, "marker"]];   /* Text unter dem Textmarker */
+                 ["tinte", 4.5, "marker"],    /* Text unter dem Textmarker */
+                 ["tinte", 4.5, "warn-g"],    /* Text auf der gewarnten Zeile */
+                 ["warn-t", 4.5, "warn-g"]];  /* der Zettel am rechten Rand */
   /* Beide Themen. Ein zweites Thema, das die Kontrastregel
      unterlaeuft, ist kein zweites Thema, sondern ein Fehler. */
   const THEMEN = [[":root{", "hell"], ['[data-thema="dunkel"]', "dunkel"]];
@@ -235,6 +237,20 @@ function verhaeltnis(a, b){
       "- [ ] offen\n  - [x] unterpunkt erledigt\n- [ ] noch offen\n",
       "- eins\n    - vier Leerzeichen sind zwei Stufen\n- zwei\n",
       "1. eins\n  - gemischte Unterliste\n2. zwei\n",
+      /* Fortsetzungszeilen. Eine eingerueckte Zeile ohne eigenes
+         Zeichen gehoert zum Punkt darueber; die Einrueckung ist genau
+         so breit wie das Listenzeichen. Zaehlte der Leser sie als
+         Absatz, unterbraeche sie die Liste -- die dritte Probe wuerde
+         dann "1. 1. 2." schreiben statt "1. 2. 3.". */
+      "- eins\n  und weiter\n- zwei\n",
+      "1. eins\n   und weiter\n2. zwei\n",
+      "1. eins\n   und weiter\n2. zwei\n3. drei\n   auch hier\n",
+      "- [ ] offen\n      und weiter\n- [x] fertig\n",
+      "- eins\n  und weiter\n  und noch eine Zeile\n- zwei\n",
+      /* Gegenprobe: Nach einer Leerzeile ist der Punkt zu Ende. Die
+         eingerueckte Zeile darunter ist ein eigener Absatz und muss
+         mit ihren Leerzeichen unveraendert wiederkommen. */
+      "- eins\n\n  ein eigener Absatz\n",
       /* Die drei Bloecke jenseits von reinem Markdown. Sie tragen
          ihre ganze Quelle im Feld `text` und muessen deshalb Zeichen
          fuer Zeichen unveraendert zurueckkommen. */

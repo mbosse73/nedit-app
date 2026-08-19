@@ -363,6 +363,65 @@ gleich("er traegt --fund", toene.fund.replace(/\s/g, ""), toene.tokenFund.replac
 gleich("und --fund ist nicht --marker", toene.tokenFund !== toene.tokenMarker, true);
 await seite.keyboard.press("Escape");
 
+/* ---------- 14 Fortsetzungszeilen ----------
+   Eine eingerueckte Zeile ohne eigenes Zeichen gehoert zum Punkt
+   darueber. Zaehlte sie als Absatz, unterbraeche sie die Liste -- und
+   die Nummerierung finge danach wieder bei 1 an. */
+console.log("\nFortsetzungszeilen");
+const FORT = "1. eins\n   und weiter\n2. zwei\n3. drei\n";
+await setzen(FORT);
+gleich("die Folgezeile wird kein eigener Block",
+  await seite.$$eval(".blk", ns => ns.length), 3);
+gleich("sie steht im Punkt darueber",
+  await seite.$eval('.blk[data-i="0"] .txt', n => n.textContent), "eins\nund weiter");
+gleich("und die Liste zaehlt durch", await datei(), FORT);
+
+/* Gegenprobe: Nach einer Leerzeile ist der Punkt zu Ende. */
+const EIGEN = "- eins\n\n  ein eigener Absatz\n";
+await setzen(EIGEN);
+gleich("nach einer Leerzeile ist es ein eigener Absatz",
+  await seite.$$eval(".blk", ns => ns.length), 2);
+gleich("und kommt unveraendert wieder heraus", await datei(), EIGEN);
+
+/* Der mitgelieferte Starttext war der Anlass: Er stand mit
+   "1. 1. 2." da, weil zwei seiner Punkte zwei Zeilen lang sind. */
+await seite.evaluate(() => localStorage.clear());
+await seite.reload();
+await seite.waitForTimeout(400);
+gleich("der Starttext zaehlt 1. 2. 3.",
+  await seite.evaluate(() => (schreibeMarkdown(Z.bloecke).match(/^\d+\. /gm) || []).join("")),
+  "1. 2. 3. ");
+
+/* ---------- 15 Die gewarnten Zeilen ----------
+   Was die reine Sprache verlaesst, wird in der Dateiansicht
+   hervorgehoben -- dort sieht man, was man weitergibt. */
+console.log("\nDie gewarnten Zeilen");
+await setzen("Ein ganz gewoehnlicher Absatz.\n\n"
+  + "- [ ] Ein To-do\n\n"
+  + "| Name | Format |\n| --- | --- |\n| Export | CSV |\n\n"
+  + "> [!TIP]\n> Der Rumpf ist gewoehnliches Zitat.\n");
+await seite.click("#w-quelltext");
+await seite.waitForTimeout(200);
+const warn = await seite.evaluate(() => {
+  const f = document.querySelector("#qfarbe"), q = document.querySelector("#q");
+  const zettel = [...f.querySelectorAll(".un[data-ur]")].map(n => n.dataset.ur);
+  return { zeilen: f.querySelectorAll(".un").length, zettel: zettel.join(","),
+           hoehe: f.scrollHeight === q.scrollHeight,
+           rein: [...f.querySelectorAll(".un")].some(n =>
+             n.textContent.indexOf("gewoehnlicher Absatz") >= 0) };
+});
+gleich("das To-do, drei Tabellenzeilen und der Callout sind gewarnt",
+  warn.zeilen, 5);
+gleich("je Bereich ein Zettel, nicht je Zeile", warn.zettel, "GFM,GFM,Dialekt");
+gleich("der reine Absatz bleibt ungewarnt", warn.rein, false);
+/* Traegt eine Zeile mehreres, gilt das staerkere Urteil. */
+await setzen("- [ ] Berichte sichten [[Kai Richter]]\n");
+await seite.click("#w-quelltext");
+await seite.waitForTimeout(200);
+gleich("ein To-do mit Wiki-Link meldet Dialekt, nicht GFM",
+  await seite.$eval("#qfarbe .un[data-ur]", n => n.dataset.ur), "Dialekt");
+gleich("und der Umbruch bleibt gleich", warn.hoehe, true);
+
 /* ---------- Schluss ---------- */
 console.log("");
 if (skriptfehler.length){

@@ -45,6 +45,10 @@
      --blau, Code trägt --code-t; nur das Verweisziel braucht einen
      eigenen Ton — sonst hätten Zeichen und Ziel dieselbe Farbe. */
   --q-l:rgb(31,102,140);
+  /* Zeilen, die das reine Markdown verlassen. Warm, nicht rot: Das
+     ist kein Fehler, sondern eine Bindung an ein bestimmtes Werkzeug. */
+  --warn-g:rgb(253,236,200);
+  --warn-t:rgb(146,76,8);
 
   --rad:5px;
   --rad-gr:8px;
@@ -82,6 +86,8 @@
   --marker:rgb(112,88,24);
   --fund:rgb(126,76,22);
   --q-l:rgb(126,190,226);
+  --warn-g:rgb(66,53,26);
+  --warn-t:rgb(238,178,98);
   --rot:rgb(240,133,124);
 }
 
@@ -163,6 +169,18 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 .qfarbe .c{color:var(--code-t)}
 .qfarbe .l{color:var(--q-l);text-decoration:underline;text-underline-offset:2px}
 .qfarbe .mrk{background:var(--marker);border-radius:2px}
+
+/* Zeilen, die das reine Markdown verlassen. Die Farbe oben sagt,
+   **was** eine Stelle ist; das hier sagt, **wo es klemmt**, wenn die
+   Datei in einem anderen Werkzeug geöffnet wird.
+
+   Der Zettel am rechten Rand steht ausserhalb des Textflusses. Stünde
+   er darin, verschöbe er den Umbruch — und die Farbschicht stünde ab
+   dort neben der Schreibmarke. */
+.qfarbe .un{background:var(--warn-g);border-radius:2px}
+.qfarbe .un[data-ur]::after{content:"← " attr(data-ur);position:absolute;right:6px;
+  background:var(--warn-g);color:var(--warn-t);font-size:11px;letter-spacing:.02em;
+  padding:0 6px;border-radius:3px;white-space:nowrap}
 
 /* Die drei Ansichten. `display` steht bewusst in keiner ID-Regel —
    eine ID schlägt jede Klasse und bräche jedes Umschalten. */
@@ -900,6 +918,24 @@ function leseMarkdown(text){
       schliesse(); aus.push({art:"zitat", text:m[1]}); continue; }
 
     if (!z.trim()){ schliesse(); continue; }
+
+    /* Fortsetzungszeile. In Markdown gehört eine eingerückte Zeile ohne
+       eigenes Zeichen zu dem Listenpunkt darüber — sie ist die zweite
+       Zeile desselben Punktes, kein neuer Absatz. Wer sie als Absatz
+       liest, unterbricht die Liste, und die Nummerierung fängt danach
+       wieder bei 1 an.
+
+       Drei Bedingungen, alle nötig: eingerückt, kein Absatz offen, und
+       die Zeile davor war nicht leer. Nach einer Leerzeile ist der
+       Punkt zu Ende. */
+    const vor = aus[aus.length - 1];
+    if (/^[ \t]+\S/.test(z) && absatz === null && vor
+        && LISTE.indexOf(vor.art) >= 0
+        && i > 0 && zeilen[i-1].trim()){
+      vor.text += "\n" + z.replace(/^[ \t]+/, "");
+      continue;
+    }
+
     absatz = absatz === null ? z : absatz + "\n" + z;
   }
   schliesse();
@@ -935,9 +971,17 @@ function schreibeMarkdown(bloecke){
     else if (b.art === "h1")     aus.push("# "   + b.text);
     else if (b.art === "h2")     aus.push("## "  + b.text);
     else if (b.art === "h3")     aus.push("### " + b.text);
-    else if (b.art === "punkt")  aus.push(ein + "- "   + b.text);
-    else if (b.art === "nummer") aus.push(ein + nr[i] + ". " + b.text);
-    else if (b.art === "todo")   aus.push(ein + "- [" + (b.fertig ? "x" : " ") + "] " + b.text);
+    /* Die drei Listen zusammen, wegen der Fortsetzungszeilen: Sie
+       werden auf die Spalte des Inhalts gerückt — genau so weit, wie
+       das Listenzeichen breit ist. Nur so liest der nächste Durchlauf
+       sie wieder als Fortsetzung und nicht als eigenen Absatz. */
+    else if (LISTE.indexOf(b.art) >= 0){
+      const zeichen = b.art === "punkt"  ? "- "
+                    : b.art === "nummer" ? nr[i] + ". "
+                    : "- [" + (b.fertig ? "x" : " ") + "] ";
+      aus.push(ein + zeichen
+        + b.text.split("\n").join("\n" + ein + " ".repeat(zeichen.length)));
+    }
     else if (b.art === "zitat")  aus.push("> "   + b.text);
     else                         aus.push(b.text);
   });
@@ -1042,7 +1086,12 @@ function toggleMalen(text){
    ============================================================ */
 /* Das Urteil aus doku/BLOCKKATALOG.md, an den Block geheftet. Blöcke
    ohne Eintrag sind reines Markdown und brauchen keine Kennzeichnung. */
-const URTEIL = {todo:"GFM", tabelle:"GFM", callout:"Dialekt", toggle:"HTML"};
+/* Die Urteile aus doku/BLOCKKATALOG.md an einer Stelle — sie hängen
+   am Block, an der Zeile im Quelltext und im Slash-Menü, und dürfen
+   an keiner der drei Stellen anders lauten. Die letzten drei sind
+   keine Blockarten, sondern Auszeichnungen im Text. */
+const URTEIL = {todo:"GFM", tabelle:"GFM", callout:"Dialekt", toggle:"HTML",
+                durch:"GFM", marker:"Dialekt", wiki:"Dialekt"};
 
 /* „2", „2.", „2)", „1.1", „1.1.3 " — alles, was wie eine
    Gliederungsnummer am Anfang aussieht und Text dahinter hat. */
@@ -1212,31 +1261,61 @@ function qInline(t){
   return aus + esc(t.slice(letzte));
 }
 
+/* Was an dieser Zeile ist kein reines Markdown — und was für welches.
+   Geprüft wird, was `leseMarkdown` daraus machen würde; die beiden
+   Auszeichnungen am Schluss hängen an der Stufe, weil der Editor sie
+   sonst gar nicht als Auszeichnung liest (harte Regel 9). */
+/* Trägt eine Zeile mehrere Auszeichnungen, gilt die, die am
+   stärksten bindet: Ein To-do mit einem Wiki-Link darin ist nicht
+   „GFM" — es braucht Obsidian. */
+const BINDUNG = {GFM:1, Dialekt:2, HTML:3};
+
+function qUrteil(z){
+  let aus = null;
+  const nimm = (u) => { if (u && (!aus || BINDUNG[u] > BINDUNG[aus])) aus = u; };
+  if (/^\s*<\/?[a-z]/i.test(z))                 nimm(URTEIL.toggle);
+  if (/^\s*>\s*\[![A-Za-z]+\]/.test(z))          nimm(URTEIL.callout);
+  if (/^\s*[-*+]\s+\[[ xX]\]/.test(z))           nimm(URTEIL.todo);
+  if (/^\s*\|.*\|\s*$/.test(z))                 nimm(URTEIL.tabelle);
+  if (/\[\[[^\]\n]+\]\]/.test(z))               nimm(URTEIL.wiki);
+  if (kann("durch")  && /~~[^~\n]+~~/.test(z))  nimm(URTEIL.durch);
+  if (kann("marker") && /==[^=\n]+==/.test(z))  nimm(URTEIL.marker);
+  return aus;
+}
+
 function quelleFaerben(text){
   let imCode = false;
+  /* Ein Zettel je zusammenhängendem Bereich, nicht je Zeile: Eine
+     Tabelle aus fünf Zeilen soll einmal „GFM" sagen, nicht fünfmal. */
+  let vorUrteil = null;
   return String(text).split("\n").map((z) => {
+    const ur = imCode ? null : qUrteil(z);
+    const zettel = ur && ur !== vorUrteil ? ' data-ur="' + ur + '"' : "";
+    vorUrteil = ur;
+    const warnen = (inhalt) =>
+      ur ? '<span class="un"' + zettel + '>' + inhalt + '</span>' : inhalt;
     /* Der Codezaun schaltet um. Innen wird nichts gedeutet — genau
        wie im Codeblock auf der Fläche. */
     if (/^\s*```/.test(z)){ imCode = !imCode; return '<span class="mk">' + esc(z) + '</span>'; }
     if (imCode) return '<span class="c">' + esc(z) + '</span>';
     let m;
     if ((m = z.match(/^(#{1,6} )(.*)$/)))
-      return '<span class="mk">' + esc(m[1]) + '</span>'
-           + '<span class="h">' + qInline(m[2]) + '</span>';
+      return warnen('<span class="mk">' + esc(m[1]) + '</span>'
+           + '<span class="h">' + qInline(m[2]) + '</span>');
     if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(z))
       return '<span class="mk">' + esc(z) + '</span>';
     if ((m = z.match(/^(\s*>\s?)(\[![A-Za-z]+\])?(.*)$/)))
-      return '<span class="mk">' + esc(m[1] + (m[2] || "")) + '</span>' + qInline(m[3]);
+      return warnen('<span class="mk">' + esc(m[1] + (m[2] || "")) + '</span>' + qInline(m[3]));
     if ((m = z.match(/^(\s*)([-*+] \[[ xX]\]|[-*+]|\d+[.)])(\s)(.*)$/)))
-      return esc(m[1]) + '<span class="mk">' + esc(m[2]) + '</span>'
-           + esc(m[3]) + qInline(m[4]);
+      return warnen(esc(m[1]) + '<span class="mk">' + esc(m[2]) + '</span>'
+           + esc(m[3]) + qInline(m[4]));
     /* Eine Zeile aus Balken ist eine Tabellenzeile. Geteilt und wieder
        zusammengesetzt — kein Zeichen geht dabei verloren. */
     if (/^\s*\|.*\|\s*$/.test(z))
-      return z.split("|").map(qInline).join('<span class="mk">|</span>');
+      return warnen(z.split("|").map(qInline).join('<span class="mk">|</span>'));
     if (/^\s*<\/?[a-z][^>]*>\s*$/i.test(z))
-      return '<span class="mk">' + esc(z) + '</span>';
-    return qInline(z);
+      return warnen('<span class="mk">' + esc(z) + '</span>');
+    return warnen(qInline(z));
   }).join("\n")
   /* Ein <pre> zeichnet die letzte Zeile nicht, wenn der Text auf einen
      Umbruch endet — das Feld darüber zeichnet sie. Ohne diesen einen

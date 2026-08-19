@@ -48,7 +48,8 @@ Schlicht, Technische Doku, Magazin, Manuskript; der Knopf **PDF**
 öffnet den Druckdialog.
 
 Drei Ansichten: Schreiben, Geteilt, Quelltext — der Quelltext
-**farbig**, damit man die Auszeichnung sieht, ohne sie zu suchen.
+**farbig**, damit man die Auszeichnung sieht, ohne sie zu suchen, und
+jede Zeile jenseits des reinen Markdown eigens gekennzeichnet.
 Öffnen über die Dateiauswahl, Sichern über den Download, Arbeitsstand
 in localStorage.
 

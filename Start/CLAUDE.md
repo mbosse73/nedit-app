@@ -54,7 +54,7 @@ oder das Format kaputt.
    Rohtext. Die Fläche zeigt ihn gerendert; gespeichert, kopiert und
    ausgegeben wird nie etwas anderes als Markdown.
    `lesen(schreiben(x))` muss `x` ergeben — der Prüflauf rechnet das
-   an 21 Proben nach. Was das nicht erfüllt, gehört nicht in den
+   an 27 Proben nach. Was das nicht erfüllt, gehört nicht in den
    Umwandler.
 9. **Kein Dialekt ohne Schalter.** Alles, was über reines Markdown
    hinausgeht — GitHub-Alerts, `==markiert==`, `[[Wiki-Links]]`,
@@ -79,6 +79,11 @@ oder das Format kaputt.
 * **`tiefe` heißt nicht `stufe`.** `Z.stufe` ist die Markdown-Stufe
   des Dialektschalters; zwei Dinge gleichen Namens in einem Modell
   sind eine Fehlerquelle.
+* **Ein `text` darf mehrere Zeilen haben.** Beim Absatz war das immer
+  so; seit August 2026 auch bei den drei Listenarten, wenn eine
+  eingerückte Fortsetzungszeile dazugehört. Der Schreiber rückt sie
+  auf die Spalte des Inhalts — so weit, wie das Listenzeichen breit
+  ist. `doku/ENTSCHEIDUNGEN.md`, Punkt 15.
 * **Tabelle, Callout und Toggle tragen ihre ganze Quelle im Feld
   `text`** — mitsamt Balken, `> [!TIP]` und `<details>`. Sie gehen
   unverändert wieder heraus. Deshalb hat auch für sie ein Block genau
@@ -151,6 +156,9 @@ ist und ein gewöhnliches Zitat vom Callout nicht verschluckt wird.
 * Farbe codiert Dringlichkeit und Zustand, nicht Kategorie. Blau ist
   „aktiv", Rot ist „kaputt". Blockarten unterscheiden sich durch Form,
   nicht durch Farbe.
+* **Das Urteil steht an drei Stellen und muss überall gleich lauten:**
+  am Block, im Slash-Menü und an der Zeile im Quelltext. Es kommt
+  deshalb aus einer einzigen Tabelle `URTEIL`.
 * **Der Suchtreffer (`--fund`) und der Textmarker (`--marker`) sind
   zwei Farben.** Der eine ist eine Anzeige, der andere steht in der
   Datei; sie dürfen nicht gleich aussehen.
@@ -220,7 +228,7 @@ gehört sie in `werkzeug/pruefen.mjs` — nicht nur in dieses Dokument.
 | `node werkzeug/lage.mjs` | Branch, letzte Commits, offene Punkte. Läuft beim Sitzungsbeginn von selbst |
 | `node werkzeug/pruefen.mjs` | die Regelprüfung. Läuft nach jedem Schreiben als Haken automatisch mit |
 | `node werkzeug/schau.mjs` | echter Browser, drei Ansichten, Tippprobe, Bilder, Skriptfehler |
-| `node werkzeug/probe.mjs` | die **Bedienung** im echten Browser: markieren, Menüs, Einrücken, Verlauf, Stufen, Druck, Farbe im Quelltext. 56 Proben |
+| `node werkzeug/probe.mjs` | die **Bedienung** im echten Browser: markieren, Menüs, Einrücken, Verlauf, Stufen, Druck, Farbe und Warnung im Quelltext. 67 Proben |
 | `node werkzeug/bau-mockups.mjs` | die sieben Entwürfe neu erzeugen |
 
 ---
