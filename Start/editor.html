@@ -47,6 +47,40 @@
   --fest:ui-monospace,Consolas,"Courier New",monospace;
 }
 
+/* ---------- Das zweite Thema ----------
+   `color-scheme` wandert mit: Ohne das färbt Windows Scrollbalken und
+   Formularfelder nach der Systemeinstellung ein, und zwar gegen das
+   gewählte Thema. Die hellen Werte oben bleiben die Vorgabe — hier
+   stehen nur die, die sich ändern. */
+:root[data-thema="dunkel"]{
+  color-scheme: dark;
+
+  --grund:rgb(25,25,25);
+  --rand:rgb(33,33,33);
+  --tinte:rgba(255,255,255,.92);
+  --tinte2:rgba(255,255,255,.74);
+  --tinte3:rgba(255,255,255,.56);
+  --blass:rgba(255,255,255,.34);
+  --linie:rgba(255,255,255,.14);
+  --linie2:rgba(255,255,255,.08);
+  --strich:rgba(255,255,255,.07);
+  --blau:rgb(84,166,247);
+  --blau-s:rgba(84,166,247,.34);
+  --code-g:rgb(38,38,38);
+  --code-t:rgb(233,140,131);
+  --marker:rgb(112,88,24);
+  --rot:rgb(240,133,124);
+}
+
+/* ---------- Der Satz ----------
+   Blocksatz ist eine Einstellung der Anzeige, kein Merkmal des
+   Textes: Markdown beschreibt, **was** etwas ist, nicht wie es
+   aussieht. In der Datei steht davon nichts
+   (doku/ENTSCHEIDUNGEN.md, Punkt 9). */
+:root[data-satz="blocksatz"] .blk.absatz .txt,
+:root[data-satz="blocksatz"] .blk.zitat .txt,
+:root[data-satz="blocksatz"] .blk.callout .txt{text-align:justify;hyphens:auto}
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 /* Jede Vollflächen-Komponente bemalt sich selbst. Sich auf `body` zu
@@ -251,7 +285,10 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
    Hängt an body, nicht an .app: Er soll über allem liegen und von
    keinem Umschalter erwischt werden. */
 .zettel{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(70px);
-  background:var(--tinte);color:#fff;padding:9px 18px;border-radius:var(--rad-gr);
+  /* Grund und Tinte über Kreuz: Im hellen Thema dunkel auf hell, im
+     dunklen hell auf dunkel. Ein festes #fff wäre im zweiten Thema
+     weiß auf weiß. */
+  background:var(--tinte);color:var(--grund);padding:9px 18px;border-radius:var(--rad-gr);
   font-size:13.5px;box-shadow:0 8px 26px rgba(15,15,15,.28);opacity:0;
   pointer-events:none;z-index:60;max-width:70vw}
 .zettel.an{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -263,11 +300,16 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
   background:var(--tinte);border-radius:6px;padding:4px;
   box-shadow:0 6px 22px rgba(15,15,15,.30)}
 .leiste.an{display:flex}
+/* Dieselbe Kreuzung wie beim Meldungszettel: Die Leiste ist dunkel
+   im hellen Thema und hell im dunklen. */
 .leiste button{font:inherit;font-size:14px;line-height:1;min-width:29px;height:28px;
-  padding:0 7px;border:0;border-radius:4px;background:none;color:rgba(255,255,255,.88);
-  cursor:pointer;display:grid;place-items:center}
-.leiste button:hover{background:rgba(255,255,255,.16);color:#fff}
-.leiste .tr{width:1px;height:17px;background:rgba(255,255,255,.22);margin:0 3px}
+  padding:0 7px;border:0;border-radius:4px;background:none;color:var(--grund);
+  opacity:.88;cursor:pointer;display:grid;place-items:center}
+/* Neutrales Grau statt eines Themen-Tokens: Die Leiste hat in jedem
+   Thema den **umgekehrten** Grund, und jeder Token wäre auf einem der
+   beiden unsichtbar. */
+.leiste button:hover{background:rgba(128,128,128,.38);opacity:1}
+.leiste .tr{width:1px;height:17px;background:rgba(128,128,128,.5);margin:0 3px}
 .leiste svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.8;fill:none;
   stroke-linecap:round;stroke-linejoin:round}
 .leiste .mk{background:var(--marker);color:rgb(55,53,47);border-radius:2px;padding:1px 4px}
@@ -341,6 +383,76 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 .karte .schluss button{font:inherit;font-size:13px;padding:6px 14px;border-radius:var(--rad);
   border:1px solid var(--linie);background:var(--grund);color:var(--tinte);cursor:pointer}
 .karte .schluss button:hover{background:var(--strich)}
+
+/* ============================================================
+   DER DRUCK
+
+   Das PDF entsteht über den Druckdialog des Browsers — ein eigener
+   Erzeuger wäre eine fremde Bibliothek in einer Datei, die keine
+   haben darf (harte Regel 2), und beherrschte Umbrüche schlechter.
+   Die Arbeit steckt deshalb hier: in drei Layouts, zwischen denen
+   die Einstellungen umschalten.
+
+   Seitenzahlen und Kopfzeilen kommen aus dem Druckdialog selbst —
+   der Browser setzt sie, nicht die Seite. Was hier steht, sind
+   Schrift, Ränder, Umbrüche und Abstände.
+   ============================================================ */
+@media print{
+  @page{margin:18mm}
+
+  /* Alles, was Bedienung ist, gehört nicht aufs Papier. */
+  .kopf,.fuss,.quelle,.gliederung,.leiste,.menue,.suchen,.ueberzug,.zettel,
+  .blk .griff,.blk .urteil{display:none!important}
+
+  html,body{background:#fff!important;color:#000!important;height:auto}
+  .app{display:block;height:auto;background:#fff}
+  .rumpf{display:block}
+  .blatt{overflow:visible;padding:0;background:#fff}
+  .blatt .spalte{max-width:none;padding:0}
+  .txt{color:#000}
+
+  /* Ein Block soll nicht mitten durch die Seite laufen, und eine
+     Überschrift nicht allein unten stehen. */
+  .blk.code,.blk.tabelle,.blk.callout,.blk.toggle{break-inside:avoid}
+  .blk.h1,.blk.h2,.blk.h3{break-after:avoid}
+  .blk.callout .txt,.blk.toggle .txt{background:none;border-color:#999}
+  .blk.tabelle th{background:none}
+  .txt .verweis{color:#000;border-bottom:1px solid #999}
+  .txt .fund{background:none;box-shadow:none}
+
+  /* ---------- Schlicht ---------- */
+  :root[data-druck="schlicht"] .blatt{font-size:11pt;line-height:1.5}
+
+  /* ---------- Technische Doku ----------
+     Nummeriert die Überschriften selbst. Bei Texten, die ihre
+     Nummern schon im Titel tragen, doppelt das — dann ist
+     „Schlicht" das richtige Layout. */
+  :root[data-druck="technik"] .blatt{font-size:10.5pt;line-height:1.45}
+  :root[data-druck="technik"] .spalte{counter-reset:k1}
+  :root[data-druck="technik"] .blk.h1{counter-reset:k2;break-before:page}
+  :root[data-druck="technik"] .blk.h1:first-child{break-before:auto}
+  :root[data-druck="technik"] .blk.h2{counter-reset:k3}
+  :root[data-druck="technik"] .blk.h1 .txt::before{
+    counter-increment:k1;content:counter(k1) "\00a0\00a0"}
+  :root[data-druck="technik"] .blk.h2 .txt::before{
+    counter-increment:k2;content:counter(k1) "." counter(k2) "\00a0\00a0"}
+  :root[data-druck="technik"] .blk.h3 .txt::before{
+    counter-increment:k3;content:counter(k1) "." counter(k2) "." counter(k3) "\00a0\00a0"}
+  /* Oben Platz lassen: Dort sitzt die Sprachmarke, und ohne den
+     Abstand steht sie in der ersten Codezeile. */
+  :root[data-druck="technik"] .blk.code .txt{border:1px solid #999;background:none;
+    padding:22px 13px 12px}
+  :root[data-druck="technik"] .blk.tabelle th,
+  :root[data-druck="technik"] .blk.tabelle td{border:1px solid #666}
+
+  /* ---------- Manuskript ----------
+     Eine Spalte, weiter Durchschuss, breiter Rand zum Hineinschreiben. */
+  :root[data-druck="manuskript"] .blatt{font-size:12pt;line-height:2}
+  :root[data-druck="manuskript"] .blatt .spalte{padding-right:48mm}
+  :root[data-druck="manuskript"] .blk.h1 .txt{font-size:17pt}
+  :root[data-druck="manuskript"] .blk.h2 .txt{font-size:14pt}
+  :root[data-druck="manuskript"] .blk.h3 .txt{font-size:12.5pt}
+}
 </style>
 </head>
 <body>
@@ -362,6 +474,7 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
     <button class="akt" id="oeffnen">Öffnen</button>
     <button class="akt" id="sichern">Sichern</button>
     <button class="akt" id="neu">Neu</button>
+    <button class="akt" id="pdf" title="Über den Druckdialog als PDF sichern">PDF</button>
     <button class="akt" id="g-auf" title="Gliederung ein- und ausblenden"
             aria-pressed="true">
       <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
@@ -434,11 +547,7 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
     <div class="titel" id="ein-titel">Einstellungen</div>
     <p class="unter">Dieselbe Fläche, andere Ausgabe. Die Stufe bestimmt, welche Blöcke
       der Editor anbietet — und wie er zeigt, was in der Datei steht.</p>
-    <div class="gruppe">
-      <div class="etikett">Markdown-Stufe</div>
-      <div class="wahl" id="stufen" role="group" aria-label="Markdown-Stufe"></div>
-      <div class="erklaerung" id="stufe-text"></div>
-    </div>
+    <div id="ein-gruppen"></div>
     <div class="schluss"><button type="button" id="ein-zu">Schließen</button></div>
   </div>
 </div>
@@ -459,7 +568,8 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
    Markdown. Das ist die tragende Entscheidung dieser Anwendung.
    ============================================================ */
 const SCHLUESSEL = "notion-md-editor";
-const Z = { name:"unbenannt.md", stufe:"rein", bloecke:[] };
+const Z = { name:"unbenannt.md", stufe:"rein", thema:"hell", satz:"links",
+            druck:"schlicht", bloecke:[] };
 
 const $  = (w) => document.querySelector(w);
 const el = (tag, klasse, html) => {
@@ -484,7 +594,8 @@ function bewahreSofort(){
   merken();
   try {
     localStorage.setItem(SCHLUESSEL, JSON.stringify(
-      { format:1, name:Z.name, stufe:Z.stufe, text:schreibeMarkdown(Z.bloecke) }));
+      { format:1, name:Z.name, stufe:Z.stufe, thema:Z.thema, satz:Z.satz,
+        druck:Z.druck, text:schreibeMarkdown(Z.bloecke) }));
     $("#f-stand").textContent = "gespeichert";
   } catch (e) {
     $("#f-stand").textContent = "nicht gespeichert";
@@ -508,6 +619,7 @@ function lade(){
     const d = JSON.parse(roh);
     Z.name = d.name || "unbenannt.md";
     if (KOENNEN[d.stufe]) Z.stufe = d.stufe;
+    ["thema","satz","druck"].forEach(f => { if (d[f]) Z[f] = d[f]; });
     ersetze(Z.bloecke, leseMarkdown(d.text || ""));
     return true;
   } catch (e) { melde("Der gespeicherte Stand ließ sich nicht lesen."); return false; }
@@ -1850,31 +1962,88 @@ function suchenVerdrahten(){
    Einstellungen und nicht in den Code: Dieselbe Fläche, andere
    Ausgabe — doku/ENTSCHEIDUNGEN.md, Punkt 1.
    ============================================================ */
-function stufeMalen(){
-  const feld = $("#stufen");
-  feld.innerHTML = "";
-  STUFEN.forEach(([schluessel, name]) => {
-    const b = el("button", null, esc(name));
-    b.type = "button";
-    b.setAttribute("aria-pressed", String(schluessel === Z.stufe));
-    b.onclick = () => {
-      if (schluessel === Z.stufe) return;
-      Z.stufe = schluessel;
-      bewahreSofort();
-      stufeMalen();
-      male();                       /* die Anzeige folgt der Stufe */
-      melde("Stufe: " + name);
-    };
-    feld.appendChild(b);
+const THEMEN = [
+  ["hell",   "Hell",   "Die Vorgabe. Heller Grund, dunkle Schrift."],
+  ["dunkel", "Dunkel",
+   "Dunkler Grund. <b>Der Druck bleibt davon unberührt</b> — Papier ist weiß, und "
+   + "eine dunkle Fläche darauf kostet nur Farbe."]
+];
+
+const SATZARTEN = [
+  ["links",     "Flattersatz",
+   "Die Vorgabe. Gleiche Wortabstände, ausgefranster rechter Rand."],
+  ["blocksatz", "Blocksatz",
+   "Beide Ränder bündig. In einer schmalen Spalte entstehen dabei Lücken zwischen den "
+   + "Wörtern — der Browser trennt nur, wo die Sprache es erlaubt. "
+   + "<b>In der Datei steht davon nichts.</b>"]
+];
+
+const DRUCKARTEN = [
+  ["schlicht",   "Schlicht",
+   "Die Vorgabe. Nüchtern, wenig Zierrat, spart Papier."],
+  ["technik",    "Technische Doku",
+   "Enger Satz, gerahmte Codeblöcke, Tabellen mit Linien, jede Überschrift 1 auf einer "
+   + "neuen Seite. <b>Nummeriert die Überschriften selbst</b> — bei Texten, die ihre "
+   + "Nummer schon im Titel tragen, doppelt das."],
+  ["manuskript", "Manuskript",
+   "Weiter Durchschuss und ein breiter Rand zum Hineinschreiben. Für Entwürfe, die auf "
+   + "Papier bearbeitet werden."]
+];
+
+/* Vier Gruppen, ein Bauplan. `wurzel` heißt: Die Einstellung steht als
+   Merkmal am Wurzelelement, und der Stil richtet sich danach — dann
+   braucht es kein Neuzeichnen. Die Stufe dagegen ändert, was der
+   Editor **anzeigt**, und verlangt eines. */
+const EINSTELLUNGEN = [
+  {feld:"stufe", etikett:"Markdown-Stufe",   werte:STUFEN,     malen:true},
+  {feld:"thema", etikett:"Thema",            werte:THEMEN,     wurzel:true},
+  {feld:"satz",  etikett:"Textausrichtung",  werte:SATZARTEN,  wurzel:true},
+  {feld:"druck", etikett:"Druck-Layout",     werte:DRUCKARTEN, wurzel:true}
+];
+
+function wurzelSetzen(){
+  const w = document.documentElement;
+  w.dataset.thema = Z.thema;
+  w.dataset.satz  = Z.satz;
+  w.dataset.druck = Z.druck;
+}
+
+function einstellungenMalen(){
+  const ziel = $("#ein-gruppen");
+  ziel.innerHTML = "";
+  EINSTELLUNGEN.forEach(g => {
+    const kasten = el("div", "gruppe");
+    kasten.appendChild(el("div", "etikett", esc(g.etikett)));
+    const wahl = el("div", "wahl");
+    wahl.setAttribute("role", "group");
+    wahl.setAttribute("aria-label", g.etikett);
+    g.werte.forEach(([schluessel, name]) => {
+      const b = el("button", null, esc(name));
+      b.type = "button";
+      b.setAttribute("aria-pressed", String(schluessel === Z[g.feld]));
+      b.onclick = () => {
+        if (schluessel === Z[g.feld]) return;
+        Z[g.feld] = schluessel;
+        bewahreSofort();
+        if (g.wurzel) wurzelSetzen();
+        einstellungenMalen();
+        if (g.malen) male();
+        melde(g.etikett + ": " + name);
+      };
+      wahl.appendChild(b);
+    });
+    kasten.appendChild(wahl);
+    const jetzt = g.werte.find(x => x[0] === Z[g.feld]);
+    kasten.appendChild(el("div", "erklaerung", jetzt ? jetzt[2] : ""));
+    ziel.appendChild(kasten);
   });
-  const jetzt = STUFEN.find(x => x[0] === Z.stufe);
-  $("#stufe-text").innerHTML = jetzt ? jetzt[2] : "";
 }
 
 function einstellungenVerdrahten(){
   const ueber = $("#einstellungen");
   const zu = () => ueber.classList.remove("an");
-  $("#ein-auf").onclick = () => { stufeMalen(); ueber.classList.add("an"); $("#ein-zu").focus(); };
+  $("#ein-auf").onclick = () => {
+    einstellungenMalen(); ueber.classList.add("an"); $("#ein-zu").focus(); };
   $("#ein-zu").onclick = zu;
   /* Ein Klick daneben schließt, ein Klick auf die Karte nicht. */
   ueber.addEventListener("mousedown", (ev) => { if (ev.target === ueber) zu(); });
@@ -1921,6 +2090,17 @@ function dateienVerdrahten(){
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(adresse), 4000);
     melde("Gesichert: " + a.download);
+  };
+
+  /* Der Browser kann aus jedem Druck ein PDF machen — „Als PDF
+     speichern" steht in seinem eigenen Dialog. Das Layout dafür
+     liefert der Druckstil; ein eigener Erzeuger wäre eine fremde
+     Bibliothek und ist ausgeschlossen (doku/ENTSCHEIDUNGEN.md,
+     Punkt 10). */
+  $("#pdf").onclick = () => {
+    leisteVerbergen(); menueVerbergen(); slashSchliessen();
+    melde("Im Druckdialog „Als PDF speichern“ wählen.");
+    setTimeout(() => window.print(), 260);
   };
 
   $("#neu").onclick = () => {
@@ -2019,6 +2199,7 @@ function start(){
   let gemerkt = "schreiben";
   try { gemerkt = localStorage.getItem(SCHLUESSEL + "-ansicht") || "schreiben"; }
   catch (e) { /* egal */ }
+  wurzelSetzen();
   ansicht(gemerkt);
   merken();                 /* der Anfangsstand, sonst führt das erste Rückgängig ins Leere */
   male();

@@ -126,8 +126,18 @@ else bad("color-scheme: light fehlt — der Dunkelmodus färbt sonst selbst ein"
 /* ---------- 8 Kontrast ----------
    Tragender Text mindestens 4,5 : 1, große Schrift mindestens 3 : 1.
    Gerechnet wird gegen den Blattgrund, mit Alpha aufgelöst. */
-function tokenWert(name){
-  const m = css.match(new RegExp("--" + name + "\\s*:\\s*([^;]+);"));
+/* Ein Thema ist ein Block mit Tokens. Gesucht wird **im Block**, nicht
+   in der ganzen Datei -- sonst faende das dunkle Thema die hellen
+   Werte, die weiter oben stehen. */
+function themaBlock(waehler){
+  const i = css.indexOf(waehler);
+  if (i < 0) return null;
+  const auf = css.indexOf("{", i);
+  const zu = css.indexOf("}", auf);
+  return auf < 0 || zu < 0 ? null : css.slice(auf, zu);
+}
+function tokenAus(block, name){
+  const m = block.match(new RegExp("--" + name + "\\s*:\\s*([^;]+);"));
   return m ? m[1].trim() : null;
 }
 function farbe(s){
@@ -153,19 +163,29 @@ function verhaeltnis(a, b){
   return (Math.max(l1,l2) + 0.05) / (Math.min(l1,l2) + 0.05);
 }
 {
-  const grund = farbe(tokenWert("grund"));
   const paare = [["tinte", 4.5], ["tinte2", 4.5], ["tinte3", 3.0], ["blau", 3.0],
                  ["rot", 4.5]];
+  /* Beide Themen. Ein zweites Thema, das die Kontrastregel
+     unterlaeuft, ist kein zweites Thema, sondern ein Fehler. */
+  const THEMEN = [[":root{", "hell"], ['[data-thema="dunkel"]', "dunkel"]];
   const schwach = [];
-  if (!grund) warn("Token --grund nicht gefunden, Kontrast nicht geprüft");
-  else paare.forEach(([name, soll]) => {
-    const c = farbe(tokenWert(name));
-    if (!c){ warn("Token --" + name + " nicht gefunden"); return; }
-    const v = verhaeltnis(ueber(c, grund), grund);
-    if (v < soll) schwach.push("--" + name + " " + v.toFixed(2) + " : 1 (mindestens " + soll + ")");
+  let geprueft = 0;
+  THEMEN.forEach(([waehler, name]) => {
+    const block = themaBlock(waehler);
+    if (!block){ warn("Thema " + name + " nicht gefunden"); return; }
+    const grund = farbe(tokenAus(block, "grund"));
+    if (!grund){ warn("Thema " + name + ": --grund fehlt"); return; }
+    paare.forEach(([tok, soll]) => {
+      const c = farbe(tokenAus(block, tok));
+      if (!c){ warn("Thema " + name + ": --" + tok + " fehlt"); return; }
+      geprueft++;
+      const v = verhaeltnis(ueber(c, grund), grund);
+      if (v < soll)
+        schwach.push(name + " --" + tok + " " + v.toFixed(2) + " : 1 (mindestens " + soll + ")");
+    });
   });
   if (schwach.length) bad("Kontrast zu schwach — " + schwach.join(", "));
-  else ok("Kontrast — " + paare.length + " Tokens über der Schwelle");
+  else ok("Kontrast — " + geprueft + " Tokens über der Schwelle, beide Themen");
 }
 
 /* ---------- 9 Markdown: hin und zurück ----------
