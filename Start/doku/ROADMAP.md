@@ -153,6 +153,56 @@ Begründung für beides in `doku/ENTSCHEIDUNGEN.md`, Punkt 9 und 10.
 
 ---
 
+## Schritt 10 — Vorschau, Themen und Ausgabe · **erledigt**
+
+Der Editor bekommt seine zweite Hälfte: Er **zeigt** das Dokument,
+statt es nur zu beschreiben, und **gibt es heraus**.
+
+**Live-Vorschau.** Eine vierte Ansicht neben Schreiben, Geteilt und
+Quelltext. Sie baut aus den Blöcken richtiges HTML — `<h1>`, `<p>`,
+verschachtelte `<ul>`, `<table>` — und folgt der zuletzt geänderten
+Stelle. Dazu Vollbild und ein ablenkungsfreier Modus.
+
+**Farbe im Code.** Ein eigener Abtaster, über fünfzig Sprachen, sechs
+Farben. Keine Bibliothek (harte Regel 2).
+
+**Lange Dokumente.** Abschnitte an der Überschrift einklappen, eine
+**Fußnotenleiste** neben der Gliederung, das Inhaltsverzeichnis
+wahlweise in der Vorschau.
+
+**Themen und Stil.** Acht Themen für das **Dokument** — sie gelten in
+Vorschau, Druck und Export. Dazu Spaltenbreite, Schriftgröße,
+Zeilenabstand und ein Feld für **eigenes CSS**, das auch in die
+exportierte Datei geht.
+
+**Seite einrichten.** Format, Hoch- und Querformat, vier Ränder,
+mitlaufende Kopf- und Fußzeile mit Bild, Seitenumbruch vor jeder
+Überschrift — und eine **Druckvorschau**, die die Seite maßhaltig
+zeigt.
+
+**Fünf Ausgaben.** `.md`, `.html` (eigenständig, mit Stil und
+Bildern), `.docx` (ein ZIP von Hand), `.rtf`, PDF über den
+Druckdialog. Dazu die Zwischenablage als HTML, RTF oder Markdown.
+
+**Mehrere Dateien.** Nach Namen sortiert zu einem Dokument
+zusammenfügen, Bilder inbegriffen.
+
+**Schnellwahl.** `Strg+K`: Überschrift, Fußnote oder Befehl.
+
+**Zwei neue Blöcke:** Fußnote (`[^1]:`, GFM) und Seitenumbruch
+(`<!-- seitenumbruch -->`, HTML).
+
+**Entwurf:** keiner. Diese Flächen sind aus der Anforderung gebaut,
+nicht aus einem Entwurf — der erste Schritt des Projekts, für den das
+gilt. Siehe `STAND.md`, offener Punkt 1.
+
+**Nicht dazu:** Diagramme (Mermaid, PlantUML) — gestrichen, siehe
+`doku/ENTSCHEIDUNGEN.md` Punkt 23. Bilder in DOCX und RTF —
+gestrichen, Punkt 21. Der Ordnerbaum — bleibt gestrichen, Punkt 2
+und 22.
+
+---
+
 ## Zurückgestellt
 
 **Frontmatter als Eigenschaften.** Der YAML-Kopf als Notions
@@ -168,7 +218,8 @@ stehen.
 Ordnerbaum · Kommentare am Text · farbiger Text · unterstrichen ·
 Erwähnung `[[Name]]` · „Link kopieren" · „Verschieben nach" · Spalten ·
 synchronisierte Blöcke · Datenbanken · zweite Datei · lokaler Server ·
-Rich-Text-Modell · KI-Funktionen.
+Rich-Text-Modell · KI-Funktionen · Diagramme im Codeblock · Bilder in
+DOCX und RTF · Rückschreiben in mehrere Dateien.
 
 Jeder Punkt mit Begründung in `doku/ENTSCHEIDUNGEN.md`. Sie stehen
 hier, damit die Frage nicht alle drei Monate neu gestellt wird.

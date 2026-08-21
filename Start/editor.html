@@ -5049,9 +5049,13 @@ function zusammenVerdrahten(){
 
   $("#zusammen-auf").onclick = () => $("#zusammen-datei").click();
   $("#zusammen-datei").addEventListener("change", (ev) => {
-    const dateien = ev.target.files;
+    /* Erst in eine eigene Liste, dann das Feld leeren: `files` ist
+       eine **lebende** Liste — wer sie vorher leert, hält hinterher
+       nichts mehr in der Hand. Geleert wird, damit sich dieselbe
+       Auswahl ein zweites Mal treffen lässt. */
+    const dateien = Array.prototype.slice.call(ev.target.files || []);
     ev.target.value = "";
-    if (!dateien || !dateien.length) return;
+    if (!dateien.length) return;
     dateienEinlesen(dateien, (stand) => {
       const texte = stand.texte.filter(Boolean);
       if (!texte.length){

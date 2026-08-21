@@ -5,6 +5,13 @@ kopiert: Blöcke statt Zeilen, Slash-Menü, Blockgriff, schwebende
 Auswahlleiste, „Umwandeln in". Was dabei herauskommt, ist und bleibt
 eine `.md`-Datei.
 
+Dazu, seit Schritt 10, die andere Hälfte: **ansehen und ausgeben.**
+Eine Vorschau in Echtzeit, acht Themen für das Dokument, eine
+Seiteneinrichtung und fünf Ausgabeformate. Die tragende Regel dabei
+ist dieselbe wie beim Schreiben: **eine Quelle, drei Ausgaben.**
+Vorschau, Druck und Export kommen aus derselben Funktion und können
+nicht auseinanderlaufen (`doku/ENTSCHEIDUNGEN.md`, Punkt 17).
+
 **Zielumgebung:** Windows-PC, Microsoft Edge, Datei per Doppelklick
 geöffnet (`file://`). Kein Internetzugriff zur Laufzeit. Kein Server,
 kein Build-Schritt.
@@ -27,9 +34,11 @@ oder das Format kaputt.
    keine separate `.js` oder `.css`.
 2. **Keine externen Abhängigkeiten, kein Netz.** Kein `<script src>`,
    kein `<link>`, kein `@import`, kein CDN, keine Webfonts. Auch keine
-   Markdown-Bibliothek und kein PDF-Erzeuger — der Umwandler steht in
-   Abschnitt 4 und wird von Hand gepflegt, das PDF kommt aus dem
-   Druckdialog des Browsers.
+   Markdown-Bibliothek, kein Syntax-Färber, kein ZIP-Packer und kein
+   PDF-Erzeuger — der Umwandler steht in Abschnitt 4, der Abtaster
+   für die Codefarbe in Abschnitt 12, der ZIP-Packer für DOCX in
+   Abschnitt 17, und alle drei werden von Hand gepflegt. Das PDF kommt
+   aus dem Druckdialog des Browsers.
 
    **Die Anwendung greift zu keinem Zeitpunkt auf das Internet zu.**
    Nicht beim Start, nicht beim Sichern, nicht für Schriften, nicht
@@ -75,7 +84,8 @@ oder das Format kaputt.
   `sprache` (Codeblock) und `tiefe` (Einrückung, nur bei `punkt`,
   `nummer`, `todo`; fehlt, wenn sie 0 ist). `art` ist einer von:
   `absatz`, `h1`, `h2`, `h3`, `punkt`, `nummer`, `todo`, `zitat`,
-  `code`, `linie`, `tabelle`, `callout`, `toggle`.
+  `code`, `linie`, `tabelle`, `callout`, `toggle`, `fussnote`,
+  `umbruch`.
 * **`tiefe` heißt nicht `stufe`.** `Z.stufe` ist die Markdown-Stufe
   des Dialektschalters; zwei Dinge gleichen Namens in einem Modell
   sind eine Fehlerquelle.
@@ -84,13 +94,22 @@ oder das Format kaputt.
   eingerückte Fortsetzungszeile dazugehört. Der Schreiber rückt sie
   auf die Spalte des Inhalts — so weit, wie das Listenzeichen breit
   ist. `doku/ENTSCHEIDUNGEN.md`, Punkt 15.
-* **Tabelle, Callout und Toggle tragen ihre ganze Quelle im Feld
-  `text`** — mitsamt Balken, `> [!TIP]` und `<details>`. Sie gehen
-  unverändert wieder heraus. Deshalb hat auch für sie ein Block genau
-  ein Feld, und der Rundlauf braucht keine Sonderbehandlung.
-* Neben dem Text liegen in `Z` vier Einstellungen: `stufe`, `thema`,
-  `satz`, `druck`. Sie werden **sofort** gesichert (`bewahreSofort`),
-  nicht gebündelt wie das Tippen.
+* **Die Rohblöcke tragen ihre ganze Quelle im Feld `text`** — mitsamt
+  Balken, `> [!TIP]`, `<details>`, `[^1]:` und
+  `<!-- seitenumbruch -->`. Sie gehen unverändert wieder heraus.
+  Deshalb hat auch für sie ein Block genau ein Feld, und der Rundlauf
+  braucht keine Sonderbehandlung. Die Liste heißt `ROHBLOCK`, steht in
+  Abschnitt 4 und wird an genau einer Stelle abgefragt.
+* **`linie` und `umbruch` haben keinen Text.** Sie stehen in
+  `OHNE_TEXT`: Backspace davor löscht sie ganz, statt in sie
+  hineinzuspringen, und `blockMalen` endet für sie früh.
+* Neben dem Text liegen in `Z` die Einstellungen aus der Liste
+  `EINSTELLUNG` — Stufe, Thema, Satz, Vorschau-Thema, Autoscroll,
+  Seitenformat, Ränder, Kopf- und Fußzeile, eigenes CSS und die Maße
+  des Dokuments. Sie werden **sofort** gesichert (`bewahreSofort`),
+  nicht gebündelt wie das Tippen. **Wer ein Feld hinzufügt, trägt es
+  in `EINSTELLUNG` ein** — sichern und laden gehen beide über diese
+  eine Liste.
 * Nach jeder Änderung `bewahre()` aufrufen. Ohne das ist die Änderung
   beim Neuladen weg.
 * **Arbeitsstand: localStorage.** **Datei öffnen: Dateiauswahl.**
@@ -103,7 +122,7 @@ oder das Format kaputt.
 
 ## Aufbau von `editor.html`
 
-Elf nummerierte Abschnitte, jeder mit einem Kopfkommentar. Ändere
+Zwanzig nummerierte Abschnitte, jeder mit einem Kopfkommentar. Ändere
 **genau den Abschnitt**, um den es geht — schreibe die Datei nicht neu.
 Das hält Diffs klein und lesbar.
 
@@ -116,10 +135,24 @@ Das hält Diffs klein und lesbar.
  6  TIPPEN               Eingabehilfen, Tasten, Leiste, Menüs, Ziehen
  7  DER QUELLTEXT        geteilte Ansicht, Farbschicht, Umschalter
  8  GLIEDERUNG, SUCHEN   Überschriften, Fund, Inhaltsverzeichnis
- 9  EINSTELLUNGEN        Stufe, Thema, Satz, Druck-Layout
-10  DATEIEN              Öffnen, Sichern, Neu, PDF
-11  TASTATUR UND START
+ 9  EINSTELLUNGEN        Stufe, Thema, Satz, Autoscroll
+10  DATEIEN              Öffnen, Sichern, Neu, herunterladen
+12  FARBE IM CODE        SPRACHEN, codeMalen, HTML/CSS/Markdown/Diff
+13  DAS DOKUMENT         DOK_CSS, dokumentHtml, blockDokument
+14  DIE VORSCHAU         vorschauMalen, Autoscroll, Vollbild, Ruhe
+15  THEMEN UND STIL      VTHEMEN, dokStilSetzen, Stil-Verwalter
+16  DIE SEITE            SEITEN, seitenStilSetzen, druckDokument
+17  AUSGEBEN             htmlAusgeben, rtfAusgeben, docxAusgeben, ZIP
+18  LANGE DOKUMENTE      Einklappen, springeZu, Fußnotenleiste
+19  MEHRERE DATEIEN      zusammenfügen, Bilder als Daten-Adresse
+20  SCHNELLWAHL          BEFEHLE, schnellMalen
+11  TASTATUR UND START   steht als letzter Abschnitt, weil `start()`
+                         am Ende der Datei aufgerufen wird
 ```
+
+**Abschnitt 11 steht zuletzt in der Datei, nicht an elfter Stelle.**
+Er ruft `start()` auf; alles, was `start()` braucht, muss vorher
+ausgewertet sein. Neue Abschnitte kommen deshalb **vor** ihn.
 
 `leseMarkdown` und `schreibeMarkdown` stehen mit Absicht nebeneinander
 und werden **immer zusammen** geändert. `werkzeug/pruefen.mjs`
@@ -132,6 +165,25 @@ Markdown-Prüfung.
 Was neu in den Umwandler kommt, bekommt eine Probe in `PROBEN`. Dort
 stehen auch Gegenproben: dass ein Absatz mit Balken **keine** Tabelle
 ist und ein gewöhnliches Zitat vom Callout nicht verschluckt wird.
+
+### Eine Quelle, drei Ausgaben
+
+`dokumentHtml()` in Abschnitt 13 baut aus den Blöcken **richtiges
+HTML**. Dieselbe Zeichenkette geht in die Vorschau, in das Druckblatt
+und in die exportierte Datei. **Nie eine zweite Fassung davon bauen** —
+eine Vorschau, die anders gebaut ist als das Papier, ist keine
+Vorschau (`doku/ENTSCHEIDUNGEN.md`, Punkt 17).
+
+Der Stil dazu steht als Zeichenkette `DOK_CSS` im Skript und **nicht**
+im `<style>`-Block: Der Export braucht ihn wörtlich. Vier Stilblöcke
+hängt das Skript zur Laufzeit ein, in dieser Reihenfolge —
+Grundstil, Thema, eigene Maße (`dokstil`), eigenes CSS (`eigenstil`),
+Seiteneinrichtung (`seitenstil`). Wer zuletzt kommt, gewinnt.
+
+**Kommt eine Blockart dazu, muss sie in jeden Ausgang.** `blockDokument`
+(HTML), `rtfAusgeben` und `docxAusgeben` haben je einen Fall dafür;
+`werkzeug/pruefen.mjs` rechnet nach, dass keiner fehlt. Eine Art, von
+der ein Ausgang nichts weiß, verschwindet dort stillschweigend.
 
 ---
 
@@ -162,6 +214,16 @@ ist und ein gewöhnliches Zitat vom Callout nicht verschluckt wird.
 * **Der Suchtreffer (`--fund`) und der Textmarker (`--marker`) sind
   zwei Farben.** Der eine ist eine Anzeige, der andere steht in der
   Datei; sie dürfen nicht gleich aussehen.
+* **Das Thema der Anwendung und das Thema des Dokuments sind zwei
+  Dinge.** `Z.thema` (`hell`/`dunkel`) färbt die Werkbank; `Z.vthema`
+  färbt das **Dokument** in Vorschau, Druck und Export und folgt dem
+  ersten **nicht** — Papier bleibt Papier, auch wenn die Werkbank
+  dunkel steht. Es gibt **keinen** zweiten Satz Druck-Layouts daneben;
+  er ist im August 2026 in die Themen aufgegangen
+  (`doku/ENTSCHEIDUNGEN.md`, Punkt 20).
+* **Die sechs Farben der Syntax-Hervorhebung stehen auf `--code-g`,
+  nicht auf dem Blattgrund.** Der Prüflauf rechnet sie gegen diese
+  Fläche nach.
 * **Die Farbschicht im Quelltext liegt unter dem Textfeld.** Jedes
   Maß, das den Umbruch beeinflusst, steht in **genau einer** Regel für
   beide Schichten (`.qfeld textarea,.qfeld .qfarbe`). Wer dort etwas
@@ -183,6 +245,13 @@ nicht die erzeugte HTML-Datei.
 zwei Formen.** Ändert sich das Urteil zu einem Block, gehört es in
 beide.
 
+**Für Schritt 10 gibt es keinen Entwurf.** Vorschau, Druckvorschau,
+Stil-Verwalter, Seite einrichten und Schnellwahl sind aus der
+Anforderung gebaut, nicht aus einer Fläche unter `mockups/`. Wer sie
+ändert, hat keinen Sollzustand — das ist ein offener Punkt und steht
+so in `STAND.md`. Es stillschweigend hinzunehmen wäre schlimmer, als
+es aufzuschreiben.
+
 ---
 
 ## Nach jeder Änderung prüfen
@@ -194,11 +263,12 @@ node werkzeug/pruefen.mjs
 Läuft unter Windows, Linux und in Claude Code on the web. Keine
 Abhängigkeiten. Rückgabewert 1, wenn etwas nicht stimmt.
 
-Geprüft werden: Syntax, externe Abhängigkeiten, gefüllte Zeichen,
+Dreizehn Prüfungen: Syntax, externe Abhängigkeiten, gefüllte Zeichen,
 `color-scheme`, Klammern im Stilblock, `display` in ID-Regeln, bemalte
 Flächen, Kontrast der Tokens, **Markdown hin und zurück**,
-Vollständigkeit der Entwürfe und ob jeder Block im Katalog ein Urteil
-trägt.
+Vollständigkeit der Entwürfe, ob jeder Block im Katalog ein Urteil
+trägt, ob jedes Vorschau-Thema einen Stil und genug Kontrast hat und
+ob **jede Blockart in jedem Ausgang** vorkommt.
 
 **Danach die Datei im Browser ansehen.** Ein bestandener Prüflauf sagt
 nichts über die Darstellung:
@@ -227,8 +297,8 @@ gehört sie in `werkzeug/pruefen.mjs` — nicht nur in dieses Dokument.
 |---|---|
 | `node werkzeug/lage.mjs` | Branch, letzte Commits, offene Punkte. Läuft beim Sitzungsbeginn von selbst |
 | `node werkzeug/pruefen.mjs` | die Regelprüfung. Läuft nach jedem Schreiben als Haken automatisch mit |
-| `node werkzeug/schau.mjs` | echter Browser, drei Ansichten, Tippprobe, Bilder, Skriptfehler |
-| `node werkzeug/probe.mjs` | die **Bedienung** im echten Browser: markieren, Menüs, Einrücken, Verlauf, Stufen, Druck, Farbe und Warnung im Quelltext. 67 Proben |
+| `node werkzeug/schau.mjs` | echter Browser, vier Ansichten, Druckvorschau, Tippprobe, Bilder, Skriptfehler |
+| `node werkzeug/probe.mjs` | die **Bedienung** im echten Browser: markieren, Menüs, Einrücken, Verlauf, Stufen, Themen, Einklappen, Fußnoten, Codefarbe, die fünf Ausgaben, Schnellwahl, Seiteneinrichtung. 110 Proben |
 | `node werkzeug/bau-mockups.mjs` | die sieben Entwürfe neu erzeugen |
 
 ---

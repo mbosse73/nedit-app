@@ -8,94 +8,151 @@ was als Nächstes ansteht. Warum etwas so entschieden wurde, steht in
 
 ## Wo wir stehen
 
-**Die Schritte 1 bis 9 sind gebaut.** Nach der Durchsprache vom
-August 2026 ist jeder Punkt der Roadmap einzeln bestätigt,
-zurückgestellt oder gestrichen worden — und das Bestätigte steht.
+**Die Schritte 1 bis 10 sind gebaut.** Mit Schritt 10 hat der Editor
+seine zweite Hälfte bekommen: Er **zeigt** das Dokument und **gibt es
+heraus**, statt es nur zu beschreiben.
 
-**Der Editor kann:**
+**Schreiben — das war Schritt 1 bis 9:**
 
 * Blöcke aus Markdown lesen und verlustfrei zurückschreiben
 * **Auswahlleiste** — markieren, und Fett, Kursiv, Durchgestrichen,
   Code, Link und Textmarker setzen Zeichen in den Rohtext
 * **Slash-Menü** — `/` öffnet die Liste, mit Kürzel und einer
   Vorschau, *was in die Datei kommt*, samt Urteil
-* **Blockmenü** am Griff — Löschen, Duplizieren, Umwandeln in
+* **Blockmenü** am Griff — Darüber einfügen, Löschen, Duplizieren,
+  Umwandeln in
 * **Einrücken** mit `Tab` und `Umschalt+Tab`
 * **Tabelle, Callout und Toggle**, jeder mit sichtbarem Urteil
-* **Dialektschalter** `Rein · GitHub · Obsidian · Pandoc` — dieselbe
-  Fläche, andere Ausgabe
+* **Dialektschalter** `Rein · GitHub · Obsidian · Pandoc`
 * **Gliederung** rechts, **Suche** im Dokument (`Strg+F`),
   **Inhaltsverzeichnis** auf Knopfdruck
-* **Bild** als Verweis; ein Verweis ins Netz wird benannt, nicht
-  geladen
+* **Bild** als Verweis; ein Verweis ins Netz wird benannt, nicht geladen
 * **Rückgängig über Blockgrenzen** (`Strg+Z` / `Strg+Y`)
-* **Zweites Thema**, **Blocksatz** und **vier Druck-Layouts** —
-  Schlicht, Technische Doku, Magazin, Manuskript; der Knopf **PDF**
-  öffnet den Druckdialog
-* **Farbe im Quelltext** — Auszeichnungszeichen, Überschriften, Code,
-  Verweise, Tabellen; in zwei Schichten, damit das Textfeld bleibt,
-  was es ist (`doku/ENTSCHEIDUNGEN.md`, Punkt 13)
-* **Warnung im Quelltext** — jede Zeile jenseits des reinen Markdown
-  ist hinterlegt, mit `GFM`, `Dialekt` oder `HTML` am rechten Rand
-* **Fortsetzungszeilen** einer Liste gehören zu ihrem Punkt; die
-  Nummerierung bricht daran nicht mehr ab
+* **Farbe und Warnung im Quelltext** — jede Zeile jenseits des reinen
+  Markdown ist hinterlegt, mit `GFM`, `Dialekt` oder `HTML` am Rand
+* **Fortsetzungszeilen** einer Liste gehören zu ihrem Punkt
 
-**18 von 27 Blöcken aus `doku/BLOCKKATALOG.md` stehen.** Sieben sind
-gestrichen, einer ist vertagt, zwei sind offen.
+**Ansehen und ausgeben — Schritt 10:**
 
-Der Prüflauf hat elf Prüfungen. Die wichtigste — Markdown hin und
-zurück — läuft an **27 Proben**, darunter verschachtelte Listen,
-Tabellen, Callouts, Toggles und zwei Gegenproben. Die Kontrastprüfung
-rechnet **24 Paare** nach, beide Themen, jeweils gegen den Grund, auf
-dem der Ton wirklich steht.
+* **Vorschau** als vierte Ansicht: richtiges HTML statt Blockzeilen,
+  in Echtzeit, mit **automatischem Scrollen zur letzten Änderung**.
+  Dieselbe Zeichenkette geht in Druck und Export —
+  `doku/ENTSCHEIDUNGEN.md`, Punkt 17
+* **Vollbild** (`Strg+Umschalt+V`) und **ablenkungsfrei**
+  (`Strg+Umschalt+R`)
+* **Farbe im Code** — ein eigener Abtaster, über fünfzig Sprachen,
+  sechs Farben, ohne Bibliothek
+* **Abschnitte einklappen** an jeder Überschrift; die Zahl der
+  verborgenen Blöcke steht am Titel
+* **Fußnotenleiste** neben der Gliederung — sie meldet auch die
+  Fußnoten **ohne Verweis im Text**
+* **Acht Themen für das Dokument** — sie gelten in Vorschau, Druck und
+  Export; das Druck-Layout ist darin aufgegangen (Punkt 20)
+* **Stil-Verwalter** — Spaltenbreite, Schriftgröße, Zeilenabstand und
+  **eigenes CSS**, das auch in die exportierte Datei geht
+* **Seite einrichten** — Format, Hoch- und Querformat, vier Ränder,
+  **mitlaufende Kopf- und Fußzeile mit Bild**, Umbruch vor jeder
+  Überschrift
+* **Druckvorschau** — die Seite maßhaltig, mit einer feinen Linie je
+  Seitenhöhe
+* **Fünf Ausgaben** — `.md`, `.html` (eigenständig, mit Stil und
+  Bildern), `.docx` (ein ZIP von Hand), `.rtf`, PDF über den
+  Druckdialog; dazu die Zwischenablage als HTML, RTF oder Markdown
+* **Mehrere Dateien zusammenfügen**, nach Namen sortiert, Bilder
+  inbegriffen
+* **Schnellwahl** (`Strg+K`) — Überschrift, Fußnote oder Befehl
+* **Zwei neue Blöcke:** Fußnote (`[^1]:`) und Seitenumbruch
+  (`<!-- seitenumbruch -->`)
+
+**20 von 29 Blöcken aus `doku/BLOCKKATALOG.md` stehen.** Sieben sind
+gestrichen, einer ist vertagt, einer ist offen.
+
+Der Prüflauf hat **13 Prüfungen**. Die wichtigste — Markdown hin und
+zurück — läuft an **33 Proben**. Die Kontrastprüfung rechnet **36
+Paare** in beiden Themen nach, dazu drei für die Vorschau-Themen. Neu
+dazugekommen: **jede Blockart muss in jedem Ausgang vorkommen** — eine
+Art, von der HTML, RTF oder DOCX nichts wissen, verschwände dort
+stillschweigend.
 
 `werkzeug/probe.mjs` **bedient** die Anwendung im echten Browser —
-markieren, Menüs, Einrücken, Verlauf, Stufen, Suche, Themen, Druck,
-Farbe und Warnung im Quelltext — und prüft danach, was in der Datei
-steht. **67 Proben**, alle grün.
+**110 Proben**, alle grün. `werkzeug/schau.mjs` klappert vier
+Ansichten und die Druckvorschau ab.
 
 ---
 
 ## Offen
 
-### 1. Die Entwürfe sind aus dem Gedächtnis
+### 1. Für Schritt 10 gibt es keinen Entwurf
+
+Die sieben Flächen unter `mockups/` zeigen den Editor beim
+**Schreiben**. Für Vorschau, Druckvorschau, Stil-Verwalter, Seite
+einrichten und Schnellwahl gibt es keinen — sie sind aus der
+Anforderung gebaut, nicht aus einem Entwurf. Das ist der erste
+Schritt des Projekts, für den das gilt, und es steht hier, damit es
+nicht untergeht.
+
+**Was daraus folgt:** Wer diese Flächen ändert, hat keinen
+Sollzustand, gegen den er prüfen kann. Entweder wird einer
+nachgezogen — `werkzeug/bau-mockups.mjs` ergänzen, wie in `CLAUDE.md`
+beschrieben — oder es wird ausdrücklich entschieden, dass es für sie
+keinen gibt.
+
+### 2. Die mitlaufende Kopfzeile ist nur emuliert geprüft
+
+Sie hängt an `<thead>` und `<tfoot>` einer Tabelle, weil Chromium das
+auf jeder Seite wiederholt. Geprüft ist das mit Chromiums eigener
+PDF-Ausgabe: acht Kapitel ergeben acht Seiten, der Umbruch vor jeder
+Überschrift 1 greift. **Ob die Zeile im Edge-Druckdialog am
+Zielrechner auf jeder Seite steht, ist noch nicht angesehen worden** —
+zusammen mit dem alten offenen Punkt zum Druck (unten).
+
+### 3. Die Entwürfe sind aus dem Gedächtnis
 
 Die Notion-Oberfläche in `mockups/` ist nachgebaut, nicht abgemalt.
-Was verlässlich ist und was nicht, steht in `doku/HERKUNFT.md`. Das
-ist der letzte ungeprüfte Bezugspunkt des Projekts.
+Was verlässlich ist und was nicht, steht in `doku/HERKUNFT.md`.
 
-### 2. Zwei Blöcke sind noch offen
+### 4. Ein Block ist noch offen
 
-**Lesezeichen** (ein Link mit Vorschau) und **Erwähnung** stehen im
-Katalog ohne Umsetzung. Die Erwähnung ist gestrichen; das Lesezeichen
-ist als gewöhnlicher Link ohnehin schon möglich — offen ist nur die
-Darstellung als Karte.
+**Lesezeichen** (ein Link mit Vorschau) steht im Katalog ohne
+Umsetzung. Als gewöhnlicher Link ist er ohnehin schon möglich — offen
+ist nur die Darstellung als Karte.
 
-### 3. Vertagt: Frontmatter als Eigenschaften
+### 5. Vertagt: Frontmatter als Eigenschaften
 
 Nicht abgelehnt, sondern verschoben — `doku/ENTSCHEIDUNGEN.md`,
 Punkt 12. Ein vorhandener YAML-Kopf bleibt bis dahin unangetastet als
 Rohtext stehen.
 
-### 4. Der Druck ist nur emuliert geprüft
+### 6. Der Druck ist nur emuliert geprüft
 
-Die vier Druck-Layouts sind mit Chromiums emulierter Druckausgabe
-angesehen worden, nicht auf Papier und nicht im Edge-Druckdialog.
-**Vor dem ersten ernsten Ausdruck einmal am Zielrechner ansehen** —
-besonders die Seitenumbrüche, den Rand im Manuskript-Layout und die
+Die Themen sind mit Chromiums emulierter Druckausgabe angesehen
+worden, nicht auf Papier und nicht im Edge-Druckdialog. **Vor dem
+ersten ernsten Ausdruck einmal am Zielrechner ansehen** — besonders
+die Seitenumbrüche, den Rand im Manuskript-Thema und die
 Silbentrennung im Blocksatz: Sie hängt an den Trenntabellen des
 Browsers, und im Prüflauf war keine geladen.
+
+### 7. Das RTF in der Zwischenablage nimmt nicht jedes Programm an
+
+`Als RTF` in der Zwischenablage setzt `text/rtf`. Ob das Zielprogramm
+daraus das Windows-Format `CF_RTF` macht, entscheidet der Browser, und
+Chromium sagt darüber nichts zu. Der Weg über die **Datei** (`.rtf`
+ausgeben und öffnen) geht in jedem Fall; die Meldung nach dem Kopieren
+sagt das auch.
 
 ---
 
 ## Erledigt und deshalb nicht mehr offen
 
-* **Der Download geht.** Am Zielrechner geprüft. Damit ist der
-  schwerste offene Punkt des Projekts weg.
-* **Die Nummerierung im Starttext stimmt.** Ursache war der Leser,
-  nicht der Text; behoben in `leseMarkdown` und `schreibeMarkdown`,
-  abgesichert mit sechs Proben. `doku/ENTSCHEIDUNGEN.md`, Punkt 15.
-* **Die Warnzeilen aus dem Entwurf sind gebaut.**
-  `doku/ENTSCHEIDUNGEN.md`, Punkt 16.
-* **Der Ordnerbaum ist entschieden** — es gibt keinen. Eine Datei, ein
-  Fenster. `doku/ENTSCHEIDUNGEN.md`, Punkt 2.
+* **Der Editor kann etwas herausgeben** — in fünf Formaten, nicht nur
+  als `.md`. Das war der zweite schwere Punkt nach dem Download.
+* **Die Vorschau ist keine Behauptung.** Vorschau, Druck und Export
+  kommen aus **einer** Funktion; sie können nicht auseinanderlaufen.
+  `doku/ENTSCHEIDUNGEN.md`, Punkt 17.
+* **Zwei Systeme fürs Aussehen sind eins geworden.** Punkt 20.
+* **Der Kommentar am Text hat eine ehrliche Antwort bekommen:** die
+  Fußnote. Punkt 8 und 18.
+* **Der Download geht.** Am Zielrechner geprüft.
+* **Die Nummerierung im Starttext stimmt.** Punkt 15.
+* **Der Ordnerbaum ist entschieden** — es gibt keinen. Punkt 2; das
+  Zusammenfügen ist ausdrücklich eine Einbahnstraße, Punkt 22.
