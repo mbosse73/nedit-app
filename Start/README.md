@@ -49,6 +49,26 @@ Dazu: `Tab` rückt Listen ein. Tabelle, Callout, Toggle, **Fußnote** und
 Rückgängig über Blockgrenzen. Der Quelltext **farbig**, und jede Zeile
 jenseits des reinen Markdown eigens gekennzeichnet.
 
+## Die Oberfläche
+
+Notions Zuschnitt: links der Name, rechts die Ansicht, **Ausgeben**,
+die Gliederung und ein `···`. Sieben Knöpfe, mehr nicht — alles
+Seltene steht im Punkte-Menü, in vier Gruppen: *Thema des Dokuments ·
+Datei · Ansehen · Finden*.
+
+Dahinter eine Regel, an die sich der Editor hält:
+
+| Die Frage | Der Ort |
+|---|---|
+| Wie sieht das **Dokument** aus? | **Layout** — Thema · Satz und Maße · Seite · Eigenes CSS |
+| Wie verhält sich der **Editor**? | **Einstellungen** |
+| Wie kommt es **heraus**? | **Ausgeben** |
+
+Das Thema des Dokuments wählt man **am Aussehen, nicht am Namen**:
+Jede Kachel ist ein Miniaturblatt, das das Thema auf sich selbst
+anwendet — sie zeigt Schrift, Farbe und Satz und kann deshalb nicht
+veralten.
+
 ## Sich zurechtfinden
 
 Gliederung und **Fußnotenleiste** rechts. Suche im Dokument
@@ -66,10 +86,11 @@ Die Ansicht **Vorschau** zeigt das fertige Dokument neben der
 Schreibfläche — richtiges HTML statt Blockzeilen, in Echtzeit, und sie
 **folgt der zuletzt geänderten Stelle**.
 
-Unter **Stil** stehen acht Themen für das Dokument — *Wie der Editor,
-Papier, Buchsatz, Technische Doku, Zeitung, Hoher Kontrast,
-Manuskript, Schreibmaschine* —, dazu Spaltenbreite, Schriftgröße,
-Zeilenabstand und ein Feld für **eigenes CSS**.
+Unter **Layout** stehen acht Themen für das Dokument — *Wie der
+Editor, Papier, Buchsatz, Technische Doku, Zeitung, Hoher Kontrast,
+Manuskript, Schreibmaschine* —, jedes mit einer Vorschau, dazu
+Textausrichtung, Spaltenbreite, Schriftgröße, Zeilenabstand und ein
+Feld für **eigenes CSS**.
 
 Codeblöcke sind **farbig**, in über fünfzig Sprachen. Der Abtaster
 dafür steht in `editor.html` und ist von Hand geschrieben; eine
@@ -87,10 +108,11 @@ Bibliothek wäre hier ausgeschlossen.
 
 Dazu die **Zwischenablage** als HTML, RTF oder Markdown.
 
-Unter **Seite einrichten**: Seitengröße (A3 bis Legal), Hoch- und
+Im Reiter **Seite**: Seitengröße (A3 bis Legal), Hoch- und
 Querformat, vier Ränder, eine **mitlaufende Kopf- und Fußzeile mit
 Bild** und der Umbruch vor jeder Überschrift. Die **Druckvorschau**
-zeigt die Seite maßhaltig.
+zeigt die Seite maßhaltig — und der Layout-Dialog bleibt dabei offen,
+damit man beim Drehen zusehen kann.
 
 **Die Seitenzahl setzt der Browser** — sie steht in seinem
 Druckdialog, und die Karte sagt das auch.
@@ -140,4 +162,4 @@ dem Produkt.** Was das heißt und was zu prüfen wäre, steht in
 `doku/HERKUNFT.md`. Bitte vor dem ersten größeren Schritt lesen.
 
 Was noch offen ist, steht in `STAND.md` — darunter, dass es für die
-Flächen aus Schritt 10 noch **keinen Entwurf** gibt.
+Flächen aus Schritt 10 und 11 noch **keinen Entwurf** gibt.

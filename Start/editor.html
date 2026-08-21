@@ -137,26 +137,42 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 
 .app{display:flex;flex-direction:column;height:100vh;background:var(--grund)}
 
-/* ---------- Kopfleiste ---------- */
-.kopf{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:9px 16px;
+/* ---------- Kopfleiste ----------
+   Notions Kopfzeile trägt links den Namen der Seite und rechts eine
+   Handvoll Knöpfe, hinter denen ein `···` alles Weitere versteckt.
+   Hier stand bis August 2026 eine Reihe aus vierzehn Knöpfen — jeder
+   für sich verständlich, zusammen eine Werkzeugleiste, die niemand
+   liest. Jetzt sind es vier Gruppen: Name · Ansicht · Ausgeben ·
+   zwei Zeichen. Der Rest steht im Menü (doku/ENTSCHEIDUNGEN.md,
+   Punkt 25). */
+.kopf{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:8px 14px;
   background:var(--grund);border-bottom:1px solid var(--linie2);font-size:13.5px}
 .kopf .name{display:flex;align-items:center;gap:7px;padding:4px 8px;border-radius:var(--rad);
-  color:var(--tinte2);cursor:pointer}
+  color:var(--tinte2);cursor:pointer;min-width:0}
 .kopf .name:hover{background:var(--strich)}
-.kopf .name svg{color:var(--tinte3)}
+.kopf .name svg{color:var(--tinte3);flex-shrink:0}
+.kopf .name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .kopf .sp{flex:1}
 .kopf button{font:inherit;font-size:13px;color:var(--tinte2);background:none;border:0;
   padding:5px 10px;border-radius:var(--rad);cursor:pointer}
-.kopf button:hover{background:var(--strich)}
+.kopf button:hover{background:var(--strich);color:var(--tinte)}
 .kopf .wechsel{display:flex;background:var(--strich);border-radius:6px;padding:2px}
 .kopf .wechsel button{padding:3px 11px;border-radius:4px;font-size:12.5px}
 .kopf .wechsel button[aria-current="true"]{background:var(--grund);color:var(--tinte);
   font-weight:500;box-shadow:0 1px 2px rgba(15,15,15,.12)}
-.kopf .akt{border:1px solid var(--linie)}
+/* Ein Zeichenknopf ist quadratisch und trägt keinen Rahmen — sonst
+   sähe die Leiste wieder aus wie eine Werkzeugleiste. */
+.kopf .sym{width:28px;height:28px;padding:0;display:grid;place-items:center}
+.kopf .sym[aria-pressed="true"]{background:var(--strich);color:var(--tinte)}
+.kopf .punkte{letter-spacing:.1em;font-size:15px;line-height:1}
 
 /* ---------- Rumpf ---------- */
 .rumpf{flex:1;min-height:0;display:flex;background:var(--grund)}
-.blatt{flex:1;min-width:0;overflow-y:auto;background:var(--grund);padding:44px 0 40vh}
+/* Notion lässt über der ersten Zeile eine Handbreit frei. Das ist
+   kein Zierrat: Es trennt den Text von der Leiste, und ohne diese
+   Trennung liest sich die erste Überschrift wie eine Beschriftung
+   der Werkbank. */
+.blatt{flex:1;min-width:0;overflow-y:auto;background:var(--grund);padding:68px 0 40vh}
 .blatt .spalte{max-width:var(--spalte);margin:0 auto;padding:0 60px}
 .quelle{width:46%;flex-shrink:0;background:var(--rand);border-left:1px solid var(--linie2);
   display:flex;flex-direction:column}
@@ -236,7 +252,7 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 .vorschau .vkopf button:hover{background:var(--strich);color:var(--tinte)}
 .vorschau .vkopf button[aria-pressed="true"]{background:var(--blau);border-color:var(--blau);
   color:#fff}
-.vblatt{flex:1;min-height:0;overflow-y:auto;background:var(--grund);padding:34px 0}
+.vblatt{flex:1;min-height:0;overflow-y:auto;background:var(--grund);padding:52px 0 20vh}
 
 /* ---------- Ablenkungsfrei ----------
    Kopf, Fuß und beide Leisten weg. Was bleibt, ist die Spalte. Der
@@ -255,18 +271,20 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
    Rechts die Überschriften, die springt. Sie ersetzt keinen
    Seitenbaum — es gibt nur diese eine Datei — sondern zeigt, wie sie
    gebaut ist. */
-.gliederung{width:238px;flex-shrink:0;background:var(--rand);
+/* Sie stand als graue Fläche neben dem Blatt und sah damit aus wie
+   ein zweites Fenster. Notions Gliederung liegt auf demselben Grund
+   wie die Seite und trennt sich nur durch eine Haarlinie — sie ist
+   ein Rand des Textes, kein eigener Ort. */
+.gliederung{width:252px;flex-shrink:0;background:var(--grund);
   border-left:1px solid var(--linie2);display:flex;flex-direction:column}
 .app[data-gliederung="aus"] .gliederung{display:none}
 .app[data-ansicht="quelltext"] .gliederung{display:none}
-.gliederung .gkopf{flex-shrink:0;display:flex;gap:2px;padding:6px 7px;
-  border-bottom:1px solid var(--linie2)}
-.gliederung .gtab{flex:1;font:inherit;font-size:11px;letter-spacing:.05em;
-  text-transform:uppercase;color:var(--tinte3);background:none;border:0;
-  padding:5px 7px;border-radius:var(--rad);cursor:pointer}
-.gliederung .gtab:hover{background:var(--strich);color:var(--tinte2)}
-.gliederung .gtab[aria-pressed="true"]{background:var(--grund);color:var(--tinte);
-  font-weight:600}
+.gliederung .gkopf{flex-shrink:0;display:flex;gap:14px;padding:14px 16px 8px}
+.gliederung .gtab{font:inherit;font-size:11px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--blass);background:none;border:0;
+  padding:2px 0;cursor:pointer}
+.gliederung .gtab:hover{color:var(--tinte2)}
+.gliederung .gtab[aria-pressed="true"]{color:var(--tinte2);font-weight:600}
 /* `display` steht in keiner ID-Regel — eine ID schlüge jede Klasse
    und bräche das Umschalten (harte Regel 7). */
 .gliederung[data-reiter="gliederung"] .notenliste{display:none}
@@ -284,21 +302,24 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
   background:var(--warn-g);border-radius:3px;padding:1px 5px}
 .gliederung .leer code{font-family:var(--fest);font-size:.92em;
   background:rgba(135,131,120,.15);border-radius:3px;padding:1px 4px}
-.gliederung .gfuss button+button{margin-top:5px}
-.gliederung .liste{flex:1;min-height:0;overflow-y:auto;padding:6px}
-.gliederung .z{display:block;width:100%;font:inherit;font-size:13px;text-align:left;
-  padding:5px 8px;border:0;border-radius:var(--rad);background:none;color:var(--tinte2);
-  cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gliederung .gfuss button+button{margin-top:1px}
+.gliederung .liste{flex:1;min-height:0;overflow-y:auto;padding:2px 8px 8px}
+.gliederung .z{display:block;width:100%;font:inherit;font-size:12.5px;text-align:left;
+  padding:4px 8px;border:0;border-radius:var(--rad);background:none;color:var(--tinte2);
+  cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  line-height:1.45}
 .gliederung .z:hover{background:var(--strich);color:var(--tinte)}
 .gliederung .s1{font-weight:600;color:var(--tinte)}
 .gliederung .s2{padding-left:20px}
 .gliederung .s3{padding-left:34px}
 .gliederung .leer{padding:10px 9px;font-size:12.5px;color:var(--tinte3);line-height:1.5}
-.gliederung .gfuss{flex-shrink:0;border-top:1px solid var(--linie2);padding:7px}
-.gliederung .gfuss button{width:100%;font:inherit;font-size:12.5px;padding:6px 9px;
-  border:1px solid var(--linie);border-radius:var(--rad);background:var(--grund);
-  color:var(--tinte2);cursor:pointer}
-.gliederung .gfuss button:hover{background:var(--strich);color:var(--tinte)}
+/* Zwei leise Zeilen statt zweier gerahmter Knöpfe: Ein Rahmen macht
+   aus einem Handgriff ein Formular. */
+.gliederung .gfuss{flex-shrink:0;padding:6px 8px 10px}
+.gliederung .gfuss button{display:block;width:100%;font:inherit;font-size:12.5px;
+  text-align:left;padding:6px 8px;border:0;border-radius:var(--rad);background:none;
+  color:var(--tinte3);cursor:pointer}
+.gliederung .gfuss button:hover{background:var(--strich);color:var(--tinte2)}
 
 /* ---------- Suchen ----------
    Die Suche des Browsers findet nur, was gerade sichtbar ist — den
@@ -326,9 +347,9 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 
 /* ---------- Fußleiste ---------- */
 .fuss{flex-shrink:0;display:flex;align-items:center;gap:16px;padding:6px 16px;
-  background:var(--rand);border-top:1px solid var(--linie2);font-size:11.5px;
-  color:var(--tinte3)}
-.fuss b{font-weight:600;color:var(--tinte2)}
+  background:var(--grund);border-top:1px solid var(--linie2);font-size:11.5px;
+  color:var(--blass)}
+.fuss b{font-weight:600;color:var(--tinte3)}
 .fuss .sp{flex:1}
 .fuss .neu{color:var(--blau)}
 
@@ -517,6 +538,10 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
   font-family:var(--fest);text-align:center}
 .menue .tr{height:1px;background:var(--linie2);margin:5px 2px}
 .menue .leer{padding:9px;font-size:13px;color:var(--tinte3)}
+/* Mit einer Kachelreihe darin braucht das Menü mehr Platz — aber
+   eine feste Breite, sonst wächst es auf die Summe aller Kacheln,
+   statt sie rollen zu lassen. */
+.menue.weit{width:330px;max-width:94vw}
 
 /* Das Slash-Menü hat eine zweite Spalte, die Notion nicht hat: Sie
    zeigt nicht, wie der Block aussieht, sondern **was in die Datei
@@ -561,6 +586,61 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 .karte .erklaerung{font-size:12.5px;color:var(--tinte2);line-height:1.6;margin-top:10px;
   padding:10px 12px;background:var(--rand);border-radius:var(--rad)}
 .karte .erklaerung b{color:var(--tinte);font-weight:600}
+/* ---------- Die Theme-Kacheln ----------
+   Ein Thema, das nur einen Namen hat, ist ein Rätsel: „Zeitung" sagt
+   nichts über Schrift, Farbe und Satz. Jede Kachel zeigt deshalb ein
+   Miniaturblatt in **diesem** Thema — sie trägt selbst die Klasse
+   `.dok` und das Merkmal `data-vthema`, und damit greifen dieselben
+   Regeln wie im Dokument. Eine gemalte Vorschau könnte lügen; diese
+   nicht. */
+.kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
+/* `display:flex` und nicht `block`: Ein <button> legt seinen Inhalt
+   sonst in einen Kasten, der sich um den Text schrumpft — das
+   Miniaturblatt wäre dann so breit wie das Wort darin. */
+.tkachel{display:flex;flex-direction:column;align-items:stretch;width:100%;padding:0;
+  border:0;background:none;cursor:pointer;border-radius:var(--rad-gr);text-align:left;
+  font:inherit}
+/* Das Merkmal muss mit in den Wähler: Ein Thema darf der Kachel
+   seine Farbe und seine Schrift geben, aber nicht seine Maße. Das
+   Manuskript-Thema hält 110 Pixel Korrekturrand frei — auf einer
+   Kachel von 132 Pixeln bliebe davon ein Buchstabe je Zeile. */
+.tkachel .tbild,.tkachel .tbild[data-vthema]{display:block;height:82px;overflow:hidden;
+  padding:11px 12px 0;border:1px solid var(--linie);border-radius:var(--rad);
+  max-width:none;margin:0;transition:border-color .12s}
+.tkachel:hover .tbild{border-color:var(--tinte3)}
+.tkachel[aria-pressed="true"] .tbild{border-color:var(--blau);
+  box-shadow:0 0 0 2px var(--blau-s)}
+.tkachel .tt{display:block;font-size:11.5px;font-weight:600;line-height:1.2;
+  margin-bottom:5px;white-space:nowrap;overflow:hidden}
+.tkachel .tp{display:block;font-size:7.5px;line-height:1.65;opacity:.82}
+.tkachel .tname{display:block;font-size:12px;color:var(--tinte2);padding:6px 2px 0}
+.tkachel[aria-pressed="true"] .tname{color:var(--tinte);font-weight:600}
+
+/* Dieselbe Kachel, kleiner: Sie steht als Reihe im Menü, damit sich
+   das Thema wechseln lässt, ohne einen Dialog zu öffnen. */
+.kachelreihe{display:flex;gap:7px;overflow-x:auto;padding:2px 9px 8px;
+  scrollbar-width:thin}
+.kachelreihe .tkachel{width:78px;flex-shrink:0}
+.kachelreihe .tkachel .tbild,
+.kachelreihe .tkachel .tbild[data-vthema]{height:52px;padding:7px 8px 0}
+.kachelreihe .tkachel .tt{font-size:8px;margin-bottom:3px}
+.kachelreihe .tkachel .tp{font-size:5.5px;line-height:1.7}
+.kachelreihe .tkachel .tname{font-size:10.5px;padding:4px 0 0;text-align:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- Reiter in einer Karte ----------
+   Vier Fragen, ein Dialog. `display` steht in keiner ID-Regel — eine
+   ID schlüge jede Klasse und bräche das Umschalten (harte Regel 7). */
+.karte .reiter{display:flex;gap:2px;margin:-4px 0 20px;border-bottom:1px solid var(--linie2)}
+.karte .reiter button{font:inherit;font-size:13px;color:var(--tinte3);background:none;
+  border:0;border-bottom:2px solid transparent;padding:7px 12px;cursor:pointer;
+  margin-bottom:-1px}
+.karte .reiter button:hover{color:var(--tinte2)}
+.karte .reiter button[aria-selected="true"]{color:var(--tinte);font-weight:600;
+  border-bottom-color:var(--tinte)}
+.karte .blatt-r{display:none}
+.karte .blatt-r.an{display:block}
+
 .karte.breit{width:min(760px,95vw)}
 .karte .felder{display:flex;flex-wrap:wrap;gap:14px}
 .karte .felder label{display:flex;align-items:center;gap:7px;font-size:13px;
@@ -736,54 +816,19 @@ body[data-druckvorschau="ja"] .app{display:none}
       <button id="w-vorschau"  aria-current="false">Vorschau</button>
       <button id="w-quelltext" aria-current="false">Quelltext</button>
     </div>
-    <button class="akt" id="oeffnen">Öffnen</button>
-    <button class="akt" id="zusammen-auf"
-            title="Mehrere Dateien zu einem Dokument zusammenfügen">Zusammenfügen</button>
-    <button class="akt" id="sichern">Sichern</button>
-    <button class="akt" id="neu">Neu</button>
-    <button class="akt" id="ausgeben" title="Als PDF, HTML, DOCX oder RTF ausgeben"
+    <button id="ausgeben" title="Als Markdown, HTML, DOCX, RTF oder PDF ausgeben"
             aria-haspopup="menu">Ausgeben</button>
-    <button class="akt" id="seite-auf" title="Seite einrichten" aria-haspopup="dialog">
-      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
-           stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
-           aria-hidden="true"><path d="M4.4 2.8h11.2v14.4H4.4z"/>
-      <path d="M6.8 5.6h6.4M6.8 8.4h6.4M6.8 11.2h4"/></svg>
-    </button>
-    <button class="akt" id="stil-auf" title="Stil: Thema, Maße, eigenes CSS"
-            aria-haspopup="dialog">
-      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
-           stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
-           aria-hidden="true"><path d="M10 2.8a7.2 7.2 0 1 0 0 14.4c1 0 1.6-.7 1.6-1.5
-           0-.9-.7-1.4-.7-2.1 0-.6.5-1.1 1.2-1.1h1.4a3.7 3.7 0 0 0 3.7-3.7c0-3.3-3.2-6-7.2-6z"/>
-      <circle cx="6.6" cy="9" r=".9"/><circle cx="9.4" cy="6.2" r=".9"/>
-      <circle cx="13.2" cy="7.4" r=".9"/></svg>
-    </button>
-    <button class="akt" id="ruhe-auf" title="Ablenkungsfrei (Strg+Umschalt+R)"
-            aria-pressed="false">
-      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
-           stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-           aria-hidden="true"><path d="M3.4 6.6V3.4h3.2M16.6 6.6V3.4h-3.2M3.4 13.4v3.2h3.2
-           M16.6 13.4v3.2h-3.2"/></svg>
-    </button>
-    <button class="akt" id="vollbild" title="Vollbild (Strg+Umschalt+V)">
-      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
-           stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-           aria-hidden="true"><path d="M7.6 3.4H3.4v4.2M12.4 3.4h4.2v4.2M7.6 16.6H3.4v-4.2
-           M12.4 16.6h4.2v-4.2"/></svg>
-    </button>
-    <button class="akt" id="g-auf" title="Gliederung ein- und ausblenden"
-            aria-pressed="true">
-      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+    <button class="sym" id="g-auf" title="Gliederung ein- und ausblenden"
+            aria-label="Gliederung" aria-pressed="true">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor"
            stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
         <path d="M4 5.2h12M6.5 10h9.5M9 14.8h7"/></svg>
     </button>
-    <button class="akt" id="ein-auf" title="Einstellungen" aria-haspopup="dialog">
-      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
-           stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
-           aria-hidden="true"><circle cx="10" cy="10" r="2.6"/>
-      <path d="M10 2.6v2M10 15.4v2M17.4 10h-2M4.6 10h-2M15.2 4.8l-1.4 1.4M6.2 13.8l-1.4 1.4
-               M15.2 15.2l-1.4-1.4M6.2 6.2 4.8 4.8"/></svg>
-    </button>
+    <!-- Notions `···`: Alles, was nicht in jeder Minute gebraucht
+         wird, steht dahinter — und ist damit an genau einer Stelle
+         zu suchen (doku/ENTSCHEIDUNGEN.md, Punkt 25). -->
+    <button class="sym" id="mehr" title="Mehr" aria-haspopup="menu"
+            aria-label="Weitere Befehle"><span class="punkte">···</span></button>
     <!-- Edge erlaubt aus einer lokal geöffneten Datei keinen direkten
          Dateizugriff. Öffnen geht deshalb über die Dateiauswahl,
          Sichern über den Download. Siehe doku/ENTSCHEIDUNGEN.md. -->
@@ -791,7 +836,6 @@ body[data-druckvorschau="ja"] .app{display:none}
     <!-- Mehrere Dateien und die Bilder dazu in einer Auswahl. -->
     <input type="file" id="zusammen-datei" multiple hidden
            accept=".md,.markdown,.mdown,.mkd,.txt,image/*">
-
   </div>
 
   <div class="rumpf">
@@ -872,72 +916,11 @@ body[data-druckvorschau="ja"] .app{display:none}
     <span class="sp"></span>
     <span class="hin">Die feinen Linien sind eine Näherung. Wo genau die Seite bricht,
       rechnet der Druckdialog.</span>
+    <button type="button" id="druck-layout">Layout …</button>
     <button type="button" id="druck-pdf">PDF / Drucken</button>
     <button type="button" id="druck-zu">Schließen</button>
   </div>
   <div class="druckflaeche"><div class="druckblatt" id="druckblatt"></div></div>
-</div>
-
-<div class="ueberzug" id="seite-karte" role="dialog" aria-modal="true"
-     aria-labelledby="seite-titel">
-  <div class="karte breit">
-    <div class="titel" id="seite-titel">Seite einrichten</div>
-    <p class="unter">Gilt für den Druck, das PDF und die Druckvorschau. Wie das Dokument
-      dabei <b>aussieht</b>, steht unter „Stil“ — ein Satz Themen für Vorschau, Druck
-      und Export.</p>
-    <div class="gruppe">
-      <div class="etikett">Seitengröße</div>
-      <div class="wahl" id="seite-format" role="group" aria-label="Seitengröße"></div>
-    </div>
-    <div class="gruppe">
-      <div class="etikett">Ausrichtung</div>
-      <div class="wahl" id="seite-lage" role="group" aria-label="Ausrichtung"></div>
-    </div>
-    <div class="gruppe">
-      <div class="etikett">Seitenränder (mm)</div>
-      <div class="wahl" id="seite-randvorlage" role="group" aria-label="Randvorlage"></div>
-      <div class="felder" style="margin-top:10px">
-        <label>Oben  <input type="number" id="rand-oben"   min="0" max="60" step="1"></label>
-        <label>Rechts<input type="number" id="rand-rechts" min="0" max="60" step="1"></label>
-        <label>Unten <input type="number" id="rand-unten"  min="0" max="60" step="1"></label>
-        <label>Links <input type="number" id="rand-links"  min="0" max="60" step="1"></label>
-      </div>
-    </div>
-    <div class="gruppe">
-      <div class="etikett">Kopfzeile</div>
-      <input type="text" id="seite-kopf"
-             placeholder="{titel} | | {datum}   —   Balken trennt links, Mitte, rechts">
-      <div class="reihe">
-        <button type="button" id="kopfbild-waehlen">Bild wählen</button>
-        <button type="button" id="kopfbild-weg">Bild entfernen</button>
-        <span class="stand" id="kopfbild-stand">kein Bild</span>
-      </div>
-      <input type="file" id="kopfbild-datei" accept="image/*" hidden>
-    </div>
-    <div class="gruppe">
-      <div class="etikett">Fußzeile</div>
-      <input type="text" id="seite-fuss" placeholder="{datei} | | ">
-      <div class="reihe">
-        <button type="button" id="fussbild-waehlen">Bild wählen</button>
-        <button type="button" id="fussbild-weg">Bild entfernen</button>
-        <span class="stand" id="fussbild-stand">kein Bild</span>
-      </div>
-      <input type="file" id="fussbild-datei" accept="image/*" hidden>
-    </div>
-    <div class="gruppe">
-      <div class="etikett">Seitenumbruch</div>
-      <div class="wahl" id="seite-umbruch" role="group" aria-label="Seitenumbruch"></div>
-      <div class="erklaerung" id="seite-umbruch-satz"></div>
-    </div>
-    <div class="erklaerung"><b>Die Seitenzahl setzt der Browser.</b> Sie steht im
-      Druckdialog unter „Kopf- und Fußzeilen“; von hier aus lässt sie sich nicht
-      steuern — Chromium kennt die CSS-Regel dafür nicht. Platzhalter, die hier gehen:
-      <code>{titel}</code>, <code>{datei}</code>, <code>{datum}</code>.</div>
-    <div class="schluss">
-      <button type="button" id="druckvorschau-auf">Druckvorschau</button>
-      <button type="button" id="seite-zu">Schließen</button>
-    </div>
-  </div>
 </div>
 
 <div class="ueberzug" id="zusammen" role="dialog" aria-modal="true"
@@ -977,31 +960,102 @@ body[data-druckvorschau="ja"] .app{display:none}
   </div>
 </div>
 
-<div class="ueberzug" id="stil" role="dialog" aria-modal="true" aria-labelledby="stil-titel">
+<div class="ueberzug" id="layout" role="dialog" aria-modal="true"
+     aria-labelledby="layout-titel">
   <div class="karte breit">
-    <div class="titel" id="stil-titel">Stil</div>
-    <p class="unter">Das Thema färbt das <b>Dokument</b> — Vorschau, Druck und Export.
-      Es folgt dem Thema der Anwendung nicht: Papier bleibt Papier, auch wenn die
-      Werkbank dunkel steht.</p>
-    <div class="gruppe">
-      <div class="etikett">Vorschau-Thema</div>
-      <div class="wahl" id="stil-themen" role="group" aria-label="Vorschau-Thema"></div>
-      <div class="erklaerung" id="stil-erklaerung"></div>
+    <div class="titel" id="layout-titel">Layout</div>
+    <p class="unter">Wie das Dokument <b>aussieht</b> — in der Vorschau, im Druck und in
+      jeder ausgegebenen Datei. In der <code>.md</code>-Datei steht davon nichts;
+      warum, steht in <code>doku/ENTSCHEIDUNGEN.md</code>, Punkt 9.</p>
+
+    <div class="reiter" role="tablist" aria-label="Layout">
+      <button type="button" class="rt" id="r-thema" role="tab" aria-selected="true"
+              aria-controls="b-thema">Thema</button>
+      <button type="button" class="rt" id="r-satz"  role="tab" aria-selected="false"
+              aria-controls="b-satz">Satz und Maße</button>
+      <button type="button" class="rt" id="r-seite" role="tab" aria-selected="false"
+              aria-controls="b-seite">Seite</button>
+      <button type="button" class="rt" id="r-css"   role="tab" aria-selected="false"
+              aria-controls="b-css">Eigenes CSS</button>
     </div>
-    <div class="gruppe">
-      <div class="etikett">Maße</div>
-      <div class="felder">
-        <label>Spaltenbreite
-          <input type="number" id="stil-breite" min="320" max="1400" step="10"> px</label>
-        <label>Schriftgröße
-          <input type="number" id="stil-groesse" min="10" max="32" step=".5"> px</label>
-        <label>Zeilenabstand
-          <input type="number" id="stil-hoehe" min="1.1" max="2.4" step=".02"></label>
+
+    <div class="blatt-r an" id="b-thema" role="tabpanel" aria-labelledby="r-thema">
+      <div class="kacheln" id="thema-kacheln" role="group" aria-label="Thema"></div>
+      <div class="erklaerung" id="thema-erklaerung"></div>
+    </div>
+
+    <div class="blatt-r" id="b-satz" role="tabpanel" aria-labelledby="r-satz">
+      <div class="gruppe">
+        <div class="etikett">Textausrichtung</div>
+        <div class="wahl" id="satz-wahl" role="group" aria-label="Textausrichtung"></div>
+        <div class="erklaerung" id="satz-erklaerung"></div>
+      </div>
+      <div class="gruppe">
+        <div class="etikett">Maße des Dokuments</div>
+        <div class="felder">
+          <label>Spaltenbreite
+            <input type="number" id="stil-breite" min="320" max="1400" step="10"> px</label>
+          <label>Schriftgröße
+            <input type="number" id="stil-groesse" min="10" max="32" step=".5"> px</label>
+          <label>Zeilenabstand
+            <input type="number" id="stil-hoehe" min="1.1" max="2.4" step=".02"></label>
+        </div>
+        <div class="erklaerung">Jedes Thema bringt eigene Maße mit — was hier steht,
+          <b>schlägt sie</b>. Sie gelten für Vorschau, Druck und Export gleichermaßen.</div>
       </div>
     </div>
-    <div class="gruppe">
-      <div class="etikett">Eigenes CSS</div>
-      <textarea id="stil-css" spellcheck="false" rows="9"
+
+    <div class="blatt-r" id="b-seite" role="tabpanel" aria-labelledby="r-seite">
+      <div class="gruppe">
+        <div class="etikett">Seitengröße und Ausrichtung</div>
+        <div class="wahl" id="seite-format" role="group" aria-label="Seitengröße"></div>
+        <div class="wahl" id="seite-lage" role="group" aria-label="Ausrichtung"
+             style="margin-top:6px"></div>
+      </div>
+      <div class="gruppe">
+        <div class="etikett">Seitenränder (mm)</div>
+        <div class="wahl" id="seite-randvorlage" role="group" aria-label="Randvorlage"></div>
+        <div class="felder" style="margin-top:10px">
+          <label>Oben  <input type="number" id="rand-oben"   min="0" max="60" step="1"></label>
+          <label>Rechts<input type="number" id="rand-rechts" min="0" max="60" step="1"></label>
+          <label>Unten <input type="number" id="rand-unten"  min="0" max="60" step="1"></label>
+          <label>Links <input type="number" id="rand-links"  min="0" max="60" step="1"></label>
+        </div>
+      </div>
+      <div class="gruppe">
+        <div class="etikett">Kopfzeile</div>
+        <input type="text" id="seite-kopf"
+               placeholder="{titel} | | {datum}   —   Balken trennt links, Mitte, rechts">
+        <div class="reihe">
+          <button type="button" id="kopfbild-waehlen">Bild wählen</button>
+          <button type="button" id="kopfbild-weg">Bild entfernen</button>
+          <span class="stand" id="kopfbild-stand">kein Bild</span>
+        </div>
+        <input type="file" id="kopfbild-datei" accept="image/*" hidden>
+      </div>
+      <div class="gruppe">
+        <div class="etikett">Fußzeile</div>
+        <input type="text" id="seite-fuss" placeholder="{datei} | | ">
+        <div class="reihe">
+          <button type="button" id="fussbild-waehlen">Bild wählen</button>
+          <button type="button" id="fussbild-weg">Bild entfernen</button>
+          <span class="stand" id="fussbild-stand">kein Bild</span>
+        </div>
+        <input type="file" id="fussbild-datei" accept="image/*" hidden>
+      </div>
+      <div class="gruppe">
+        <div class="etikett">Seitenumbruch</div>
+        <div class="wahl" id="seite-umbruch" role="group" aria-label="Seitenumbruch"></div>
+        <div class="erklaerung" id="seite-umbruch-satz"></div>
+      </div>
+      <div class="erklaerung"><b>Die Seitenzahl setzt der Browser.</b> Sie steht im
+        Druckdialog unter „Kopf- und Fußzeilen“; von hier aus lässt sie sich nicht
+        steuern — Chromium kennt die CSS-Regel dafür nicht. Platzhalter, die hier gehen:
+        <code>{titel}</code>, <code>{datei}</code>, <code>{datum}</code>.</div>
+    </div>
+
+    <div class="blatt-r" id="b-css" role="tabpanel" aria-labelledby="r-css">
+      <textarea id="stil-css" spellcheck="false" rows="12"
         placeholder=".dok h1 { color: #1a4f8a; }&#10;.dok p  { text-indent: 1.4em; }"></textarea>
       <div class="erklaerung">Es steht <b>zuletzt</b> und schlägt damit jedes Thema.
         Regeln mit <code>.dok</code> davor gelten nur für das Dokument; ohne das
@@ -1014,7 +1068,11 @@ body[data-druckvorschau="ja"] .app{display:none}
       </div>
       <input type="file" id="stil-datei" accept=".css,text/css" hidden>
     </div>
-    <div class="schluss"><button type="button" id="stil-zu">Schließen</button></div>
+
+    <div class="schluss">
+      <button type="button" id="layout-druck">Druckvorschau</button>
+      <button type="button" id="layout-zu">Schließen</button>
+    </div>
   </div>
 </div>
 
@@ -1022,8 +1080,8 @@ body[data-druckvorschau="ja"] .app{display:none}
      aria-labelledby="ein-titel">
   <div class="karte">
     <div class="titel" id="ein-titel">Einstellungen</div>
-    <p class="unter">Dieselbe Fläche, andere Ausgabe. Die Stufe bestimmt, welche Blöcke
-      der Editor anbietet — und wie er zeigt, was in der Datei steht.</p>
+    <p class="unter">Wie der <b>Editor</b> sich verhält. Wie das <b>Dokument</b>
+      aussieht, steht unter „Layout“ — Thema, Satz, Maße, Seite und eigenes CSS.</p>
     <div id="ein-gruppen"></div>
     <div class="schluss"><button type="button" id="ein-zu">Schließen</button></div>
   </div>
@@ -2247,14 +2305,20 @@ function umwandeln(i, art){
 function menueVerbergen(){ $("#menue").classList.remove("an"); }
 
 /* `eintraege` ist eine Liste aus {ic, nm, ta, tue} und "tr" für einen
-   Trenner, "k:Überschrift" für eine Gruppenzeile. */
+   Trenner, "k:Überschrift" für eine Gruppenzeile. `{bau: fn}` hängt
+   ein fertiges Element ein — dafür gibt es genau einen Grund, und der
+   ist die Reihe der Theme-Kacheln im Hauptmenü. Notion stellt seine
+   drei Schriften genauso in das `···`, und aus demselben Grund: Ein
+   Aussehen wählt man am Aussehen, nicht am Namen. */
 function menueZeigen(eintraege, anker){
   const m = $("#menue");
   m.innerHTML = "";
+  m.classList.toggle("weit", eintraege.some(e => e && e.bau));
   eintraege.forEach(e => {
     if (e === "tr"){ m.appendChild(el("div", "tr")); return; }
     if (typeof e === "string" && e.slice(0,2) === "k:"){
       m.appendChild(el("div", "k", esc(e.slice(2)))); return; }
+    if (e.bau){ m.appendChild(e.bau()); return; }
     const b = el("button", null,
       '<span class="ic">' + esc(e.ic || "") + '</span>'
       + '<span class="nm">' + esc(e.nm) + '</span>'
@@ -2650,7 +2714,11 @@ function inhaltEinfuegen(){
   melde(neu.length + " Überschriften als Verzeichnis eingefügt");
 }
 
-/* ---------- Suchen ---------- */
+/* ---------- Suchen ----------
+   `suchenVerdrahten()` gibt den Griff zum Öffnen zurück. Er steht in
+   einer Veränderlichen, weil ihn drei Stellen brauchen: die Tastatur,
+   das Hauptmenü und die Schnellwahl. */
+let suchenOeffnenGlobal = () => {};
 let suchWort = "", suchStellen = [], suchWahl = 0;
 
 function suchRechnen(){
@@ -2769,6 +2837,14 @@ const SATZARTEN = [
    zwangsläufig etwas anderes als das Papier. Jetzt gilt das
    Vorschau-Thema für Vorschau, Druck und Export.
    `doku/ENTSCHEIDUNGEN.md`, Punkt 20. */
+const INHALTWAHL = [
+  ["aus", "Aus", "Die Vorschau beginnt mit der ersten Zeile des Textes."],
+  ["an",  "An",
+   "Über dem Dokument steht ein Verzeichnis der Überschriften. Es gilt für Vorschau, "
+   + "Druck und Export — <b>in der Datei steht davon nichts.</b> Wer es dort haben "
+   + "will, nimmt den Knopf in der Gliederung."]
+];
+
 const AUTOSCROLL = [
   ["an",  "An",
    "Die Vorschau rollt zur zuletzt geänderten Stelle. <b>Ohne das sucht man nach jedem "
@@ -2782,11 +2858,19 @@ const AUTOSCROLL = [
    Merkmal am Wurzelelement, und der Stil richtet sich danach — dann
    braucht es kein Neuzeichnen. Die Stufe dagegen ändert, was der
    Editor **anzeigt**, und verlangt eines. */
+/* Hier steht seit August 2026 **nur noch das Programm**: wie der
+   Editor sich verhält und was er anbietet. Wie das Dokument
+   *aussieht*, steht im Layout-Dialog — Thema, Satz, Maße, Seite,
+   eigenes CSS. Die Textausrichtung ist deshalb von hier dorthin
+   gewandert: Sie ist Layout, kein Verhalten
+   (doku/ENTSCHEIDUNGEN.md, Punkt 25). */
 const EINSTELLUNGEN = [
-  {feld:"stufe",      etikett:"Markdown-Stufe",  werte:STUFEN,     malen:true},
-  {feld:"thema",      etikett:"Thema",           werte:THEMEN,     wurzel:true},
-  {feld:"satz",       etikett:"Textausrichtung", werte:SATZARTEN,  wurzel:true},
-  {feld:"autoscroll", etikett:"Automatisches Scrollen", werte:AUTOSCROLL, dok:true}
+  {feld:"stufe",      etikett:"Markdown-Stufe",   werte:STUFEN,     malen:true},
+  {feld:"thema",      etikett:"Erscheinungsbild", werte:THEMEN,     wurzel:true},
+  {feld:"autoscroll", etikett:"Vorschau folgt der Schreibmarke",
+   werte:AUTOSCROLL, dok:true},
+  {feld:"vinhalt",    etikett:"Inhaltsverzeichnis in der Vorschau",
+   werte:INHALTWAHL, dok:true}
 ];
 
 function wurzelSetzen(){
@@ -2828,11 +2912,15 @@ function einstellungenMalen(){
   });
 }
 
+function einstellungenOeffnen(){
+  einstellungenMalen();
+  $("#einstellungen").classList.add("an");
+  $("#ein-zu").focus();
+}
+
 function einstellungenVerdrahten(){
   const ueber = $("#einstellungen");
   const zu = () => ueber.classList.remove("an");
-  $("#ein-auf").onclick = () => {
-    einstellungenMalen(); ueber.classList.add("an"); $("#ein-zu").focus(); };
   $("#ein-zu").onclick = zu;
   /* Ein Klick daneben schließt, ein Klick auf die Karte nicht. */
   ueber.addEventListener("mousedown", (ev) => { if (ev.target === ueber) zu(); });
@@ -2840,12 +2928,10 @@ function einstellungenVerdrahten(){
     if (ev.key !== "Escape") return;
     if ($("#schnell").classList.contains("an")) schnellSchliessen();
     else if (document.body.dataset.druckvorschau === "ja") druckvorschau(false);
-    else if ($("#seite-karte").classList.contains("an"))
-      $("#seite-karte").classList.remove("an");
-    else if ($("#stil").classList.contains("an")) $("#stil").classList.remove("an");
+    else if ($("#layout").classList.contains("an")) $("#layout").classList.remove("an");
     else if (ueber.classList.contains("an")) zu();
     else if ($("#app").dataset.ruhe === "ja"){
-      ruhe(false); $("#ruhe-auf").setAttribute("aria-pressed", "false"); }
+      ruhe(false); }
     menueVerbergen(); leisteVerbergen(); slashSchliessen();
   });
 }
@@ -2874,8 +2960,40 @@ function herunterladen(inhalt, name, typ){
   setTimeout(() => URL.revokeObjectURL(adresse), 4000);
 }
 
+/* Die Handgriffe an den Dateien. Sie hingen bis August 2026 an
+   Knöpfen in der Kopfleiste; jetzt rufen das Hauptmenü, die
+   Schnellwahl und die Tastatur **dieselbe Funktion** auf. Ein Knopf,
+   den ein anderer Knopf per `click()` drückt, ist eine Verdrahtung,
+   die niemand findet. */
+function dateiOeffnen(){ $("#datei").click(); }
+function zusammenOeffnen(){ $("#zusammen-datei").click(); }
+
+function dateiSichern(){
+  const text = schreibeMarkdown(Z.bloecke);
+  const name = /\.(md|markdown|txt)$/i.test(Z.name) ? Z.name : Z.name + ".md";
+  herunterladen(text, name, "text/markdown");
+  melde("Gesichert: " + name);
+}
+
+function dateiNeu(){
+  if (schreibeMarkdown(Z.bloecke).trim()
+      && !confirm("Der jetzige Text geht verloren.\n\nOK = neu anfangen, Abbrechen = zurück"))
+    return;
+  Z.name = "unbenannt.md";
+  ersetze(Z.bloecke, [{art:"absatz", text:""}]);
+  aktiv = -1; letzteStelle = 0;
+  EINGEKLAPPT.clear();
+  bewahre(); male(0, 0);
+}
+
+function dateiUmbenennen(){
+  const n = prompt("Dateiname", Z.name);
+  if (!n) return;
+  Z.name = /\.(md|markdown|txt)$/i.test(n) ? n : n + ".md";
+  bewahre(); fussMalen(); quelleMalen(); vorschauMalen();
+}
+
 function dateienVerdrahten(){
-  $("#oeffnen").onclick = () => $("#datei").click();
   $("#datei").addEventListener("change", (ev) => {
     const f = ev.target.files && ev.target.files[0];
     if (!f) return;
@@ -2892,13 +3010,6 @@ function dateienVerdrahten(){
     ev.target.value = "";                 /* dieselbe Datei nochmal öffnen können */
   });
 
-  $("#sichern").onclick = () => {
-    const text = schreibeMarkdown(Z.bloecke);
-    const name = /\.(md|markdown|txt)$/i.test(Z.name) ? Z.name : Z.name + ".md";
-    herunterladen(text, name, "text/markdown");
-    melde("Gesichert: " + name);
-  };
-
   /* Der Browser kann aus jedem Druck ein PDF machen — „Als PDF
      speichern" steht in seinem eigenen Dialog. Das Layout dafür
      liefert der Druckstil; ein eigener Erzeuger wäre eine fremde
@@ -2911,21 +3022,7 @@ function dateienVerdrahten(){
     $("#druckblatt").innerHTML = druckDokument();
   });
 
-  $("#neu").onclick = () => {
-    if (schreibeMarkdown(Z.bloecke).trim()
-        && !confirm("Der jetzige Text geht verloren.\n\nOK = neu anfangen, Abbrechen = zurück"))
-      return;
-    Z.name = "unbenannt.md";
-    ersetze(Z.bloecke, [{art:"absatz", text:""}]);
-    aktiv = -1; bewahre(); male(0, 0);
-  };
-
-  $("#name").onclick = () => {
-    const n = prompt("Dateiname", Z.name);
-    if (!n) return;
-    Z.name = /\.(md|markdown|txt)$/i.test(n) ? n : n + ".md";
-    bewahre(); fussMalen(); quelleMalen();
-  };
+  $("#name").onclick = dateiUmbenennen;
 }
 
 /* ============================================================
@@ -3723,13 +3820,16 @@ function ruhe(an){
   const app = $("#app");
   const jetzt = an === undefined ? app.dataset.ruhe !== "ja" : an;
   app.dataset.ruhe = jetzt ? "ja" : "nein";
+  /* Der einzige sichtbare Ausweg. Ohne ihn wäre der Modus eine Falle
+     für den, der Esc nicht kennt — und die Kopfleiste, in der der
+     Knopf sonst stünde, ist ja gerade weg. */
   $("#ruhe-aus").hidden = !jetzt;
   if (jetzt) melde("Ablenkungsfrei — Esc beendet");
   try { localStorage.setItem(SCHLUESSEL + "-ruhe", app.dataset.ruhe); } catch (e) { /* egal */ }
 }
 
 /* ============================================================
-  15 — THEMEN UND DER STIL-VERWALTER
+  15 — THEMEN UND LAYOUT
 
    Zwei Dinge, die auseinandergehalten gehören:
 
@@ -3851,60 +3951,208 @@ function dokStilSetzen(){
   stilSetzen("eigenstil", String(Z.eigenCss || ""));
 }
 
-/* ---------- Der Stil-Verwalter ----------
-   Eine eigene Karte, nicht noch eine Gruppe in den Einstellungen:
-   Hier steht ein Textfeld, und ein Textfeld in einer Reihe von
-   Knopfgruppen sieht aus wie ein Versehen. */
-function stilVerdrahten(){
-  const ueber = $("#stil");
-  const feld = $("#stil-css");
-  const zu = () => ueber.classList.remove("an");
+/* ---------- Die Theme-Kachel ----------
+   Ein Thema, das nur einen Namen hat, ist ein Rätsel: „Zeitung" sagt
+   nichts über Schrift, Farbe und Satz. Die Kachel zeigt deshalb ein
+   **Miniaturblatt** — und sie trägt selbst die Klasse `.dok` und das
+   Merkmal `data-vthema`. Damit greifen auf ihr dieselben Regeln wie
+   im Dokument: Eine gemalte Vorschau könnte lügen, diese nicht.
 
-  const themenMalen = () => {
-    const wahl = $("#stil-themen");
-    wahl.innerHTML = "";
-    VTHEMEN.forEach(([schluessel, name]) => {
+   Die Maße des Nutzers gelten hier **nicht**. Eine Kachel, die die
+   eingestellte Schriftgröße mitmacht, zeigt bei 28 Pixeln zwei Wörter
+   und ist als Vergleich wertlos. */
+const KACHEL_TITEL = "Überschrift";
+const KACHEL_SATZ  = "Ein Absatz aus zwei Zeilen, damit Schrift, "
+                   + "Farbe und Satz zu sehen sind.";
+
+function themaKachel(schluessel, name){
+  const b = el("button", "tkachel");
+  b.type = "button";
+  b.setAttribute("aria-pressed", String(schluessel === Z.vthema));
+  b.title = name;
+  b.innerHTML = '<span class="tbild dok" data-vthema="' + esc(schluessel) + '" '
+    + 'style="--dok-groesse:inherit;--dok-hoehe:inherit;--dok-breite:none" aria-hidden="true">'
+    + '<span class="tt">' + esc(KACHEL_TITEL) + '</span>'
+    + '<span class="tp">' + esc(KACHEL_SATZ) + '</span></span>'
+    + '<span class="tname">' + esc(name) + '</span>';
+  return b;
+}
+
+/* Ein Bauplan für beide Größen: die Reihe im Menü und das Gitter im
+   Dialog. Zwei Fassungen liefen auseinander, sobald ein Thema
+   dazukäme. */
+function themaKachelnMalen(ziel, danach){
+  ziel.innerHTML = "";
+  VTHEMEN.forEach(([schluessel, name]) => {
+    const b = themaKachel(schluessel, name);
+    b.onclick = () => {
+      Z.vthema = schluessel;
+      bewahreSofort();
+      dokStilSetzen(); vorschauMalen(); druckvorschauMalen();
+      themaKachelnMalen(ziel, danach);
+      if (danach) danach(schluessel);
+    };
+    ziel.appendChild(b);
+  });
+}
+
+const themaSatz = (schluessel) =>
+  (VTHEMEN.find(x => x[0] === schluessel) || [, , ""])[2] || "";
+
+/* ---------- Der Layout-Dialog ----------
+   Bis August 2026 waren das zwei Karten: „Stil" und „Seite
+   einrichten". Beide beantworteten dieselbe Frage — wie sieht das
+   Dokument aus —, und wer die Schriftgröße suchte, musste raten, in
+   welcher. Jetzt ist es eine Karte mit vier Reitern, und die Reiter
+   heißen nach dem, was man sucht: Thema · Satz und Maße · Seite ·
+   Eigenes CSS. Begründung in doku/ENTSCHEIDUNGEN.md, Punkt 25. */
+const LAYOUT_REITER = ["thema", "satz", "seite", "css"];
+
+function layoutReiter(name){
+  LAYOUT_REITER.forEach(n => {
+    $("#r-" + n).setAttribute("aria-selected", String(n === name));
+    $("#b-" + n).classList.toggle("an", n === name);
+  });
+  try { localStorage.setItem(SCHLUESSEL + "-layoutreiter", name); } catch (e) { /* egal */ }
+}
+
+function layoutOeffnen(reiter){
+  layoutMalen();
+  if (reiter) layoutReiter(reiter);
+  $("#layout").classList.add("an");
+  $("#layout-zu").focus();
+}
+
+function layoutMalen(){
+  themaKachelnMalen($("#thema-kacheln"), (s) => {
+    $("#thema-erklaerung").innerHTML = themaSatz(s);
+  });
+  $("#thema-erklaerung").innerHTML = themaSatz(Z.vthema);
+
+  /* Die Textausrichtung stand bis August 2026 in den Einstellungen.
+     Sie gehört hierher: Sie ist Layout, kein Verhalten des
+     Programms. */
+  const satz = $("#satz-wahl");
+  satz.innerHTML = "";
+  SATZARTEN.forEach(([schluessel, name]) => {
+    const b = el("button", null, esc(name));
+    b.type = "button";
+    b.setAttribute("aria-pressed", String(schluessel === Z.satz));
+    b.onclick = () => {
+      Z.satz = schluessel;
+      bewahreSofort(); wurzelSetzen(); layoutMalen();
+      vorschauMalen(); druckvorschauMalen();
+    };
+    satz.appendChild(b);
+  });
+  $("#satz-erklaerung").innerHTML =
+    (SATZARTEN.find(x => x[0] === Z.satz) || [, , ""])[2] || "";
+
+  [["stil-breite", "dokBreite"], ["stil-groesse", "dokGroesse"],
+   ["stil-hoehe", "dokHoehe"]].forEach(([id, feld]) => {
+    $("#" + id).value = String(Z[feld]);
+  });
+
+  const wahl = (id, werte, jetzt, tue) => {
+    const k = $("#" + id);
+    k.innerHTML = "";
+    werte.forEach(([schluessel, name]) => {
       const b = el("button", null, esc(name));
       b.type = "button";
-      b.setAttribute("aria-pressed", String(schluessel === Z.vthema));
-      b.onclick = () => {
-        Z.vthema = schluessel;
-        bewahreSofort(); themenMalen(); vorschauMalen(); druckvorschauMalen();
-        $("#stil-erklaerung").innerHTML =
-          (VTHEMEN.find(x => x[0] === schluessel) || [,,""])[2];
-      };
-      wahl.appendChild(b);
+      b.setAttribute("aria-pressed", String(String(schluessel) === String(jetzt)));
+      b.onclick = () => { tue(schluessel); bewahreSofort(); seitenStilSetzen();
+                          layoutMalen(); druckvorschauMalen(); druckLeisteMalen(); };
+      k.appendChild(b);
     });
-    $("#stil-erklaerung").innerHTML = (VTHEMEN.find(x => x[0] === Z.vthema) || [,,""])[2];
   };
+  wahl("seite-format", SEITEN.map(x => [x[0], x[1]]), Z.seite, (v) => { Z.seite = v; });
+  wahl("seite-lage", [["hoch","Hochformat"],["quer","Querformat"]], Z.hoch,
+       (v) => { Z.hoch = v; });
+  wahl("seite-randvorlage", RANDVORLAGE.map(x => [x[2], x[1]]), String(Z.rand),
+       (v) => { Z.rand = v; });
+  wahl("seite-umbruch", UMBRUCHVOR.map(x => [x[0], x[1]]), Z.umbruchVor,
+       (v) => { Z.umbruchVor = v; });
+  $("#seite-umbruch-satz").innerHTML =
+    (UMBRUCHVOR.find(x => x[0] === Z.umbruchVor) || [, , ""])[2];
 
-  const masse = [
-    ["stil-breite", "dokBreite",  "px",  (v) => Math.max(320, Math.min(1400, v))],
-    ["stil-groesse","dokGroesse", "px",  (v) => Math.max(10,  Math.min(32, v))],
-    ["stil-hoehe",  "dokHoehe",   "",    (v) => Math.max(1.1, Math.min(2.4, v))]
-  ];
+  const r = raender();
+  ["oben","rechts","unten","links"].forEach((n, i) => { $("#rand-" + n).value = String(r[i]); });
+  $("#seite-kopf").value = String(Z.kopfzeile || "");
+  $("#seite-fuss").value = String(Z.fusszeile || "");
+  $("#kopfbild-stand").textContent = Z.kopfbild ? "Bild gewählt" : "kein Bild";
+  $("#fussbild-stand").textContent = Z.fussbild ? "Bild gewählt" : "kein Bild";
+  $("#stil-css").value = String(Z.eigenCss || "");
+}
 
-  $("#stil-auf").onclick = () => {
-    themenMalen();
-    masse.forEach(([id, feldname]) => { $("#" + id).value = String(Z[feldname]); });
-    feld.value = String(Z.eigenCss || "");
-    ueber.classList.add("an");
-    $("#stil-zu").focus();
-  };
-  $("#stil-zu").onclick = zu;
+function layoutVerdrahten(){
+  const ueber = $("#layout");
+  const zu = () => ueber.classList.remove("an");
+  LAYOUT_REITER.forEach(n => { $("#r-" + n).onclick = () => layoutReiter(n); });
+  $("#layout-zu").onclick = zu;
+  $("#layout-druck").onclick = () => druckvorschau(true);
   ueber.addEventListener("mousedown", (ev) => { if (ev.target === ueber) zu(); });
 
-  masse.forEach(([id, feldname, , grenze]) => {
+  const grenze = { dokBreite:[320,1400], dokGroesse:[10,32], dokHoehe:[1.1,2.4] };
+  [["stil-breite","dokBreite"], ["stil-groesse","dokGroesse"],
+   ["stil-hoehe","dokHoehe"]].forEach(([id, feld]) => {
     $("#" + id).addEventListener("input", () => {
       const v = parseFloat($("#" + id).value);
       if (!isFinite(v)) return;
-      Z[feldname] = String(grenze(v));
+      const [klein, gross] = grenze[feld];
+      Z[feld] = String(Math.max(klein, Math.min(gross, v)));
       bewahreSofort(); dokStilSetzen(); druckvorschauMalen();
+    });
+  });
+
+  ["oben","rechts","unten","links"].forEach((n, i) => {
+    $("#rand-" + n).addEventListener("input", () => {
+      const r = raender();
+      const v = parseFloat($("#rand-" + n).value);
+      if (!isFinite(v)) return;
+      r[i] = Math.max(0, Math.min(60, v));
+      Z.rand = r.join(" ");
+      bewahreSofort(); seitenStilSetzen(); druckvorschauMalen();
+    });
+  });
+
+  [["seite-kopf","kopfzeile"], ["seite-fuss","fusszeile"]].forEach(([id, feld]) => {
+    $("#" + id).addEventListener("input", () => {
+      Z[feld] = $("#" + id).value;
+      bewahreSofort(); druckvorschauMalen();
+    });
+  });
+
+  /* Bilder in Kopf- und Fußzeile. Sie liegen als Daten-Adresse in der
+     Einstellung und gehen damit auch in den HTML-Export mit — dafür
+     ist die Grenze eng: `localStorage` fasst wenige Megabyte, und ein
+     Logo braucht keine hundert Kilobyte. */
+  const BILDGRENZE = 400 * 1024;
+  [["kopfbild", "kopfbild"], ["fussbild", "fussbild"]].forEach(([id, feld]) => {
+    $("#" + id + "-waehlen").onclick = () => $("#" + id + "-datei").click();
+    $("#" + id + "-weg").onclick = () => {
+      Z[feld] = ""; bewahreSofort(); layoutMalen(); druckvorschauMalen(); };
+    $("#" + id + "-datei").addEventListener("change", (ev) => {
+      const f = ev.target.files && ev.target.files[0];
+      ev.target.value = "";
+      if (!f) return;
+      if (f.size > BILDGRENZE){
+        melde("Das Bild ist größer als 400 KB. Ein Logo in der Kopfzeile braucht das nicht.");
+        return;
+      }
+      const leser = new FileReader();
+      leser.onload = () => {
+        Z[feld] = String(leser.result);
+        bewahreSofort(); layoutMalen(); druckvorschauMalen();
+        melde("Bild übernommen: " + f.name);
+      };
+      leser.onerror = () => melde("Das Bild ließ sich nicht lesen.");
+      leser.readAsDataURL(f);
     });
   });
 
   /* Das eigene CSS wirkt sofort. Ein Knopf „Anwenden" wäre eine
      Rückfrage, auf die niemand mit Nein antwortet. */
+  const feld = $("#stil-css");
   let cssUhr = null;
   feld.addEventListener("input", () => {
     clearTimeout(cssUhr);
@@ -3917,6 +4165,7 @@ function stilVerdrahten(){
   $("#stil-laden").onclick = () => $("#stil-datei").click();
   $("#stil-datei").addEventListener("change", (ev) => {
     const f = ev.target.files && ev.target.files[0];
+    ev.target.value = "";
     if (!f) return;
     const leser = new FileReader();
     leser.onload = () => {
@@ -3927,12 +4176,11 @@ function stilVerdrahten(){
     };
     leser.onerror = () => melde("Die CSS-Datei ließ sich nicht lesen.");
     leser.readAsText(f, "utf-8");
-    ev.target.value = "";
   });
 
   $("#stil-sichern").onclick = () => {
     if (!String(Z.eigenCss || "").trim()){ melde("Noch kein eigenes CSS."); return; }
-    herunterladen(Z.eigenCss, Z.name.replace(/\.[^.]+$/, "") + ".css", "text/css");
+    herunterladen(Z.eigenCss, ohneEndung(Z.name) + ".css", "text/css");
   };
 
   $("#stil-leeren").onclick = () => {
@@ -3942,6 +4190,11 @@ function stilVerdrahten(){
     bewahreSofort(); dokStilSetzen(); druckvorschauMalen();
     melde("Eigenes CSS gelöscht");
   };
+
+  let gemerkt = "thema";
+  try { gemerkt = localStorage.getItem(SCHLUESSEL + "-layoutreiter") || "thema"; }
+  catch (e) { /* egal */ }
+  layoutReiter(LAYOUT_REITER.indexOf(gemerkt) >= 0 ? gemerkt : "thema");
 }
 
 /* ============================================================
@@ -4087,18 +4340,22 @@ function druckvorschau(an){
   document.body.dataset.druckvorschau = jetzt ? "ja" : "nein";
   if (jetzt){
     leisteVerbergen(); menueVerbergen(); slashSchliessen();
-    /* Die Karten liegen über der Vorschau. Wer sie aus einer Karte
-       heraus öffnet, will die Seite sehen und nicht die Karte. */
-    document.querySelectorAll(".ueberzug.an").forEach(n => n.classList.remove("an"));
+    /* Die Karten liegen über der Vorschau. Der Layout-Dialog darf
+       offen bleiben — wer von dort aus die Vorschau öffnet, will
+       weiter am Layout drehen und dabei zusehen. Alles andere geht zu. */
+    document.querySelectorAll(".ueberzug.an").forEach(n => {
+      if (n.id !== "layout") n.classList.remove("an"); });
     seitenStilSetzen();
     $("#druckblatt").innerHTML = druckDokument();
     druckLeisteMalen();
   }
 }
 
-/* Die Leiste über der Vorschau: Format, Ausrichtung, Layout — die
-   drei Griffe, die man beim Ansehen ändern will, ohne dafür in die
-   Einstellungen zu gehen. */
+/* Die Leiste über der Vorschau trägt die zwei Griffe, die man beim
+   Ansehen wirklich ändert — Format und Ausrichtung. Alles andere
+   steht im Layout-Dialog, und der lässt sich von hier aus öffnen: Er
+   liegt über der Vorschau, und was man dort umstellt, ist sofort auf
+   der Seite zu sehen. */
 function druckLeisteMalen(){
   const wo = $("#druck-griffe");
   wo.innerHTML = "";
@@ -4117,101 +4374,6 @@ function druckLeisteMalen(){
   };
   gruppe("Format", SEITEN.map(x => [x[0], x[1]]), Z.seite, (v) => { Z.seite = v; });
   gruppe("Ausrichtung", [["hoch","Hoch"],["quer","Quer"]], Z.hoch, (v) => { Z.hoch = v; });
-  gruppe("Rand", RANDVORLAGE.map(x => [x[2], x[1]]), String(Z.rand), (v) => { Z.rand = v; });
-  gruppe("Thema", VTHEMEN.map(x => [x[0], x[1]]), Z.vthema, (v) => { Z.vthema = v; });
-}
-
-/* ---------- Die Karte „Seite einrichten" ---------- */
-function seiteVerdrahten(){
-  const ueber = $("#seite-karte");
-  const zu = () => ueber.classList.remove("an");
-
-  const malen = () => {
-    const wahl = (id, werte, jetzt, tue) => {
-      const k = $("#" + id);
-      k.innerHTML = "";
-      werte.forEach(([schluessel, name]) => {
-        const b = el("button", null, esc(name));
-        b.type = "button";
-        b.setAttribute("aria-pressed", String(String(schluessel) === String(jetzt)));
-        b.onclick = () => { tue(schluessel); bewahreSofort(); seitenStilSetzen();
-                            malen(); druckvorschauMalen(); };
-        k.appendChild(b);
-      });
-    };
-    wahl("seite-format", SEITEN.map(x => [x[0], x[1]]), Z.seite, (v) => { Z.seite = v; });
-    wahl("seite-lage", [["hoch","Hochformat"],["quer","Querformat"]], Z.hoch,
-         (v) => { Z.hoch = v; });
-    wahl("seite-randvorlage", RANDVORLAGE.map(x => [x[2], x[1]]), String(Z.rand),
-         (v) => { Z.rand = v; });
-    wahl("seite-umbruch", UMBRUCHVOR.map(x => [x[0], x[1]]), Z.umbruchVor,
-         (v) => { Z.umbruchVor = v; });
-    $("#seite-umbruch-satz").innerHTML =
-      (UMBRUCHVOR.find(x => x[0] === Z.umbruchVor) || [,,""])[2];
-    const r = raender();
-    ["oben","rechts","unten","links"].forEach((n, i) => { $("#rand-" + n).value = String(r[i]); });
-    $("#seite-kopf").value = String(Z.kopfzeile || "");
-    $("#seite-fuss").value = String(Z.fusszeile || "");
-    $("#kopfbild-stand").textContent = Z.kopfbild ? "Bild gewählt" : "kein Bild";
-    $("#fussbild-stand").textContent = Z.fussbild ? "Bild gewählt" : "kein Bild";
-  };
-
-  $("#seite-auf").onclick = () => { seitenStilSetzen(); malen();
-                                    ueber.classList.add("an"); $("#seite-zu").focus(); };
-  $("#seite-zu").onclick = zu;
-  ueber.addEventListener("mousedown", (ev) => { if (ev.target === ueber) zu(); });
-
-  ["oben","rechts","unten","links"].forEach((n, i) => {
-    $("#rand-" + n).addEventListener("input", () => {
-      const r = raender();
-      const v = parseFloat($("#rand-" + n).value);
-      if (!isFinite(v)) return;
-      r[i] = Math.max(0, Math.min(60, v));
-      Z.rand = r.join(" ");
-      bewahreSofort(); seitenStilSetzen(); druckvorschauMalen();
-    });
-  });
-
-  const zeile = (id, feld) => {
-    $("#" + id).addEventListener("input", () => {
-      Z[feld] = $("#" + id).value;
-      bewahreSofort(); druckvorschauMalen();
-    });
-  };
-  zeile("seite-kopf", "kopfzeile");
-  zeile("seite-fuss", "fusszeile");
-
-  /* Bilder in Kopf- und Fußzeile. Sie liegen als Daten-Adresse in
-     der Einstellung und gehen damit auch in den HTML-Export mit —
-     dafür ist die Grenze eng: `localStorage` fasst wenige Megabyte,
-     und ein Logo braucht keine hundert Kilobyte. */
-  const BILDGRENZE = 400 * 1024;
-  [["kopfbild", "kopfbild"], ["fussbild", "fussbild"]].forEach(([id, feld]) => {
-    $("#" + id + "-waehlen").onclick = () => $("#" + id + "-datei").click();
-    $("#" + id + "-weg").onclick = () => {
-      Z[feld] = ""; bewahreSofort(); malen(); druckvorschauMalen(); };
-    $("#" + id + "-datei").addEventListener("change", (ev) => {
-      const f = ev.target.files && ev.target.files[0];
-      ev.target.value = "";
-      if (!f) return;
-      if (f.size > BILDGRENZE){
-        melde("Das Bild ist größer als 400 KB. Ein Logo in der Kopfzeile braucht das nicht.");
-        return;
-      }
-      const leser = new FileReader();
-      leser.onload = () => {
-        Z[feld] = String(leser.result);
-        bewahreSofort(); malen(); druckvorschauMalen();
-        melde("Bild übernommen: " + f.name);
-      };
-      leser.onerror = () => melde("Das Bild ließ sich nicht lesen.");
-      leser.readAsDataURL(f);
-    });
-  });
-
-  $("#druck-zu").onclick = () => druckvorschau(false);
-  $("#druck-pdf").onclick = () => pdfOeffnen();
-  $("#druckvorschau-auf").onclick = () => druckvorschau(true);
 }
 
 /* Der Druckdialog. Vorher wird das Druckdokument gebaut — ohne das
@@ -4772,12 +4934,46 @@ function kopieren(art){
     : "Die Zwischenablage ließ sich nicht beschreiben.");
 }
 
-/* ---------- Das Menü ---------- */
+/* ---------- Das Hauptmenü ----------
+   Notions `···` trägt oben die drei Schriften als Muster und darunter
+   eine Liste. Genauso hier: erst die Theme-Kacheln, dann der Weg in
+   den Layout-Dialog, dann Datei, Modus und Hilfe. Alles, was nicht
+   in jeder Minute gebraucht wird, steht **an dieser einen Stelle** —
+   statt als vierzehnter Knopf in der Kopfleiste
+   (doku/ENTSCHEIDUNGEN.md, Punkt 25). */
+function hauptmenue(){
+  const eintraege = [
+    "k:Thema des Dokuments",
+    {bau: () => {
+      const reihe = el("div", "kachelreihe");
+      themaKachelnMalen(reihe, null);
+      return reihe;
+    }},
+    {ic:"", nm:"Layout anpassen …", ta:"", tue:() => layoutOeffnen("thema")},
+    {ic:"", nm:"Einstellungen …",   ta:"", tue:einstellungenOeffnen},
+    "tr", "k:Datei",
+    {ic:"", nm:"Öffnen …",              ta:"Strg O", tue:dateiOeffnen},
+    {ic:"", nm:"Dateien zusammenfügen …", ta:"",     tue:zusammenOeffnen},
+    {ic:"", nm:"Sichern",               ta:"Strg S", tue:dateiSichern},
+    {ic:"", nm:"Umbenennen …",          ta:"",       tue:dateiUmbenennen},
+    {ic:"", nm:"Neu",                   ta:"",       tue:dateiNeu},
+    "tr", "k:Ansehen",
+    {ic:"", nm:"Ablenkungsfrei", ta:"Strg Umsch R", tue:() => ruhe()},
+    {ic:"", nm:"Vollbild",       ta:"Strg Umsch V", tue:vollbild},
+    {ic:"", nm:"Druckvorschau",  ta:"",             tue:() => druckvorschau(true)},
+    "tr", "k:Finden",
+    {ic:"", nm:"Schnellwahl",         ta:"Strg K", tue:schnellOeffnen},
+    {ic:"", nm:"Im Dokument suchen",  ta:"Strg F", tue:() => suchenOeffnenGlobal()}
+  ];
+  menueZeigen(eintraege, $("#mehr"));
+}
+
+/* ---------- Das Ausgabe-Menü ---------- */
 function ausgebenVerdrahten(){
   $("#ausgeben").onclick = () => {
     const eintraege = [
       "k:Als Datei",
-      {ic:"md",   nm:"Markdown (.md)",  ta:"Strg S", tue:() => $("#sichern").click()},
+      {ic:"md",   nm:"Markdown (.md)",  ta:"Strg S", tue:dateiSichern},
       {ic:"htm",  nm:"HTML (.html)",    ta:"",       tue:() => {
         herunterladen(htmlAusgeben(), ohneEndung(Z.name) + ".html", "text/html");
         melde("Ausgegeben: " + ohneEndung(Z.name) + ".html");
@@ -4795,7 +4991,7 @@ function ausgebenVerdrahten(){
       "tr", "k:Über den Druckdialog",
       {ic:"pdf",  nm:"PDF / Drucken",   ta:"Strg P", tue:pdfOeffnen},
       {ic:"vor",  nm:"Druckvorschau",   ta:"",       tue:() => druckvorschau(true)},
-      {ic:"",     nm:"Seite einrichten …", ta:"",    tue:() => $("#seite-auf").click()},
+      {ic:"",     nm:"Seite einrichten …", ta:"",    tue:() => layoutOeffnen("seite")},
       "tr", "k:In die Zwischenablage",
       {ic:"htm",  nm:"Als HTML",        ta:"",       tue:() => kopieren("html")},
       {ic:"rtf",  nm:"Als RTF",         ta:"",       tue:() => kopieren("rtf")},
@@ -5047,7 +5243,6 @@ function zusammenVerdrahten(){
   const ueber = $("#zusammen");
   const zu = () => { ueber.classList.remove("an"); zusammenWarten = null; };
 
-  $("#zusammen-auf").onclick = () => $("#zusammen-datei").click();
   $("#zusammen-datei").addEventListener("change", (ev) => {
     /* Erst in eine eigene Liste, dann das Feld leeren: `files` ist
        eine **lebende** Liste — wer sie vorher leert, hält hinterher
@@ -5163,17 +5358,19 @@ const BEFEHLE = [
   ["Vollbild",                  () => vollbild(),                   "", "Strg Umsch V"],
   ["Druckvorschau",             () => druckvorschau(true),          "", ""],
   ["PDF / Drucken",             () => pdfOeffnen(),                 "", "Strg P"],
-  ["Seite einrichten …",        () => $("#seite-auf").click(),      "", ""],
-  ["Stil …",                    () => $("#stil-auf").click(),       "", ""],
-  ["Einstellungen …",           () => $("#ein-auf").click(),        "", ""],
-  ["Dateien zusammenfügen …",   () => $("#zusammen-auf").click(),   "", ""],
+  ["Layout: Thema …",           () => layoutOeffnen("thema"),       "", ""],
+  ["Layout: Satz und Maße …",   () => layoutOeffnen("satz"),        "", ""],
+  ["Layout: Seite …",           () => layoutOeffnen("seite"),       "", ""],
+  ["Layout: Eigenes CSS …",     () => layoutOeffnen("css"),         "", ""],
+  ["Einstellungen …",           einstellungenOeffnen,               "", ""],
+  ["Dateien zusammenfügen …",   zusammenOeffnen,                    "", ""],
   ["Als HTML ausgeben",         () => { herunterladen(htmlAusgeben(),
       ohneEndung(Z.name) + ".html", "text/html"); melde("Ausgegeben als HTML"); }, "", ""],
   ["Als DOCX ausgeben",         () => { herunterladen(docxAusgeben(),
       ohneEndung(Z.name) + ".docx"); melde("Ausgegeben als DOCX"); }, "", ""],
   ["Als RTF ausgeben",          () => { herunterladen(rtfAusgeben(),
       ohneEndung(Z.name) + ".rtf", "application/rtf"); melde("Ausgegeben als RTF"); }, "", ""],
-  ["Als Markdown sichern",      () => $("#sichern").click(),        "", "Strg S"],
+  ["Als Markdown sichern",      dateiSichern,                       "", "Strg S"],
   ["In die Zwischenablage: HTML", () => kopieren("html"),           "", ""],
   ["In die Zwischenablage: RTF",  () => kopieren("rtf"),            "", ""],
   ["In die Zwischenablage: Markdown", () => kopieren("md"),         "", ""],
@@ -5181,8 +5378,10 @@ const BEFEHLE = [
   ["Alle Abschnitte einklappen",  () => $("#g-alle-zu").click(),    "", ""],
   ["Fußnoten anzeigen",         () => reiterSetzen("noten"),        "", ""],
   ["Gliederung anzeigen",       () => reiterSetzen("gliederung"),   "", ""],
-  ["Neu",                       () => $("#neu").click(),            "", ""],
-  ["Öffnen …",                  () => $("#oeffnen").click(),        "", "Strg O"]
+  ["Neu",                       dateiNeu,                           "", ""],
+  ["Umbenennen …",              dateiUmbenennen,                    "", ""],
+  ["Öffnen …",                  dateiOeffnen,                       "", "Strg O"],
+  ["Im Dokument suchen",        () => suchenOeffnenGlobal(),        "", "Strg F"]
 ];
 
 function schnellMalen(){
@@ -5256,8 +5455,8 @@ function schnellVerdrahten(){
 document.addEventListener("keydown", (ev) => {
   if (!(ev.ctrlKey || ev.metaKey)) return;
   const k = ev.key.toLowerCase();
-  if (k === "s"){ ev.preventDefault(); $("#sichern").click(); }
-  if (k === "o"){ ev.preventDefault(); $("#oeffnen").click(); }
+  if (k === "s"){ ev.preventDefault(); dateiSichern(); }
+  if (k === "o"){ ev.preventDefault(); dateiOeffnen(); }
   /* Ohne diese drei setzt das Textfeld von sich aus <b>, <i> und <u>
      in den Block — und schriebe damit HTML, wo Markdown stehen soll. */
   /* Ohne preventDefault nimmt das Textfeld selbst zurück — und zwar
@@ -5282,10 +5481,7 @@ document.addEventListener("keydown", (ev) => {
   }
   /* Umschalt dazu: die drei Modi, die nichts am Text ändern. */
   if (ev.shiftKey && k === "v"){ ev.preventDefault(); vollbild(); }
-  if (ev.shiftKey && k === "r"){
-    ev.preventDefault(); ruhe();
-    $("#ruhe-auf").setAttribute("aria-pressed", String($("#app").dataset.ruhe === "ja"));
-  }
+  if (ev.shiftKey && k === "r"){ ev.preventDefault(); ruhe(); }
   if (ev.shiftKey && k === "p"){ ev.preventDefault(); ansicht("vorschau"); }
   /* Nicht Strg P: Das ist der Druckbefehl des Browsers, und ein
      Editor, der ihn wegnimmt, nimmt den Weg zum PDF. */
@@ -5340,17 +5536,14 @@ function start(){
   dokStilSetzen();
   seitenStilSetzen();
   ausgebenVerdrahten();
-  seiteVerdrahten();
+  layoutVerdrahten();
   vorschauVerdrahten();
-  stilVerdrahten();
-  const suchenOeffnen = suchenVerdrahten();
-  $("#vollbild").onclick = vollbild;
-  $("#ruhe-auf").onclick = () => {
-    ruhe();
-    $("#ruhe-auf").setAttribute("aria-pressed",
-      String($("#app").dataset.ruhe === "ja"));
-  };
-  $("#ruhe-aus").onclick = () => { ruhe(false); $("#ruhe-auf").setAttribute("aria-pressed","false"); };
+  $("#druck-zu").onclick = () => druckvorschau(false);
+  $("#druck-pdf").onclick = pdfOeffnen;
+  $("#druck-layout").onclick = () => layoutOeffnen("seite");
+  $("#mehr").onclick = hauptmenue;
+  suchenOeffnenGlobal = suchenVerdrahten();
+  $("#ruhe-aus").onclick = () => ruhe(false);
   try { if (localStorage.getItem(SCHLUESSEL + "-ruhe") === "ja") ruhe(true); }
   catch (e) { /* egal */ }
   $("#g-inhalt").onclick = inhaltEinfuegen;
@@ -5382,7 +5575,7 @@ function start(){
     String($("#app").dataset.gliederung !== "aus"));
   document.addEventListener("keydown", (ev) => {
     if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === "f"){
-      ev.preventDefault(); suchenOeffnen();
+      ev.preventDefault(); suchenOeffnenGlobal();
     }
   });
   ANSICHTEN.forEach(n => { $("#w-" + n).onclick = () => ansicht(n); });

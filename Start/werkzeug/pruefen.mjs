@@ -423,6 +423,28 @@ function verhaeltnis(a, b){
   }
 }
 
+/* ---------- 14 Die Kopfleiste bleibt schmal ----------
+   Sie trug im August 2026 vierzehn Knoepfe. Jeder fuer sich war
+   verstaendlich, zusammen waren sie eine Werkzeugleiste, die niemand
+   liest. Alles, was nicht in jeder Minute gebraucht wird, steht seit
+   der Umstellung im Punkte-Menue (doku/ENTSCHEIDUNGEN.md, Punkt 25).
+
+   Diese Pruefung ist eine Bremse, keine Wahrheit: Sie sagt nicht,
+   dass die Leiste gut ist -- sie sagt, dass sie nicht wieder
+   zuwaechst, ohne dass es jemand merkt. */
+{
+  const m = html.match(/<div class="kopf">([\s\S]*?)\n  <\/div>/);
+  if (!m) warn("Kopfleiste nicht gefunden");
+  else {
+    const knoepfe = (m[1].match(/<button/g) || []).length;
+    const GRENZE = 8;
+    if (knoepfe > GRENZE)
+      bad("Kopfleiste mit " + knoepfe + " Knoepfen (hoechstens " + GRENZE
+        + ") — was selten gebraucht wird, gehoert ins Punkte-Menue");
+    else ok("Kopfleiste — " + knoepfe + " Knoepfe, hoechstens " + GRENZE);
+  }
+}
+
 console.log("\n" + "─".repeat(52));
 if (fehler) console.log(fehler + " Fehler" + (warnungen ? ", " + warnungen + " Hinweis(e)" : ""));
 else console.log("Keine Fehler" + (warnungen ? ", " + warnungen + " Hinweis(e)" : ""));

@@ -167,8 +167,9 @@ für den Druck; die Datei bleibt unberührt. Der Weg über
 `<div style="text-align:justify">` wurde verworfen — er brächte
 HTML-Gerüst mitten in den Text.
 
-Dasselbe gilt für jede weitere Frage nach Aussehen: Sie wird über die
-Themen und die Seiteneinrichtung beantwortet, nie über die Datei.
+Dasselbe gilt für jede weitere Frage nach Aussehen: Sie wird über den
+**Layout-Dialog** beantwortet, nie über die Datei. Wo genau, steht in
+Punkt 25.
 
 **Eine Ausnahme, und nur eine:** der Seitenumbruch. Warum er keine ist,
 steht in Punkt 18.
@@ -630,3 +631,99 @@ HTML-Export mit ein und gilt auch im Druck.
 
 Der Platzhalter im Feld zeigt zwei Regeln mit `.dok` davor. Wer sie
 übernimmt, macht es richtig, ohne es gelesen zu haben.
+
+---
+
+## 25 · Wo eine Einstellung hingehört — und warum die Kopfleiste leer ist
+
+Nach Schritt 10 trug die Kopfleiste **vierzehn Knöpfe**: Öffnen,
+Zusammenfügen, Sichern, Neu, Ausgeben, Seite, Stil, Ablenkungsfrei,
+Vollbild, Gliederung, Einstellungen — dazu vier für die Ansicht. Jeder
+für sich war verständlich. Zusammen waren sie eine Werkzeugleiste, die
+niemand liest, und der Editor sah damit aus wie das Gegenteil dessen,
+was er sein will.
+
+Dazu kam eine zweite, schlimmere Unordnung: **Es gab keine Regel,
+wohin eine Einstellung gehört.** Die Textausrichtung stand in den
+Einstellungen, die Schriftgröße im Stil-Verwalter, der Seitenrand in
+„Seite einrichten“ — drei Orte für dieselbe Frage. Wer die
+Spaltenbreite suchte, musste raten.
+
+**Entschieden: eine Frage, ein Ort.**
+
+| Frage | Ort |
+|---|---|
+| Wie sieht das **Dokument** aus? | **Layout** — Thema · Satz und Maße · Seite · Eigenes CSS |
+| Wie verhält sich der **Editor**? | **Einstellungen** — Markdown-Stufe, Erscheinungsbild, Vorschau |
+| Wie kommt das Dokument **heraus**? | **Ausgeben** |
+| Alles Seltene | das **`···`-Menü** |
+
+Daraus folgt dreierlei:
+
+**Erstens: Aus zwei Karten wird eine.** „Stil“ und „Seite einrichten“
+beantworteten beide die Frage nach dem Aussehen. Sie sind ein Dialog
+mit vier Reitern geworden. Die **Textausrichtung** ist aus den
+Einstellungen dorthin gewandert — sie ist Layout, kein Verhalten.
+
+**Zweitens: Zwei Dinge hießen „Thema“.** Das der Anwendung heißt jetzt
+**Erscheinungsbild** (hell/dunkel), das des Dokuments bleibt **Thema**.
+Zwei Dinge gleichen Namens in einer Oberfläche sind dieselbe
+Fehlerquelle wie zwei gleichen Namens im Datenmodell — siehe `tiefe`
+und `stufe`.
+
+**Drittens: die Kopfleiste trägt sieben Knöpfe.** Name, vier Ansichten,
+**Ausgeben**, die Gliederung und `···`. Alles andere steht im
+Punkte-Menü, und zwar in Gruppen: *Thema des Dokuments · Datei ·
+Ansehen · Finden*. Das ist Notions Aufteilung, und sie ist aus
+demselben Grund richtig: Eine Leiste, die alles zeigt, zeigt nichts.
+
+`werkzeug/pruefen.mjs` zählt die Knöpfe in der Kopfleiste und schlägt
+über acht an. Das ist keine Wahrheit, sondern eine **Bremse**: Sie sagt
+nicht, dass die Leiste gut ist — sie sagt, dass sie nicht wieder
+zuwächst, ohne dass es jemand merkt.
+
+**Was dabei aus dem Code verschwunden ist:** Knöpfe, die andere Knöpfe
+drücken. `$("#sichern").click()` stand an vier Stellen. Jetzt gibt es
+`dateiSichern()`, und Menü, Schnellwahl und Tastatur rufen dieselbe
+Funktion. Eine Verdrahtung über `click()` findet niemand, der sie nicht
+schon kennt.
+
+---
+
+## 26 · Eine Theme-Vorschau, die nicht lügen kann
+
+Acht Themen standen als acht Wörter da. „Zeitung“ sagt nichts über
+Schrift, Farbe und Satz; wer wissen wollte, was es tut, musste es
+anklicken und wieder zurückstellen.
+
+Es gab zwei Wege zu einer Vorschau:
+
+1. **Ein Bild malen** — für jedes Thema eine kleine Grafik. Sie wäre
+   in dem Moment falsch, in dem jemand am Thema etwas ändert, und
+   niemand würde es merken.
+2. **Das Thema auf sich selbst anwenden.**
+
+**Entschieden: Weg 2.** Die Kachel ist ein `<span>` mit der Klasse
+`.dok` und dem Merkmal `data-vthema` — dieselben zwei Haken, an denen
+das ganze Dokument hängt. Damit greifen auf ihr **dieselben Regeln**:
+Grund, Schrift, Farbe, Blocksatz, Überschriftgröße. Ändert sich das
+Thema, ändert sich die Kachel mit. Sie kann nicht veralten.
+
+Zwei Einschränkungen, beide bewusst:
+
+* **Die Maße des Nutzers gelten auf der Kachel nicht.** Wer die
+  Schriftgröße auf 28 Pixel stellt, sähe sonst zwei Wörter je Kachel,
+  und der Vergleich wäre wertlos. Die Kachel setzt `--dok-groesse` und
+  `--dok-hoehe` auf ihre eigenen Werte zurück.
+* **Auch die Themen-Maße gelten nur, soweit sie hineinpassen.** Das
+  Manuskript-Thema hält 110 Pixel Korrekturrand frei; auf einer Kachel
+  von 132 Pixeln bliebe davon ein Buchstabe je Zeile. Der Wähler
+  `.tkachel .tbild[data-vthema]` sticht die Themenregel für Ränder
+  aus — für Farbe und Schrift nicht.
+
+Die Kacheln stehen an zwei Stellen: **groß** im Layout-Dialog, mit
+Namen und Erklärung, und **klein** als rollende Reihe im `···`-Menü.
+Beide kommen aus derselben Funktion; zwei Fassungen liefen
+auseinander, sobald ein Thema dazukäme. Notion stellt seine drei
+Schriften genauso in das `···`, und aus demselben Grund: **Ein
+Aussehen wählt man am Aussehen, nicht am Namen.**

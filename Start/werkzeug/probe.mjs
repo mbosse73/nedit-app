@@ -60,8 +60,17 @@ const datei = async () => {
   await seite.waitForTimeout(200);
   return v;
 };
+/* Die Kopfleiste trägt seit August 2026 keine Knöpfe mehr für die
+   Karten — sie stehen im Punkte-Menü (doku/ENTSCHEIDUNGEN.md,
+   Punkt 25). Die Proben gehen denselben Weg wie ein Mensch. */
+const ausMenue = async (name) => {
+  await seite.click("#mehr");
+  await seite.waitForTimeout(220);
+  await seite.click('#menue button:has(.nm:text-is("' + name + '"))');
+  await seite.waitForTimeout(320);
+};
 const stufe = async (name) => {
-  await seite.click("#ein-auf");
+  await ausMenue("Einstellungen …");
   await seite.click('#ein-gruppen .gruppe:has(.etikett:text-is("Markdown-Stufe")) '
                     + 'button:text-is("' + name + '")');
   await seite.click("#ein-zu");
@@ -227,13 +236,22 @@ gleich("das Inhaltsverzeichnis ist reines Markdown", (await datei()).split("\n")
 /* ---------- 9 Themen und Druck ---------- */
 console.log("\nThemen und Druck");
 const stellen = async (gruppe, name) => {
-  await seite.click("#ein-auf");
+  await ausMenue("Einstellungen …");
   await seite.click('#ein-gruppen .gruppe:has(.etikett:text-is("' + gruppe + '")) '
                     + 'button:text-is("' + name + '")');
   await seite.click("#ein-zu");
   await seite.waitForTimeout(250);
 };
-await stellen("Thema", "Dunkel");
+/* Alles, was das Dokument **aussehen** lässt, steht im Layout-Dialog. */
+const layout = async (reiter, waehler) => {
+  await seite.evaluate((r) => layoutOeffnen(r), reiter);
+  await seite.waitForTimeout(300);
+  await seite.click(waehler);
+  await seite.waitForTimeout(300);
+  await seite.click("#layout-zu");
+  await seite.waitForTimeout(250);
+};
+await stellen("Erscheinungsbild", "Dunkel");
 gleich("das dunkle Thema steht am Wurzelelement",
   await seite.evaluate(() => document.documentElement.dataset.thema), "dunkel");
 gleich("der Meldungszettel ist darin nicht weiss auf weiss",
@@ -241,12 +259,13 @@ gleich("der Meldungszettel ist darin nicht weiss auf weiss",
     const z = getComputedStyle(document.querySelector("#zettel"));
     return z.backgroundColor !== z.color;
   }), true);
-await stellen("Textausrichtung", "Blocksatz");
+await layout("satz", '#satz-wahl button:text-is("Blocksatz")');
 gleich("Blocksatz wirkt auf den Absatz",
   await seite.$eval(".blk.absatz .txt", n => getComputedStyle(n).textAlign), "justify");
 gleich("und steht nicht in der Datei",
   (await datei()).indexOf("justify"), -1);
-await stellen("Thema", "Hell");
+await layout("satz", '#satz-wahl button:text-is("Flattersatz")');
+await stellen("Erscheinungsbild", "Hell");
 /* Gedruckt wird nicht die Schreibflaeche, sondern das Dokument im
    Druckblatt (doku/ENTSCHEIDUNGEN.md, Punkt 17). Gebaut wird es beim
    Drucken; `emulateMedia` loest das nicht aus, deshalb hier von
@@ -270,10 +289,7 @@ await seite.emulateMedia({ media: "screen" });
    Druckemulation pruefen: Die Vorschau zeigt dasselbe wie das Papier. */
 console.log("\nDie Nummern im Thema Technische Doku");
 const thema = async (name) => {
-  await seite.click("#stil-auf");
-  await seite.click('#stil-themen button:text-is("' + name + '")');
-  await seite.click("#stil-zu");
-  await seite.waitForTimeout(300);
+  await layout("thema", '#thema-kacheln .tkachel:has(.tname:text-is("' + name + '"))');
 };
 await setzen("# Titel ohne Nummer\n\n## 1 Bestandsaufnahme\n\n## Zweitens\n\n"
   + "Ein Absatz, damit auch der Satz zu pruefen ist.\n");
@@ -573,8 +589,7 @@ gleich("Esc schliesst", await seite.isVisible("#schnell-feld"), false);
 
 /* ---------- 22 Ablenkungsfrei ---------- */
 console.log("\nAblenkungsfrei");
-await seite.click("#ruhe-auf");
-await seite.waitForTimeout(300);
+await ausMenue("Ablenkungsfrei");
 gleich("Kopf und Fuss sind weg", await seite.isVisible(".kopf"), false);
 gleich("der Ausstieg steht da", await seite.isVisible("#ruhe-aus"), true);
 await seite.keyboard.press("Escape");
@@ -605,6 +620,78 @@ await seite.evaluate(() => { Z.kopfzeile = ""; Z.fusszeile = "";
                              document.querySelector("#druckblatt").innerHTML = druckDokument(); });
 gleich("ohne Kopf- und Fusszeile keine Tabelle",
   await seite.$$eval("#druckblatt table.dseite", ns => ns.length), 0);
+
+/* ---------- 24 Die Kopfleiste ----------
+   Sie trug vierzehn Knöpfe und war damit eine Werkzeugleiste, die
+   niemand liest. Diese Probe haelt sie schmal: Waechst sie wieder,
+   faellt es hier auf und nicht erst dem Nutzer. */
+console.log("\nDie Kopfleiste");
+const kopfKnoepfe = await seite.$$eval(".kopf button", ns => ns.map(n =>
+  (n.textContent || "").trim() || n.getAttribute("aria-label") || n.id));
+gleich("traegt hoechstens sieben Knoepfe", kopfKnoepfe.length <= 7, true);
+gleich("und zwar diese", kopfKnoepfe.join(","),
+  "Schreiben,Geteilt,Vorschau,Quelltext,Ausgeben,Gliederung,···");
+
+/* ---------- 25 Das Punkte-Menue ----------
+   Notions `···`: oben das Aussehen als Muster, darunter die Liste. */
+console.log("\nDas Punkte-Menue");
+await seite.click("#mehr");
+await seite.waitForTimeout(300);
+gleich("zeigt jedes Thema als Kachel",
+  await seite.$$eval("#menue .kachelreihe .tkachel", ns => ns.length), 8);
+gleich("mit den Gruppen darunter",
+  (await seite.$$eval("#menue .k", ns => ns.map(n => n.textContent))).join(","),
+  "Thema des Dokuments,Datei,Ansehen,Finden");
+/* Die Kachel traegt dieselben Regeln wie das Dokument -- eine gemalte
+   Vorschau koennte luegen, diese nicht. */
+const kachel = await seite.evaluate(() => {
+  const n = document.querySelector('#menue .tkachel:has(.tname) .tbild[data-vthema="papier"]');
+  const s = getComputedStyle(n);
+  return { grund: s.backgroundColor, serif: s.fontFamily.indexOf("Georgia") >= 0,
+           breit: Math.round(n.getBoundingClientRect().width) };
+});
+gleich("die Papier-Kachel traegt den Papierton", kachel.grund, "rgb(252, 250, 244)");
+gleich("und die Serifenschrift", kachel.serif, true);
+gleich("und ist nicht auf einen Buchstaben geschrumpft", kachel.breit > 40, true);
+await seite.click('#menue .kachelreihe .tkachel:has(.tname:text-is("Zeitung"))');
+await seite.waitForTimeout(300);
+gleich("ein Klick wechselt das Thema",
+  await seite.evaluate(() => Z.vthema), "zeitung");
+gleich("und das Menue bleibt offen", await seite.isVisible("#menue"), true);
+await seite.keyboard.press("Escape");
+await thema("Wie der Editor");
+
+/* ---------- 26 Der Layout-Dialog ----------
+   Aus zwei Karten -- "Stil" und "Seite einrichten" -- ist eine mit
+   vier Reitern geworden. Beide beantworteten dieselbe Frage. */
+console.log("\nDer Layout-Dialog");
+await seite.evaluate(() => layoutOeffnen("thema"));
+await seite.waitForTimeout(320);
+gleich("hat vier Reiter",
+  (await seite.$$eval("#layout .reiter button", ns => ns.map(n => n.textContent))).join(","),
+  "Thema,Satz und Maße,Seite,Eigenes CSS");
+gleich("zeigt acht Kacheln",
+  await seite.$$eval("#thema-kacheln .tkachel", ns => ns.length), 8);
+gleich("der Seiten-Reiter ist zu", await seite.isVisible("#seite-format"), false);
+await seite.click("#r-seite");
+await seite.waitForTimeout(250);
+gleich("und geht auf", await seite.isVisible("#seite-format"), true);
+gleich("dann ist der Thema-Reiter zu", await seite.isVisible("#thema-kacheln"), false);
+await seite.click("#r-css");
+await seite.waitForTimeout(250);
+gleich("das eigene CSS hat einen eigenen Reiter", await seite.isVisible("#stil-css"), true);
+await seite.click("#layout-zu");
+
+/* ---------- 27 Die Einstellungen tragen nur das Programm ----------
+   Was das Dokument aussehen laesst, steht im Layout. Was der Editor
+   tut, steht hier. Zwei Fragen, zwei Orte. */
+console.log("\nDie Einstellungen");
+await ausMenue("Einstellungen …");
+gleich("vier Gruppen, alle ueber das Programm",
+  (await seite.$$eval("#ein-gruppen .etikett", ns => ns.map(n => n.textContent))).join(","),
+  "Markdown-Stufe,Erscheinungsbild,Vorschau folgt der Schreibmarke,"
+  + "Inhaltsverzeichnis in der Vorschau");
+await seite.click("#ein-zu");
 
 /* ---------- Schluss ---------- */
 console.log("");

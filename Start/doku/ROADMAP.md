@@ -203,6 +203,41 @@ und 22.
 
 ---
 
+## Schritt 11 — Die Oberfläche zusammenfassen · **erledigt**
+
+Schritt 10 hat viel gebracht und die Oberfläche dabei zugestellt:
+**vierzehn Knöpfe** in der Kopfleiste und drei Orte für dieselbe
+Frage. Dieser Schritt räumt auf — und holt die Fläche zurück zu
+Notion.
+
+**Eine Frage, ein Ort.** „Stil“ und „Seite einrichten“ werden ein
+Dialog **Layout** mit vier Reitern: *Thema · Satz und Maße · Seite ·
+Eigenes CSS*. Die Textausrichtung wandert aus den Einstellungen
+dorthin. Die Einstellungen behalten nur noch das **Programm**.
+
+**Die Kopfleiste trägt sieben Knöpfe** — Name, vier Ansichten,
+Ausgeben, Gliederung und `···`. Alles Seltene steht im Punkte-Menü,
+in Gruppen: *Thema des Dokuments · Datei · Ansehen · Finden*.
+
+**Jedes Thema bekommt eine Vorschau.** Die Kachel wendet das Thema
+**auf sich selbst** an — sie trägt `.dok` und `data-vthema` und kann
+deshalb nicht veralten. Groß im Dialog, klein als rollende Reihe im
+Menü, wie Notion seine drei Schriften zeigt.
+
+**Zwei Dinge hießen „Thema“.** Das der Anwendung heißt jetzt
+**Erscheinungsbild**.
+
+Dazu mehr Weißraum über dem Text, eine leisere Seitenleiste und eine
+Fußleiste, die sich zurücknimmt.
+
+**Entwurf:** keiner — siehe `STAND.md`, offener Punkt 1.
+
+**Nicht dazu:** ein Seitenbaum links. Er bleibt gestrichen
+(`doku/ENTSCHEIDUNGEN.md`, Punkt 2). Notions Kopfzeile ohne Notions
+Seitenleiste ist hier die richtige Hälfte.
+
+---
+
 ## Zurückgestellt
 
 **Frontmatter als Eigenschaften.** Der YAML-Kopf als Notions

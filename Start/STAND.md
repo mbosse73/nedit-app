@@ -8,9 +8,10 @@ was als Nächstes ansteht. Warum etwas so entschieden wurde, steht in
 
 ## Wo wir stehen
 
-**Die Schritte 1 bis 10 sind gebaut.** Mit Schritt 10 hat der Editor
-seine zweite Hälfte bekommen: Er **zeigt** das Dokument und **gibt es
-heraus**, statt es nur zu beschreiben.
+**Die Schritte 1 bis 11 sind gebaut.** Schritt 10 hat dem Editor seine
+zweite Hälfte gegeben — er **zeigt** das Dokument und **gibt es
+heraus** —, und Schritt 11 hat die Oberfläche danach wieder
+aufgeräumt.
 
 **Schreiben — das war Schritt 1 bis 9:**
 
@@ -64,31 +65,48 @@ heraus**, statt es nur zu beschreiben.
 * **Zwei neue Blöcke:** Fußnote (`[^1]:`) und Seitenumbruch
   (`<!-- seitenumbruch -->`)
 
+**Die Oberfläche — Schritt 11:**
+
+* **Sieben Knöpfe in der Kopfleiste** statt vierzehn: Name, vier
+  Ansichten, Ausgeben, Gliederung, `···`. Alles Seltene steht im
+  Punkte-Menü, in vier Gruppen (Punkt 25)
+* **Ein Layout-Dialog statt zweier Karten** — Thema · Satz und Maße ·
+  Seite · Eigenes CSS. „Stil“ und „Seite einrichten“ beantworteten
+  dieselbe Frage
+* **Die Einstellungen tragen nur noch das Programm.** Die
+  Textausrichtung ist ins Layout gewandert, das Thema der Anwendung
+  heißt **Erscheinungsbild** — zwei Dinge durften nicht gleich heißen
+* **Jedes Thema hat eine Vorschau**, die das Thema **auf sich selbst
+  anwendet** und deshalb nicht veralten kann (Punkt 26)
+* Mehr Weißraum über dem Text, eine leisere Seitenleiste, eine
+  Fußleiste, die sich zurücknimmt
+
 **20 von 29 Blöcken aus `doku/BLOCKKATALOG.md` stehen.** Sieben sind
 gestrichen, einer ist vertagt, einer ist offen.
 
-Der Prüflauf hat **13 Prüfungen**. Die wichtigste — Markdown hin und
+Der Prüflauf hat **14 Prüfungen**. Die wichtigste — Markdown hin und
 zurück — läuft an **33 Proben**. Die Kontrastprüfung rechnet **36
-Paare** in beiden Themen nach, dazu drei für die Vorschau-Themen. Neu
-dazugekommen: **jede Blockart muss in jedem Ausgang vorkommen** — eine
-Art, von der HTML, RTF oder DOCX nichts wissen, verschwände dort
-stillschweigend.
+Paare** in beiden Themen nach, dazu drei für die Vorschau-Themen. Zwei Prüfungen sind
+Bremsen: **jede Blockart muss in jedem Ausgang vorkommen** — eine Art,
+von der HTML, RTF oder DOCX nichts wissen, verschwände dort
+stillschweigend —, und die **Kopfleiste darf nicht über acht Knöpfe
+wachsen**.
 
 `werkzeug/probe.mjs` **bedient** die Anwendung im echten Browser —
-**110 Proben**, alle grün. `werkzeug/schau.mjs` klappert vier
+**126 Proben**, alle grün. `werkzeug/schau.mjs` klappert vier
 Ansichten und die Druckvorschau ab.
 
 ---
 
 ## Offen
 
-### 1. Für Schritt 10 gibt es keinen Entwurf
+### 1. Für Schritt 10 und 11 gibt es keinen Entwurf
 
 Die sieben Flächen unter `mockups/` zeigen den Editor beim
-**Schreiben**. Für Vorschau, Druckvorschau, Stil-Verwalter, Seite
-einrichten und Schnellwahl gibt es keinen — sie sind aus der
-Anforderung gebaut, nicht aus einem Entwurf. Das ist der erste
-Schritt des Projekts, für den das gilt, und es steht hier, damit es
+**Schreiben**. Für Vorschau, Druckvorschau, Layout-Dialog,
+Punkte-Menü und Schnellwahl gibt es keinen — sie sind aus der
+Anforderung gebaut, nicht aus einem Entwurf. Das gilt seit Schritt 10
+und ist mit Schritt 11 nicht kleiner geworden; es steht hier, damit es
 nicht untergeht.
 
 **Was daraus folgt:** Wer diese Flächen ändert, hat keinen
@@ -156,3 +174,6 @@ sagt das auch.
 * **Die Nummerierung im Starttext stimmt.** Punkt 15.
 * **Der Ordnerbaum ist entschieden** — es gibt keinen. Punkt 2; das
   Zusammenfügen ist ausdrücklich eine Einbahnstraße, Punkt 22.
+* **Es gibt eine Regel, wohin eine Einstellung gehört.** Vorher gab es
+  drei Orte für dieselbe Frage. Punkt 25 — und `pruefen.mjs` bremst,
+  wenn die Kopfleiste wieder zuwächst.

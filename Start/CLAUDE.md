@@ -135,13 +135,13 @@ Das hält Diffs klein und lesbar.
  6  TIPPEN               Eingabehilfen, Tasten, Leiste, Menüs, Ziehen
  7  DER QUELLTEXT        geteilte Ansicht, Farbschicht, Umschalter
  8  GLIEDERUNG, SUCHEN   Überschriften, Fund, Inhaltsverzeichnis
- 9  EINSTELLUNGEN        Stufe, Thema, Satz, Autoscroll
+ 9  EINSTELLUNGEN        das Programm: Stufe, Erscheinungsbild, Vorschau
 10  DATEIEN              Öffnen, Sichern, Neu, herunterladen
 12  FARBE IM CODE        SPRACHEN, codeMalen, HTML/CSS/Markdown/Diff
 13  DAS DOKUMENT         DOK_CSS, dokumentHtml, blockDokument
 14  DIE VORSCHAU         vorschauMalen, Autoscroll, Vollbild, Ruhe
-15  THEMEN UND STIL      VTHEMEN, dokStilSetzen, Stil-Verwalter
-16  DIE SEITE            SEITEN, seitenStilSetzen, druckDokument
+15  THEMEN UND LAYOUT    VTHEMEN, Theme-Kacheln, Layout-Dialog
+16  DIE SEITE            SEITEN, seitenStilSetzen, druckDokument, Druck
 17  AUSGEBEN             htmlAusgeben, rtfAusgeben, docxAusgeben, ZIP
 18  LANGE DOKUMENTE      Einklappen, springeZu, Fußnotenleiste
 19  MEHRERE DATEIEN      zusammenfügen, Bilder als Daten-Adresse
@@ -184,6 +184,38 @@ Seiteneinrichtung (`seitenstil`). Wer zuletzt kommt, gewinnt.
 (HTML), `rtfAusgeben` und `docxAusgeben` haben je einen Fall dafür;
 `werkzeug/pruefen.mjs` rechnet nach, dass keiner fehlt. Eine Art, von
 der ein Ausgang nichts weiß, verschwindet dort stillschweigend.
+
+---
+
+## Wo eine Einstellung hingehört
+
+**Eine Frage, ein Ort.** Wer das verletzt, baut den Zustand von
+August 2026 wieder auf: drei Orte für dieselbe Frage und vierzehn
+Knöpfe in der Kopfleiste. Die Begründung steht in
+`doku/ENTSCHEIDUNGEN.md`, Punkt 25.
+
+| Die Frage | Der Ort |
+|---|---|
+| Wie sieht das **Dokument** aus? | **Layout** — Thema · Satz und Maße · Seite · Eigenes CSS |
+| Wie verhält sich der **Editor**? | **Einstellungen** — Stufe, Erscheinungsbild, Vorschau |
+| Wie kommt es **heraus**? | **Ausgeben** |
+| Alles Seltene | das **`···`-Menü** |
+
+* **Die Kopfleiste trägt höchstens acht Knöpfe.** `pruefen.mjs` zählt
+  sie. Was selten gebraucht wird, gehört ins `···`-Menü — nicht als
+  fünfzehnter Knopf daneben.
+* **Kein Knopf drückt einen anderen Knopf.** Was das Menü, die
+  Schnellwahl und die Tastatur gemeinsam auslösen, ist eine **Funktion**
+  (`dateiSichern`, `layoutOeffnen`, `einstellungenOeffnen`). Eine
+  Verdrahtung über `$("#x").click()` findet niemand, der sie nicht
+  schon kennt.
+* **Zwei Dinge dürfen nicht gleich heißen.** Das Thema der Anwendung
+  heißt **Erscheinungsbild**, das des Dokuments **Thema** — dieselbe
+  Regel wie bei `tiefe` und `stufe` im Datenmodell.
+* **Ein Aussehen wählt man am Aussehen.** Jedes Vorschau-Thema hat eine
+  Kachel, die das Thema **auf sich selbst anwendet** (`.dok` +
+  `data-vthema`). Ein gemaltes Vorschaubild wäre in dem Moment falsch,
+  in dem jemand am Thema etwas ändert. Punkt 26.
 
 ---
 
@@ -263,12 +295,13 @@ node werkzeug/pruefen.mjs
 Läuft unter Windows, Linux und in Claude Code on the web. Keine
 Abhängigkeiten. Rückgabewert 1, wenn etwas nicht stimmt.
 
-Dreizehn Prüfungen: Syntax, externe Abhängigkeiten, gefüllte Zeichen,
+Vierzehn Prüfungen: Syntax, externe Abhängigkeiten, gefüllte Zeichen,
 `color-scheme`, Klammern im Stilblock, `display` in ID-Regeln, bemalte
 Flächen, Kontrast der Tokens, **Markdown hin und zurück**,
 Vollständigkeit der Entwürfe, ob jeder Block im Katalog ein Urteil
 trägt, ob jedes Vorschau-Thema einen Stil und genug Kontrast hat und
-ob **jede Blockart in jedem Ausgang** vorkommt.
+ob **jede Blockart in jedem Ausgang** vorkommt und ob die Kopfleiste
+schmal geblieben ist.
 
 **Danach die Datei im Browser ansehen.** Ein bestandener Prüflauf sagt
 nichts über die Darstellung:
@@ -298,7 +331,7 @@ gehört sie in `werkzeug/pruefen.mjs` — nicht nur in dieses Dokument.
 | `node werkzeug/lage.mjs` | Branch, letzte Commits, offene Punkte. Läuft beim Sitzungsbeginn von selbst |
 | `node werkzeug/pruefen.mjs` | die Regelprüfung. Läuft nach jedem Schreiben als Haken automatisch mit |
 | `node werkzeug/schau.mjs` | echter Browser, vier Ansichten, Druckvorschau, Tippprobe, Bilder, Skriptfehler |
-| `node werkzeug/probe.mjs` | die **Bedienung** im echten Browser: markieren, Menüs, Einrücken, Verlauf, Stufen, Themen, Einklappen, Fußnoten, Codefarbe, die fünf Ausgaben, Schnellwahl, Seiteneinrichtung. 110 Proben |
+| `node werkzeug/probe.mjs` | die **Bedienung** im echten Browser: markieren, Menüs, Einrücken, Verlauf, Stufen, Themen, Einklappen, Fußnoten, Codefarbe, die fünf Ausgaben, Schnellwahl, Seiteneinrichtung, Kopfleiste, Punkte-Menü, Layout-Dialog. 126 Proben |
 | `node werkzeug/bau-mockups.mjs` | die sieben Entwürfe neu erzeugen |
 
 ---
