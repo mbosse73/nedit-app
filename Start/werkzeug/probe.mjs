@@ -247,46 +247,66 @@ gleich("Blocksatz wirkt auf den Absatz",
 gleich("und steht nicht in der Datei",
   (await datei()).indexOf("justify"), -1);
 await stellen("Thema", "Hell");
+/* Gedruckt wird nicht die Schreibflaeche, sondern das Dokument im
+   Druckblatt (doku/ENTSCHEIDUNGEN.md, Punkt 17). Gebaut wird es beim
+   Drucken; `emulateMedia` loest das nicht aus, deshalb hier von
+   Hand. */
+await seite.evaluate(() => {
+  seitenStilSetzen();
+  document.querySelector("#druckblatt").innerHTML = druckDokument();
+});
 await seite.emulateMedia({ media: "print" });
 gleich("im Druck ist die Kopfleiste weg", await seite.isVisible(".kopf"), false);
-gleich("und das Blatt noch da", await seite.isVisible(".blatt"), true);
+gleich("und die Schreibflaeche auch", await seite.isVisible(".blatt"), false);
+gleich("das Druckblatt traegt das Dokument",
+  await seite.$$eval("#druckblatt .dok", ns => ns.length), 1);
 await seite.emulateMedia({ media: "screen" });
 
-/* ---------- 10 Die Nummern im Technik-Layout ----------
+/* ---------- 10 Die Nummern im Thema „Technische Doku" ----------
    Ein Text, in dem eine Ueberschrift schon eine Nummer traegt und
-   eine andere nicht. Das Layout darf nur die zweite nummerieren --
-   sonst stuende dort "1.1  1 Bestandsaufnahme". */
-console.log("\nDie Nummern im Technik-Layout");
+   eine andere nicht. Das Thema darf nur die zweite nummerieren --
+   sonst stuende dort "1.1  1 Bestandsaufnahme". Seit dem Zusammenlegen
+   von Druck-Layout und Vorschau-Thema (Punkt 20) laesst sich das ohne
+   Druckemulation pruefen: Die Vorschau zeigt dasselbe wie das Papier. */
+console.log("\nDie Nummern im Thema Technische Doku");
+const thema = async (name) => {
+  await seite.click("#stil-auf");
+  await seite.click('#stil-themen button:text-is("' + name + '")');
+  await seite.click("#stil-zu");
+  await seite.waitForTimeout(300);
+};
 await setzen("# Titel ohne Nummer\n\n## 1 Bestandsaufnahme\n\n## Zweitens\n\n"
   + "Ein Absatz, damit auch der Satz zu pruefen ist.\n");
 gleich("die Ueberschrift mit Nummer ist erkannt",
   await seite.$$eval(".blk.h1,.blk.h2", ns => ns.map(n => n.classList.contains("eigen")).join(",")),
   "false,true,false");
-await stellen("Druck-Layout", "Technische Doku");
-await seite.emulateMedia({ media: "print" });
+await seite.click("#w-vorschau");
+await seite.waitForTimeout(350);
+await thema("Technische Doku");
 const vorsatz = (waehler) => seite.evaluate((w) =>
-  getComputedStyle(document.querySelector(w + " .txt"), "::before").content, waehler);
+  getComputedStyle(document.querySelector(w), "::before").content, waehler);
 gleich("ohne eigene Nummer wird nummeriert",
-  (await vorsatz('.blk[data-i="0"]')).indexOf("counter") >= 0, true);
+  (await vorsatz('#vdok [data-i="0"]')).indexOf("counter") >= 0, true);
 gleich("mit eigener Nummer nicht",
-  await vorsatz('.blk[data-i="1"]'), "none");
+  await vorsatz('#vdok [data-i="1"]'), "none");
 gleich("die naechste ohne eigene Nummer wieder schon",
-  (await vorsatz('.blk[data-i="2"]')).indexOf("counter") >= 0, true);
-await seite.emulateMedia({ media: "screen" });
+  (await vorsatz('#vdok [data-i="2"]')).indexOf("counter") >= 0, true);
 
-/* ---------- 11 Das Magazin-Layout ---------- */
-console.log("\nDas Magazin-Layout");
-await stellen("Druck-Layout", "Magazin");
-await seite.emulateMedia({ media: "print" });
+/* ---------- 11 Das Thema „Buchsatz" ---------- */
+console.log("\nDas Thema Buchsatz");
+await thema("Buchsatz");
 gleich("setzt in einer Serifenschrift",
-  (await seite.$eval(".blatt", n => getComputedStyle(n).fontFamily)).indexOf("Georgia") >= 0,
+  (await seite.$eval("#vdok", n => getComputedStyle(n).fontFamily)).indexOf("Georgia") >= 0,
   true);
 gleich("und im Blocksatz",
-  await seite.$eval(".blk.absatz .txt", n => getComputedStyle(n).textAlign), "justify");
+  await seite.$eval("#vdok p", n => getComputedStyle(n).textAlign), "justify");
 gleich("nummeriert aber nicht",
-  await vorsatz('.blk[data-i="2"]'), "none");
-await seite.emulateMedia({ media: "screen" });
-await stellen("Druck-Layout", "Schlicht");
+  await vorsatz('#vdok [data-i="2"]'), "none");
+gleich("und es steht nichts davon in der Datei",
+  (await datei()).indexOf("justify"), -1);
+await thema("Wie der Editor");
+await seite.click("#w-schreiben");
+await seite.waitForTimeout(250);
 
 /* ---------- 12 Farbe im Quelltext ----------
    Die Farbschicht liegt unter dem Feld. Sie darf kein Zeichen
@@ -421,6 +441,170 @@ await seite.waitForTimeout(200);
 gleich("ein To-do mit Wiki-Link meldet Dialekt, nicht GFM",
   await seite.$eval("#qfarbe .un[data-ur]", n => n.dataset.ur), "Dialekt");
 gleich("und der Umbruch bleibt gleich", warn.hoehe, true);
+
+/* ---------- 16 Fussnote und Seitenumbruch ----------
+   Zwei neue Blockarten. Beide tragen ihre ganze Quelle im Feld `text`
+   und muessen Zeichen fuer Zeichen wieder herauskommen. */
+console.log("\nFussnote und Seitenumbruch");
+await stellen("Markdown-Stufe", "GitHub");
+const FUSS = "# Kapitel\n\nEin Satz mit Beleg.[^1]\n\n[^1]: Woher der Satz stammt.\n\n"
+  + "<!-- seitenumbruch -->\n\n## Zweiter Teil\n\nNoch ein Absatz.\n";
+await setzen(FUSS);
+gleich("beide werden als eigene Bloecke gelesen",
+  await seite.$$eval(".blk.fussnote,.blk.umbruch", ns => ns.length), 2);
+gleich("das Fussnotenzeichen steht hochgestellt",
+  await seite.$$eval(".txt sup.fnv", ns => ns.length), 1);
+gleich("und alles kommt unveraendert wieder heraus", await datei(), FUSS);
+await seite.click("#g-t-noten");
+await seite.waitForTimeout(250);
+gleich("die Fussnotenleiste sammelt sie",
+  await seite.$$eval("#n-liste .note .nt", ns => ns.map(n => n.textContent).join(",")),
+  "Woher der Satz stammt.");
+await stellen("Markdown-Stufe", "Rein");
+await seite.waitForTimeout(250);
+gleich("auf Rein sagt die Leiste, woran es liegt",
+  (await seite.textContent("#n-liste")).indexOf("GitHub") >= 0, true);
+await stellen("Markdown-Stufe", "GitHub");
+await seite.click("#g-t-gliederung");
+
+/* ---------- 17 Einklappen ----------
+   Eine Anzeige, kein Merkmal des Textes: In der Datei steht davon
+   nichts, und der Export enthaelt jeden Block. */
+console.log("\nEinklappen");
+await setzen("# Erstes\n\nEin Absatz.\n\n## Darunter\n\nNoch einer.\n\n# Zweites\n\nText.\n");
+const sichtbar = () => seite.$$eval(".blk", ns => ns.length);
+gleich("sechs Bloecke stehen da", await sichtbar(), 6);
+await seite.click('.blk[data-i="0"] .griff .klapp');
+await seite.waitForTimeout(300);
+gleich("nach dem Einklappen nur noch drei", await sichtbar(), 3);
+gleich("die Zahl steht am Titel", await seite.textContent(".klappzahl"), "3 Blöcke");
+gleich("in der Datei steht davon nichts",
+  (await datei()).indexOf("Noch einer.") >= 0, true);
+gleich("und im Export auch nicht",
+  await seite.evaluate(() => dokumentHtml({}).indexOf("Noch einer.") >= 0), true);
+await seite.click('.blk[data-i="0"] .griff .klapp');
+await seite.waitForTimeout(300);
+gleich("aufgeklappt sind wieder alle da", await sichtbar(), 6);
+
+/* ---------- 18 Die Vorschau ----------
+   Dieselbe Zeichenkette wie im Export, nur in einem Rahmen. Sie hat
+   keine Griffe. */
+console.log("\nDie Vorschau");
+await setzen("# Titel\n\n- eins\n  - unter\n- zwei\n\n1. Schritt\n\n> Ein Zitat\n");
+await seite.click("#w-vorschau");
+await seite.waitForTimeout(400);
+gleich("baut richtige Listen statt Zeilen",
+  await seite.$$eval("#vdok ul > li > ul > li", ns => ns.length), 1);
+gleich("die Ueberschrift ist eine Ueberschrift",
+  await seite.$$eval("#vdok h1", ns => ns.length), 1);
+gleich("das Zitat ein blockquote",
+  await seite.$$eval("#vdok blockquote", ns => ns.length), 1);
+gleich("und sie traegt keine Blockgriffe",
+  await seite.$$eval("#vdok .griff", ns => ns.length), 0);
+await seite.click("#v-inhalt");
+await seite.waitForTimeout(300);
+gleich("das Inhaltsverzeichnis der Vorschau steht nicht in der Datei",
+  (await datei()).indexOf("Inhalt") >= 0, false);
+await seite.click("#w-vorschau");
+await seite.click("#v-inhalt");
+await seite.waitForTimeout(200);
+await seite.click("#w-schreiben");
+await seite.waitForTimeout(250);
+
+/* ---------- 19 Farbe im Code ----------
+   Sie deutet, mehr nicht: Ein falsch gefaerbtes Wort steht trotzdem
+   unveraendert in der Datei. */
+console.log("\nFarbe im Code");
+const CODE = "```python\ndef gruss(name):\n    # ein Kommentar\n    return 42\n```\n";
+await setzen(CODE);
+gleich("Schluesselwoerter sind gefaerbt",
+  (await seite.$$eval(".blk.code .s-k", ns => ns.map(n => n.textContent))).join(","),
+  "def,return");
+gleich("der Kommentar auch",
+  await seite.$eval(".blk.code .s-x", n => n.textContent), "# ein Kommentar");
+gleich("die Zahl auch", await seite.$eval(".blk.code .s-n", n => n.textContent), "42");
+gleich("der Sprachname steht ausgeschrieben darueber",
+  await seite.$eval(".blk.code .sprache", n => n.textContent), "Python");
+gleich("und der Code kommt unveraendert wieder heraus", await datei(), CODE);
+
+/* ---------- 20 Die Ausgaben ----------
+   Fuenf Formate, ein Dokument. Geprueft wird, dass jedes entsteht
+   und den Text traegt -- nicht, wie es aussieht. */
+console.log("\nDie Ausgaben");
+await setzen("# Bericht\n\nEin Absatz mit **fett**.\n\n- ein Punkt\n\n"
+  + "| a | b |\n| --- | --- |\n| 1 | 2 |\n");
+const html = await seite.evaluate(() => htmlAusgeben());
+gleich("HTML ist eine ganze Seite", html.slice(0, 15), "<!DOCTYPE html>");
+gleich("HTML traegt den Stil in sich", html.indexOf(".dok{background") >= 0, true);
+gleich("HTML holt nichts aus dem Netz",
+  /<script[^>]+src=|<link[^>]+stylesheet|https?:\/\//.test(html), false);
+gleich("HTML traegt den Text", html.indexOf("<h1") >= 0 && html.indexOf("fett") >= 0, true);
+const rtf = await seite.evaluate(() => rtfAusgeben());
+gleich("RTF beginnt mit dem Kopf", rtf.slice(0, 6), "{\\rtf1");
+gleich("RTF traegt die Ueberschrift fett", rtf.indexOf("\\b\\fs40") >= 0, true);
+gleich("RTF baut eine Tabelle", rtf.indexOf("\\trowd") >= 0, true);
+const docx = await seite.evaluate(async () => {
+  const b = docxAusgeben();
+  return { gross: b.size, art: b.type,
+           anfang: new Uint8Array(await b.slice(0, 2).arrayBuffer()).join(",") };
+});
+gleich("DOCX ist ein ZIP", docx.anfang, "80,75");
+gleich("und nicht leer", docx.gross > 4000, true);
+gleich("mit der richtigen Art", docx.art.indexOf("wordprocessingml") >= 0, true);
+
+/* ---------- 21 Die Schnellwahl ----------
+   Strg+K, nicht Strg+P: Das ist der Druckbefehl des Browsers. */
+console.log("\nDie Schnellwahl");
+await setzen("# Erstes Kapitel\n\nText.\n\n## Zweites Kapitel\n\nMehr Text.\n");
+await seite.keyboard.press("Control+k");
+await seite.waitForTimeout(300);
+gleich("oeffnet sich", await seite.isVisible("#schnell-feld"), true);
+await seite.fill("#schnell-feld", "Zweites");
+await seite.waitForTimeout(250);
+gleich("findet die Ueberschrift",
+  await seite.$eval("#schnell-liste button .nm", n => n.textContent), "Zweites Kapitel");
+await seite.fill("#schnell-feld", "Vollbild");
+await seite.waitForTimeout(250);
+gleich("und den Befehl dazu",
+  await seite.$eval("#schnell-liste button .nm", n => n.textContent), "Vollbild");
+await seite.keyboard.press("Escape");
+await seite.waitForTimeout(200);
+gleich("Esc schliesst", await seite.isVisible("#schnell-feld"), false);
+
+/* ---------- 22 Ablenkungsfrei ---------- */
+console.log("\nAblenkungsfrei");
+await seite.click("#ruhe-auf");
+await seite.waitForTimeout(300);
+gleich("Kopf und Fuss sind weg", await seite.isVisible(".kopf"), false);
+gleich("der Ausstieg steht da", await seite.isVisible("#ruhe-aus"), true);
+await seite.keyboard.press("Escape");
+await seite.waitForTimeout(300);
+gleich("Esc beendet ihn", await seite.isVisible(".kopf"), true);
+
+/* ---------- 23 Die Seiteneinrichtung ----------
+   Groesse, Ausrichtung und Rand stehen im Block `seitenstil`. `@page`
+   kennt keine Variablen -- deshalb wird er zur Laufzeit geschrieben. */
+console.log("\nDie Seiteneinrichtung");
+await seite.evaluate(() => { Z.seite = "a5"; Z.hoch = "quer"; Z.rand = "10 10 10 10";
+                             seitenStilSetzen(); });
+await seite.waitForTimeout(250);
+gleich("A5 quer ergibt 210 mm Breite",
+  await seite.evaluate(() =>
+    document.querySelector("#seitenstil").textContent.indexOf("size:210mm 148mm") >= 0), true);
+await seite.evaluate(() => { Z.seite = "a4"; Z.hoch = "hoch"; Z.rand = "18 18 18 18";
+                             seitenStilSetzen(); });
+await seite.evaluate(() => { Z.kopfzeile = "{titel} | | {datum}"; Z.fusszeile = "| {datei} |";
+                             document.querySelector("#druckblatt").innerHTML = druckDokument(); });
+await seite.waitForTimeout(250);
+gleich("die mitlaufende Zeile haengt im thead",
+  await seite.$$eval("#druckblatt table.dseite thead .dkopf", ns => ns.length), 1);
+gleich("und der Platzhalter ist gefuellt",
+  (await seite.textContent("#druckblatt .dkopf")).indexOf("Erstes Kapitel") >= 0
+  || (await seite.textContent("#druckblatt .dkopf")).length > 0, true);
+await seite.evaluate(() => { Z.kopfzeile = ""; Z.fusszeile = "";
+                             document.querySelector("#druckblatt").innerHTML = druckDokument(); });
+gleich("ohne Kopf- und Fusszeile keine Tabelle",
+  await seite.$$eval("#druckblatt table.dseite", ns => ns.length), 0);
 
 /* ---------- Schluss ---------- */
 console.log("");

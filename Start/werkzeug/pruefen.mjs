@@ -170,6 +170,13 @@ function verhaeltnis(a, b){
   const paare = [["tinte", 4.5], ["tinte2", 4.5], ["tinte3", 3.0], ["blau", 3.0],
                  ["rot", 4.5],
                  ["code-t", 4.5, "code-g"],   /* Code auf seiner Flaeche */
+                 /* Die sechs Farben der Syntax-Hervorhebung. Sie stehen
+                    auf der Codeflaeche, nicht auf dem Blattgrund. Eine
+                    Hervorhebung, die den Kontrast unterlaeuft, ist
+                    keine Hilfe, sondern ein Hindernis. */
+                 ["s-schl", 4.5, "code-g"], ["s-name", 4.5, "code-g"],
+                 ["s-text", 4.5, "code-g"], ["s-zahl", 4.5, "code-g"],
+                 ["s-komm", 4.5, "code-g"], ["s-fkt",  4.5, "code-g"],
                  ["blau", 3.0, "rand"],       /* Auszeichnungszeichen im Quelltext */
                  ["q-l", 4.5, "rand"],        /* Verweisziel im Quelltext */
                  ["tinte", 4.5, "fund"],      /* Text auf dem Suchtreffer */
@@ -263,7 +270,20 @@ function verhaeltnis(a, b){
          Trennzeile bleibt er ein Absatz. */
       "Erst a | dann b und sonst nichts\n",
       /* Ein gewoehnliches Zitat darf der Callout nicht verschlucken. */
-      "> Ein Zitat\n\n> [!TIP]\n> Ein Callout\n"
+      "> Ein Zitat\n\n> [!TIP]\n> Ein Callout\n",
+      /* Fussnoten. Die Erklaerung traegt ihre ganze Quelle im Feld
+         `text`; zwei davon stehen ohne Leerzeile untereinander, und
+         eine eingerueckte Folgezeile gehoert zur Erklaerung darueber. */
+      "Ein Satz mit Beleg.[^1]\n\n[^1]: Woher der Satz stammt.\n",
+      "[^1]: Erste Quelle\n[^2]: Zweite Quelle\n",
+      "[^lang]: Erste Zeile\n    und weiter\n\nEin Absatz danach.\n",
+      /* Gegenprobe: Ein gewoehnlicher Verweis ist keine Fussnote. */
+      "Ein [Verweis](./datei.md) und ein ^Dach.\n",
+      /* Der Seitenumbruch. Ein HTML-Kommentar, der unveraendert
+         wieder herauskommen muss — sonst waere er beim naechsten
+         Speichern weg. */
+      "Erste Seite\n\n<!-- seitenumbruch -->\n\nZweite Seite\n",
+      "# Kapitel\n\n<!-- seitenumbruch -->\n\n# Naechstes Kapitel\n"
     ];
     try {
       const kasten = { ergebnis: null };
@@ -316,6 +336,90 @@ function verhaeltnis(a, b){
     if (!kopf) warn(pfad + ": keine Tabelle gefunden");
     else if (ohne.length) bad(pfad + ": " + ohne.length + " Zeile(n) ohne Urteil");
     else ok(pfad + " — " + zeilen.length + " Blöcke, jeder mit Urteil");
+  }
+}
+
+/* ---------- 12 Die Vorschau-Themen ----------
+   Sie färben das Dokument in Vorschau, Druck und Export. Zwei Dinge
+   müssen stimmen: Jedes angebotene Thema braucht auch einen Stil,
+   und der Text darauf muss lesbar bleiben. Ein Thema in der Liste
+   ohne Regel im Stil ist ein Knopf, der nichts tut. */
+{
+  const liste = js.match(/const VTHEMEN = \[([\s\S]*?)\n\];/);
+  const stil  = js.match(/const VTHEMA_CSS = `([\s\S]*?)`;/);
+  if (!liste || !stil) warn("VTHEMEN oder VTHEMA_CSS nicht gefunden");
+  else {
+    const namen = [...liste[1].matchAll(/\["([a-z]+)",/g)].map(m => m[1]);
+    /* „editor" ist die Vorgabe: dieselben Werte wie die Fläche, und
+       deshalb ohne eigene Regel. */
+    const ohne = namen.filter(n => n !== "editor"
+      && stil[1].indexOf('data-vthema="' + n + '"') < 0);
+    if (!namen.length) bad("keine Vorschau-Themen gefunden");
+    else if (ohne.length) bad("Vorschau-Thema ohne Stil — " + ohne.join(", "));
+    else ok("Vorschau-Themen — " + namen.length + " Themen, jedes mit Stil");
+
+    /* Die eigenen Gründe der Themen. Papier bleibt hell, auch im
+       dunklen Thema — deshalb werden sie nur gegen sich selbst und
+       nur im hellen Block gerechnet. */
+    const block = themaBlock(":root{");
+    const paare = [["pap-t", "pap-g"], ["kon-t", "kon-g"], ["masch-t", "masch-g"]];
+    const schwach = [];
+    if (!block) warn("Thema hell nicht gefunden");
+    else paare.forEach(([vorn, hinten]) => {
+      const c = farbe(tokenAus(block, vorn)), h = farbe(tokenAus(block, hinten));
+      if (!c || !h){ warn("Token --" + vorn + " oder --" + hinten + " fehlt"); return; }
+      const v = verhaeltnis(ueber(c, h), h);
+      if (v < 4.5) schwach.push("--" + vorn + " auf --" + hinten
+        + " " + v.toFixed(2) + " : 1 (mindestens 4.5)");
+    });
+    if (schwach.length) bad("Kontrast im Vorschau-Thema — " + schwach.join(", "));
+    else ok("Kontrast der Vorschau-Themen — " + paare.length + " Paare über der Schwelle");
+  }
+}
+
+/* ---------- 13 Jede Blockart kennt jeden Ausgang ----------
+   Der Editor gibt in fünf Formaten aus. Kommt eine Blockart dazu und
+   weiß eine der Ausgaben nichts von ihr, verschwindet sie dort
+   stillschweigend — und niemand merkt es, bis jemand das Dokument
+   aufmacht. Deshalb: Was in `ARTEN` steht, muss in jedem Ausgang
+   vorkommen. */
+{
+  const ausschnitt = (name) => {
+    const von = js.indexOf("function " + name);
+    if (von < 0) return "";
+    const bis = js.indexOf("\nfunction ", von + 10);
+    return js.slice(von, bis < 0 ? js.length : bis);
+  };
+  const liste = js.match(/const ARTEN = \[([\s\S]*?)\n\];/);
+  if (!liste) warn("ARTEN nicht gefunden");
+  else {
+    const arten = [...liste[1].matchAll(/\{art:"([a-z0-9]+)"/g)].map(m => m[1]);
+    /* Zwei stehen mit Absicht nicht als eigener Fall da: Der Absatz
+       ist der Vorgabefall, das Bild ist keine Blockart, sondern ein
+       Handgriff im Slash-Menü. */
+    const vorgabe = ["absatz", "bild"];
+    /* Das Dokument behandelt die Listen und die Fussnote schon in
+       `dokumentHtml`, bevor `blockDokument` an die Reihe kommt —
+       deshalb zaehlen beide Koerper zusammen. */
+    const ausgaenge = [[["dokumentHtml","blockDokument"], "HTML"],
+                       [["rtfAusgeben"],  "RTF"],
+                       [["docxAusgeben"], "DOCX"]];
+    const LISTENART = ["punkt", "nummer", "todo"];
+    const fehlt = [];
+    ausgaenge.forEach(([fns, wie]) => {
+      const koerper = fns.map(ausschnitt).join("\n");
+      if (!koerper.trim()){ warn(fns.join("/") + " nicht gefunden"); return; }
+      arten.forEach(a => {
+        if (vorgabe.indexOf(a) >= 0) return;
+        const da = koerper.indexOf('case "' + a + '"') >= 0
+                || koerper.indexOf('=== "' + a + '"') >= 0
+                || (LISTENART.indexOf(a) >= 0 && koerper.indexOf("LISTE.indexOf") >= 0);
+        if (!da) fehlt.push(wie + ": " + a);
+      });
+    });
+    if (!arten.length) bad("keine Blockarten in ARTEN gefunden");
+    else if (fehlt.length) bad("Blockart ohne Ausgang — " + fehlt.join(", "));
+    else ok("Ausgänge vollständig — " + arten.length + " Blockarten in HTML, RTF und DOCX");
   }
 }
 

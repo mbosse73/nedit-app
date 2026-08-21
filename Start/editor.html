@@ -36,6 +36,16 @@
   --blau-s:rgba(35,131,226,.28);
   --code-g:rgb(247,246,243);
   --code-t:rgb(186,67,63);
+  /* Die Farben im Codeblock. Sie stehen auf --code-g, nicht auf dem
+     Blattgrund — der Prüflauf rechnet sie gegen diese Fläche nach.
+     Sechs reichen: mehr Farben unterscheiden nicht mehr, sie
+     verwirren nur. */
+  --s-schl:rgb(140,38,150);   /* Schlüsselwort */
+  --s-name:rgb(23,92,168);    /* eingebauter Name */
+  --s-text:rgb(20,105,55);    /* Zeichenkette */
+  --s-zahl:rgb(150,72,10);    /* Zahl */
+  --s-komm:rgb(104,104,104);  /* Kommentar */
+  --s-fkt:rgb(0,98,110);      /* Aufruf */
   --marker:rgb(251,243,196);
   /* Der Suchtreffer ist kein Textmarker. Er steht nur, solange gesucht
      wird, und darf nicht wie eine Auszeichnung im Text aussehen —
@@ -49,6 +59,16 @@
      ist kein Fehler, sondern eine Bindung an ein bestimmtes Werkzeug. */
   --warn-g:rgb(253,236,200);
   --warn-t:rgb(146,76,8);
+
+  /* Die Vorschau-Themen. Sie färben das **Dokument**, nicht die
+     Werkbank, und folgen dem dunklen Thema deshalb nicht: Papier
+     bleibt Papier. Der Prüflauf rechnet jedes Paar nach. */
+  --pap-g:rgb(252,250,244);   /* Papier und Buchsatz */
+  --pap-t:rgb(46,41,33);
+  --kon-g:rgb(255,255,255);   /* Hoher Kontrast */
+  --kon-t:rgb(0,0,0);
+  --masch-g:rgb(250,249,246); /* Schreibmaschine */
+  --masch-t:rgb(38,38,38);
 
   --rad:5px;
   --rad-gr:8px;
@@ -83,6 +103,12 @@
   --blau-s:rgba(84,166,247,.34);
   --code-g:rgb(38,38,38);
   --code-t:rgb(233,140,131);
+  --s-schl:rgb(214,163,241);
+  --s-name:rgb(133,190,242);
+  --s-text:rgb(141,206,151);
+  --s-zahl:rgb(240,182,124);
+  --s-komm:rgb(152,152,152);
+  --s-fkt:rgb(122,212,206);
   --marker:rgb(112,88,24);
   --fund:rgb(126,76,22);
   --q-l:rgb(126,190,226);
@@ -187,6 +213,43 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 .app[data-ansicht="schreiben"] .quelle{display:none}
 .app[data-ansicht="quelltext"] .blatt{display:none}
 .app[data-ansicht="quelltext"] .quelle{width:100%;border-left:0}
+.app[data-ansicht="schreiben"] .vorschau,
+.app[data-ansicht="geteilt"] .vorschau,
+.app[data-ansicht="quelltext"] .vorschau{display:none}
+.app[data-ansicht="vorschau"] .quelle{display:none}
+/* „Nur Vorschau" nimmt die Schreibfläche weg — Lesen statt Sehen. */
+.app[data-ansicht="vorschau"][data-nur="ja"] .blatt{display:none}
+.app[data-ansicht="vorschau"][data-nur="ja"] .vorschau{width:100%;border-left:0}
+
+/* ---------- Die Vorschau ----------
+   Dieselbe Zeichenkette wie im Export, nur in einem Rahmen mit
+   Rollbalken. Sie hat keine Griffe: eine Anzeige, kein zweiter
+   Editor. */
+.vorschau{width:50%;flex-shrink:0;background:var(--grund);
+  border-left:1px solid var(--linie2);display:flex;flex-direction:column;min-width:0}
+.vorschau .vkopf{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:6px 14px;
+  font-size:11.5px;color:var(--tinte3);border-bottom:1px solid var(--linie2);
+  background:var(--rand)}
+.vorschau .vkopf .sp{flex:1}
+.vorschau .vkopf button{font:inherit;font-size:11.5px;color:var(--tinte2);background:none;
+  border:1px solid var(--linie);padding:3px 9px;border-radius:var(--rad);cursor:pointer}
+.vorschau .vkopf button:hover{background:var(--strich);color:var(--tinte)}
+.vorschau .vkopf button[aria-pressed="true"]{background:var(--blau);border-color:var(--blau);
+  color:#fff}
+.vblatt{flex:1;min-height:0;overflow-y:auto;background:var(--grund);padding:34px 0}
+
+/* ---------- Ablenkungsfrei ----------
+   Kopf, Fuß und beide Leisten weg. Was bleibt, ist die Spalte. Der
+   Ausstieg steht als einziger Knopf oben rechts — ohne ihn wäre der
+   Modus eine Falle für den, der Esc nicht kennt. */
+.app[data-ruhe="ja"] .kopf,
+.app[data-ruhe="ja"] .fuss,
+.app[data-ruhe="ja"] .gliederung{display:none}
+.app[data-ruhe="ja"] .blatt{padding-top:8vh}
+.ruhe-aus{position:fixed;top:14px;right:16px;z-index:57;font:inherit;font-size:12px;
+  color:var(--tinte2);background:var(--grund);border:1px solid var(--linie);
+  border-radius:var(--rad);padding:5px 11px;cursor:pointer;opacity:.35}
+.ruhe-aus:hover{opacity:1;background:var(--strich)}
 
 /* ---------- Gliederung ----------
    Rechts die Überschriften, die springt. Sie ersetzt keinen
@@ -196,8 +259,32 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
   border-left:1px solid var(--linie2);display:flex;flex-direction:column}
 .app[data-gliederung="aus"] .gliederung{display:none}
 .app[data-ansicht="quelltext"] .gliederung{display:none}
-.gliederung .gkopf{flex-shrink:0;padding:9px 13px 7px;font-size:11px;letter-spacing:.05em;
-  text-transform:uppercase;color:var(--tinte3);border-bottom:1px solid var(--linie2)}
+.gliederung .gkopf{flex-shrink:0;display:flex;gap:2px;padding:6px 7px;
+  border-bottom:1px solid var(--linie2)}
+.gliederung .gtab{flex:1;font:inherit;font-size:11px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--tinte3);background:none;border:0;
+  padding:5px 7px;border-radius:var(--rad);cursor:pointer}
+.gliederung .gtab:hover{background:var(--strich);color:var(--tinte2)}
+.gliederung .gtab[aria-pressed="true"]{background:var(--grund);color:var(--tinte);
+  font-weight:600}
+/* `display` steht in keiner ID-Regel — eine ID schlüge jede Klasse
+   und bräche das Umschalten (harte Regel 7). */
+.gliederung[data-reiter="gliederung"] .notenliste{display:none}
+.gliederung[data-reiter="noten"] .kopfliste{display:none}
+.gliederung .note{display:block;width:100%;font:inherit;font-size:12.5px;text-align:left;
+  padding:6px 8px;border:0;border-radius:var(--rad);background:none;color:var(--tinte2);
+  cursor:pointer;line-height:1.45}
+.gliederung .note:hover{background:var(--strich);color:var(--tinte)}
+.gliederung .note .nm{display:inline-block;min-width:18px;font-weight:600;
+  color:var(--blau);font-family:var(--fest);font-size:11.5px}
+.gliederung .note .nt{display:block;margin-left:18px;overflow:hidden;
+  text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+.gliederung .note .nw{display:inline-block;margin:3px 0 0 18px;font-size:10px;
+  letter-spacing:.04em;text-transform:uppercase;color:var(--warn-t);
+  background:var(--warn-g);border-radius:3px;padding:1px 5px}
+.gliederung .leer code{font-family:var(--fest);font-size:.92em;
+  background:rgba(135,131,120,.15);border-radius:3px;padding:1px 4px}
+.gliederung .gfuss button+button{margin-top:5px}
 .gliederung .liste{flex:1;min-height:0;overflow-y:auto;padding:6px}
 .gliederung .z{display:block;width:100%;font:inherit;font-size:13px;text-align:left;
   padding:5px 8px;border:0;border-radius:var(--rad);background:none;color:var(--tinte2);
@@ -262,6 +349,17 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 .blk .griff button{background:none;border:0;padding:3px;border-radius:4px;cursor:grab;
   color:var(--blass);display:flex}
 .blk .griff button:hover{background:var(--strich);color:var(--tinte2)}
+/* ---------- Der Klappgriff ----------
+   Er sitzt in der Griffleiste, wo bei allen anderen Blockarten das
+   Pluszeichen steht. Ein zugeklappter Abschnitt zeigt ihn dauerhaft:
+   Sonst sähe eine zugeklappte Überschrift aus wie eine gewöhnliche.
+   Er ist eine Anzeige — in der Datei steht davon nichts. */
+.blk.zugeklappt .griff{opacity:1}
+.blk .klapp{cursor:pointer}
+.blk .klapp.zu{color:var(--tinte2)}
+.blk .klappzahl{align-self:center;flex-shrink:0;font-size:11px;color:var(--tinte3);
+  background:var(--rand);border:1px solid var(--linie2);border-radius:10px;
+  padding:1px 8px;user-select:none}
 .blk .griff svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.7;fill:none;
   stroke-linecap:round;stroke-linejoin:round}
 
@@ -292,8 +390,34 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
   font-family:var(--fest);font-size:13.5px;line-height:1.6}
 .blk.code .sprache{position:absolute;left:17px;top:7px;font-size:11.5px;color:var(--tinte3);
   pointer-events:none}
+/* Syntax-Hervorhebung. Die Klassen sind kurz, weil jede Zeile Code
+   sie trägt; sie stehen nur im Codeblock und in den Ausgaben. */
+.s-k{color:var(--s-schl)}
+.s-y{color:var(--s-name)}
+.s-t{color:var(--s-text)}
+.s-n{color:var(--s-zahl)}
+.s-x{color:var(--s-komm);font-style:italic}
+.s-f{color:var(--s-fkt)}
 .blk.linie{padding:12px 2px}
 .blk.linie .strich{flex:1;height:1px;background:var(--linie)}
+
+/* ---------- Seitenumbruch ----------
+   Er trägt keinen Text. Auf der Fläche ist er eine gestrichelte
+   Linie mit Wort in der Mitte; im Export beginnt dort eine Seite. */
+.blk.umbruch{padding:14px 2px;align-items:center;gap:10px}
+.blk.umbruch .strich{flex:1;height:0;border-top:2px dashed var(--linie)}
+.blk.umbruch .umbruchwort{flex-shrink:0;font-size:11px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--tinte3);user-select:none}
+
+/* ---------- Fußnote ----------
+   Die Erklärung steht dort, wo sie in der Datei steht. Gesammelt
+   zeigt sie die Fußnotenleiste rechts. */
+.blk.fussnote .txt{font-size:14px;color:var(--tinte2);line-height:1.55;
+  border-left:2px solid var(--linie);padding-left:12px}
+.blk.fussnote .fnz{display:inline-block;min-width:16px;font-weight:600;
+  color:var(--tinte);margin-right:7px}
+.txt sup.fnv{font-size:.72em;line-height:0;vertical-align:super;color:var(--blau);
+  padding:0 1px;cursor:pointer}
 
 /* ---------- Tabelle, Callout, Toggle ----------
    Die drei Blöcke jenseits von reinem Markdown. Jeder trägt sein
@@ -437,7 +561,65 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 .karte .erklaerung{font-size:12.5px;color:var(--tinte2);line-height:1.6;margin-top:10px;
   padding:10px 12px;background:var(--rand);border-radius:var(--rad)}
 .karte .erklaerung b{color:var(--tinte);font-weight:600}
-.karte .schluss{display:flex;justify-content:flex-end}
+.karte.breit{width:min(760px,95vw)}
+.karte .felder{display:flex;flex-wrap:wrap;gap:14px}
+.karte .felder label{display:flex;align-items:center;gap:7px;font-size:13px;
+  color:var(--tinte2)}
+.karte input[type="number"],.karte input[type="text"]{font:inherit;font-size:13px;
+  width:92px;padding:5px 8px;border:1px solid var(--linie);border-radius:var(--rad);
+  background:var(--grund);color:var(--tinte);outline:none}
+.karte input[type="text"]{width:100%}
+.karte input:focus{border-color:var(--blau)}
+.karte textarea{width:100%;font-family:var(--fest);font-size:12.5px;line-height:1.6;
+  padding:10px 12px;border:1px solid var(--linie);border-radius:var(--rad);
+  background:var(--grund);color:var(--tinte);outline:none;resize:vertical;
+  tab-size:2}
+.karte textarea:focus{border-color:var(--blau)}
+.karte .reihe{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.karte .reihe button{font:inherit;font-size:12.5px;padding:5px 11px;border-radius:var(--rad);
+  border:1px solid var(--linie);background:var(--grund);color:var(--tinte2);cursor:pointer}
+.karte .reihe button:hover{background:var(--strich);color:var(--tinte)}
+.karte .erklaerung code{font-family:var(--fest);font-size:.9em;
+  background:rgba(135,131,120,.15);border-radius:3px;padding:1px 4px}
+.karte .reihe .stand{font-size:12px;color:var(--tinte3);align-self:center}
+.karte .haken{display:flex;align-items:flex-start;gap:8px;font-size:13px;
+  color:var(--tinte2);padding:5px 0;cursor:pointer}
+.karte .haken input{margin-top:2px}
+.karte .zliste{max-height:220px;overflow-y:auto;border:1px solid var(--linie);
+  border-radius:var(--rad);background:var(--rand)}
+.karte .zz{display:flex;align-items:center;gap:10px;padding:6px 10px;font-size:13px;
+  border-bottom:1px solid var(--linie2)}
+.karte .zz:last-child{border-bottom:0}
+.karte .zz .nr{width:20px;color:var(--tinte3);font-variant-numeric:tabular-nums}
+.karte .zz .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-family:var(--fest);font-size:12px}
+.karte .zz .gr{color:var(--tinte3);font-size:11.5px}
+.karte .unter code{font-family:var(--fest);font-size:.9em;
+  background:rgba(135,131,120,.15);border-radius:3px;padding:1px 4px}
+
+/* ---------- Die Schnellwahl ----------
+   Oben statt in der Mitte: Wer sie öffnet, sucht etwas im Text, und
+   der Text soll dabei sichtbar bleiben. */
+.ueberzug.schnell{align-items:flex-start;padding-top:12vh}
+.schnellkarte{width:min(620px,94vw);background:var(--grund);color:var(--tinte);
+  border-radius:var(--rad-gr);box-shadow:0 20px 64px rgba(15,15,15,.34);overflow:hidden}
+.schnellkarte input{width:100%;font:inherit;font-size:15px;padding:13px 16px;border:0;
+  border-bottom:1px solid var(--linie2);background:var(--grund);color:var(--tinte);
+  outline:none}
+.schnellkarte .liste{max-height:52vh;overflow-y:auto;padding:5px}
+.schnellkarte button{display:flex;align-items:center;gap:10px;width:100%;font:inherit;
+  font-size:13.5px;padding:7px 9px;border:0;border-radius:var(--rad);background:none;
+  color:var(--tinte);cursor:pointer;text-align:left}
+.schnellkarte button:hover,.schnellkarte button.zeig{background:var(--strich)}
+.schnellkarte button .ic{width:28px;flex-shrink:0;color:var(--tinte3);font-size:11px;
+  font-family:var(--fest);text-align:center}
+.schnellkarte button .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.schnellkarte button .ta{flex-shrink:0;font-size:11.5px;color:var(--tinte3)}
+.schnellkarte .leer{padding:12px;font-size:13px;color:var(--tinte3)}
+.schnellkarte .schnellfuss{padding:7px 14px;font-size:11.5px;color:var(--tinte3);
+  border-top:1px solid var(--linie2);background:var(--rand)}
+.karte .schluss{display:flex;justify-content:flex-end;gap:8px}
 .karte .schluss button{font:inherit;font-size:13px;padding:6px 14px;border-radius:var(--rad);
   border:1px solid var(--linie);background:var(--grund);color:var(--tinte);cursor:pointer}
 .karte .schluss button:hover{background:var(--strich)}
@@ -445,96 +627,95 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 /* ============================================================
    DER DRUCK
 
-   Das PDF entsteht über den Druckdialog des Browsers — ein eigener
-   Erzeuger wäre eine fremde Bibliothek in einer Datei, die keine
-   haben darf (harte Regel 2), und beherrschte Umbrüche schlechter.
-   Die Arbeit steckt deshalb hier: in drei Layouts, zwischen denen
-   die Einstellungen umschalten.
+   Gedruckt wird **nicht** die Schreibfläche, sondern dasselbe
+   Dokument, das die Vorschau zeigt: `#druckblatt`. Vorher war es die
+   Fläche selbst, und damit sahen Vorschau und Papier zwangsläufig
+   verschieden aus — die Fläche hat Griffe, eine feste Spaltenbreite
+   und den Rohtext unter der Schreibmarke. Die Begründung steht in
+   `doku/ENTSCHEIDUNGEN.md`, Punkt 17.
 
-   Seitenzahlen und Kopfzeilen kommen aus dem Druckdialog selbst —
-   der Browser setzt sie, nicht die Seite. Was hier steht, sind
-   Schrift, Ränder, Umbrüche und Abstände.
+   Größe, Ausrichtung und Ränder stehen nicht hier, sondern werden
+   zur Laufzeit in den Block `seitenstil` geschrieben: `@page` kennt
+   keine Variablen. Das Aussehen kommt aus dem Vorschau-Thema —
+   **ein** Satz Themen für Vorschau, Druck und Export, nicht zwei
+   (Punkt 20).
+
+   Die Seitenzahl setzt weiterhin der Browser im Druckdialog.
+   `counter(page)` in einem Randkasten kennt Chromium nicht.
    ============================================================ */
+/* ---------- Die Druckvorschau auf dem Bildschirm ---------- */
+.druckrahmen{display:none;position:fixed;inset:0;z-index:64;background:var(--rand);
+  flex-direction:column}
+body[data-druckvorschau="ja"] .druckrahmen{display:flex}
+body[data-druckvorschau="ja"] .app{display:none}
+.druckleiste{flex-shrink:0;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:8px 14px;background:var(--grund);border-bottom:1px solid var(--linie);
+  font-size:12px;color:var(--tinte3)}
+.druckleiste .dg{display:flex;align-items:center;gap:3px}
+.druckleiste .dgn{margin-right:5px;color:var(--tinte3)}
+.druckleiste button{font:inherit;font-size:12px;padding:3px 9px;border-radius:var(--rad);
+  border:1px solid var(--linie);background:var(--grund);color:var(--tinte2);cursor:pointer}
+.druckleiste button:hover{background:var(--strich);color:var(--tinte)}
+.druckleiste button[aria-pressed="true"]{background:var(--blau);border-color:var(--blau);
+  color:#fff}
+.druckleiste .sp{flex:1}
+.druckleiste .hin{font-size:11.5px;color:var(--tinte3);max-width:42ch;line-height:1.4}
+.druckflaeche{flex:1;min-height:0;overflow:auto;background:var(--rand);padding:26px 0 60px;
+  display:flex;justify-content:center;align-items:flex-start}
+/* Maße und die Linie je Seite kommen aus `seitenstil`. */
+.druckblatt{background:#fff;color:rgb(20,20,20);box-shadow:0 4px 22px rgba(15,15,15,.20)}
+/* Kein eigener Grund für das Dokument auf der Seite: Das Papier ist
+   die Fläche. Sonst stünde in der Vorschau ein farbiger Kasten auf
+   einem weißen Blatt — und auf dem Papier stünde er nicht. */
+/* Das Merkmal muss mit in den Wähler: Die Themenregel trägt es auch
+   und steht im später eingehängten Stilblock — bei gleichem Gewicht
+   gewönne sie. */
+.druckblatt .dok,.druckblatt .dok[data-vthema]{margin:0;padding:0;background:none}
+.dseite{width:100%;border-collapse:collapse}
+.dseite td{padding:0;border:0;vertical-align:top}
+.dkopf,.dfuss{display:flex;align-items:center;gap:10px;font-size:9.5pt;
+  color:var(--tinte3)}
+.dkopf{border-bottom:1px solid var(--linie);padding-bottom:4px;margin-bottom:8mm}
+.dfuss{border-top:1px solid var(--linie);padding-top:4px;margin-top:8mm}
+.dkopf img,.dfuss img{max-height:12mm;max-width:40mm;object-fit:contain}
+.dkopf .f0,.dfuss .f0{flex:1;text-align:left}
+.dkopf .f1,.dfuss .f1{flex:1;text-align:center}
+.dkopf .f2,.dfuss .f2{flex:1;text-align:right}
+
 @media print{
-  @page{margin:18mm}
-
   /* Alles, was Bedienung ist, gehört nicht aufs Papier. */
-  .kopf,.fuss,.quelle,.gliederung,.leiste,.menue,.suchen,.ueberzug,.zettel,
-  .blk .griff,.blk .urteil{display:none!important}
-
+  .app,.leiste,.menue,.suchen,.ueberzug,.zettel,.ruhe-aus,.druckleiste{display:none!important}
   html,body{background:#fff!important;color:#000!important;height:auto}
-  .app{display:block;height:auto;background:#fff}
-  .rumpf{display:block}
-  .blatt{overflow:visible;padding:0;background:#fff}
-  .blatt .spalte{max-width:none;padding:0}
-  .txt{color:#000}
-
+  .druckrahmen{display:block;position:static;background:#fff;inset:auto}
+  .druckflaeche{display:block;overflow:visible;padding:0;background:#fff}
+  /* Rand und Größe stehen im @page — das Blatt selbst ist auf dem
+     Papier randlos, sonst stünde der Rand doppelt. */
+  .druckblatt{width:auto!important;min-height:0!important;padding:0!important;
+    background:#fff!important;background-image:none!important;box-shadow:none;margin:0;
+    color:#000}
+  .druckblatt .dok,.druckblatt .dok[data-vthema]{max-width:none!important;font-size:11pt;
+    background:none}
+  .dok{background:none!important}
+  .dok pre{background:none;border:1px solid #999}
+  .dok th{background:none}
+  .dok .callout{background:none;border-left-color:#666}
+  .dok a{color:#000;border-bottom:1px solid #999}
+  .dok .inhalt{background:none;border:1px solid #999}
   /* Ein Block soll nicht mitten durch die Seite laufen, und eine
      Überschrift nicht allein unten stehen. */
-  .blk.code,.blk.tabelle,.blk.callout,.blk.toggle{break-inside:avoid}
-  .blk.h1,.blk.h2,.blk.h3{break-after:avoid}
-  .blk.callout .txt,.blk.toggle .txt{background:none;border-color:#999}
-  .blk.tabelle th{background:none}
-  .txt .verweis{color:#000;border-bottom:1px solid #999}
-  .txt .fund{background:none;box-shadow:none}
-
-  /* ---------- Schlicht ---------- */
-  :root[data-druck="schlicht"] .blatt{font-size:11pt;line-height:1.5}
-
-  /* ---------- Technische Doku ----------
-     Nummeriert die Überschriften selbst. Bei Texten, die ihre
-     Nummern schon im Titel tragen, doppelt das — dann ist
-     „Schlicht" das richtige Layout. */
-  :root[data-druck="technik"] .blatt{font-size:10.5pt;line-height:1.45}
-  :root[data-druck="technik"] .spalte{counter-reset:k1}
-  :root[data-druck="technik"] .blk.h1{counter-increment:k1;counter-reset:k2;break-before:page}
-  :root[data-druck="technik"] .blk.h1:first-child{break-before:auto}
-  :root[data-druck="technik"] .blk.h2{counter-increment:k2;counter-reset:k3}
-  :root[data-druck="technik"] .blk.h3{counter-increment:k3}
-  /* Gezählt wird am Block, **geschrieben** nur vor Überschriften ohne
-     eigene Nummer. Trüge der Zähler im ::before, sprängen die Nummern
-     bei jeder übersprungenen Überschrift. Die Klasse `eigen` setzt
-     `blockMalen` — Zähler können keinen Text lesen. */
-  :root[data-druck="technik"] .blk.h1:not(.eigen) .txt::before{
-    content:counter(k1) "\00a0\00a0"}
-  :root[data-druck="technik"] .blk.h2:not(.eigen) .txt::before{
-    content:counter(k1) "." counter(k2) "\00a0\00a0"}
-  :root[data-druck="technik"] .blk.h3:not(.eigen) .txt::before{
-    content:counter(k1) "." counter(k2) "." counter(k3) "\00a0\00a0"}
-  /* Oben Platz lassen: Dort sitzt die Sprachmarke, und ohne den
-     Abstand steht sie in der ersten Codezeile. */
-  :root[data-druck="technik"] .blk.code .txt{border:1px solid #999;background:none;
-    padding:22px 13px 12px}
-  :root[data-druck="technik"] .blk.tabelle th,
-  :root[data-druck="technik"] .blk.tabelle td{border:1px solid #666}
-
-  /* ---------- Magazin ----------
-     Serifenschrift, schmale Spalte, Blocksatz. Für Texte, die
-     gelesen und nicht nachgeschlagen werden. Die Spalte ist hier
-     absichtlich schmaler als der Satzspiegel: 118 mm sind rund 70
-     Zeichen, und darüber verliert das Auge beim Rücksprung die
-     Zeile. */
-  :root[data-druck="magazin"] .blatt{font-family:var(--serif);font-size:11.5pt;
-    line-height:1.62}
-  :root[data-druck="magazin"] .blatt .spalte{max-width:118mm;margin:0 auto}
-  :root[data-druck="magazin"] .blk.absatz .txt,
-  :root[data-druck="magazin"] .blk.zitat .txt,
-  :root[data-druck="magazin"] .blk.callout .txt{text-align:justify;hyphens:auto}
-  :root[data-druck="magazin"] .blk.h1{margin-top:0;margin-bottom:7mm}
-  :root[data-druck="magazin"] .blk.h1 .txt{font-size:25pt;line-height:1.12;
-    letter-spacing:-.015em}
-  :root[data-druck="magazin"] .blk.h2 .txt{font-size:15.5pt}
-  :root[data-druck="magazin"] .blk.h3 .txt{font-size:12.5pt}
-  :root[data-druck="magazin"] .blk.h2,
-  :root[data-druck="magazin"] .blk.h3{margin-top:7mm}
-
-  /* ---------- Manuskript ----------
-     Eine Spalte, weiter Durchschuss, breiter Rand zum Hineinschreiben. */
-  :root[data-druck="manuskript"] .blatt{font-size:12pt;line-height:2}
-  :root[data-druck="manuskript"] .blatt .spalte{padding-right:48mm}
-  :root[data-druck="manuskript"] .blk.h1 .txt{font-size:17pt}
-  :root[data-druck="manuskript"] .blk.h2 .txt{font-size:14pt}
-  :root[data-druck="manuskript"] .blk.h3 .txt{font-size:12.5pt}
+  .dok pre,.dok table,.dok .callout,.dok details,.dok blockquote{break-inside:avoid}
+  .dok h1,.dok h2,.dok h3{break-after:avoid}
+  .dok li{break-inside:avoid}
+  /* Der Seitenumbruch aus dem Text. */
+  .dok .umbruch{break-after:page}
+  /* Und der, den die Seiteneinrichtung setzt. */
+  :root[data-umbruch="h1"] .dok h1{break-before:page}
+  :root[data-umbruch="h2"] .dok h1,
+  :root[data-umbruch="h2"] .dok h2{break-before:page}
+  :root[data-umbruch="h1"] .dok>h1:first-child,
+  :root[data-umbruch="h2"] .dok>h1:first-child,
+  :root[data-umbruch="h2"] .dok>h2:first-child{break-before:auto}
+  .dkopf,.dfuss{color:#444}
 }
 </style>
 </head>
@@ -552,12 +733,44 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
     <div class="wechsel" role="group" aria-label="Ansicht">
       <button id="w-schreiben" aria-current="true">Schreiben</button>
       <button id="w-geteilt"   aria-current="false">Geteilt</button>
+      <button id="w-vorschau"  aria-current="false">Vorschau</button>
       <button id="w-quelltext" aria-current="false">Quelltext</button>
     </div>
     <button class="akt" id="oeffnen">Öffnen</button>
+    <button class="akt" id="zusammen-auf"
+            title="Mehrere Dateien zu einem Dokument zusammenfügen">Zusammenfügen</button>
     <button class="akt" id="sichern">Sichern</button>
     <button class="akt" id="neu">Neu</button>
-    <button class="akt" id="pdf" title="Über den Druckdialog als PDF sichern">PDF</button>
+    <button class="akt" id="ausgeben" title="Als PDF, HTML, DOCX oder RTF ausgeben"
+            aria-haspopup="menu">Ausgeben</button>
+    <button class="akt" id="seite-auf" title="Seite einrichten" aria-haspopup="dialog">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+           stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true"><path d="M4.4 2.8h11.2v14.4H4.4z"/>
+      <path d="M6.8 5.6h6.4M6.8 8.4h6.4M6.8 11.2h4"/></svg>
+    </button>
+    <button class="akt" id="stil-auf" title="Stil: Thema, Maße, eigenes CSS"
+            aria-haspopup="dialog">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+           stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true"><path d="M10 2.8a7.2 7.2 0 1 0 0 14.4c1 0 1.6-.7 1.6-1.5
+           0-.9-.7-1.4-.7-2.1 0-.6.5-1.1 1.2-1.1h1.4a3.7 3.7 0 0 0 3.7-3.7c0-3.3-3.2-6-7.2-6z"/>
+      <circle cx="6.6" cy="9" r=".9"/><circle cx="9.4" cy="6.2" r=".9"/>
+      <circle cx="13.2" cy="7.4" r=".9"/></svg>
+    </button>
+    <button class="akt" id="ruhe-auf" title="Ablenkungsfrei (Strg+Umschalt+R)"
+            aria-pressed="false">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+           stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true"><path d="M3.4 6.6V3.4h3.2M16.6 6.6V3.4h-3.2M3.4 13.4v3.2h3.2
+           M16.6 13.4v3.2h-3.2"/></svg>
+    </button>
+    <button class="akt" id="vollbild" title="Vollbild (Strg+Umschalt+V)">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+           stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true"><path d="M7.6 3.4H3.4v4.2M12.4 3.4h4.2v4.2M7.6 16.6H3.4v-4.2
+           M12.4 16.6h4.2v-4.2"/></svg>
+    </button>
     <button class="akt" id="g-auf" title="Gliederung ein- und ausblenden"
             aria-pressed="true">
       <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
@@ -575,6 +788,10 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
          Dateizugriff. Öffnen geht deshalb über die Dateiauswahl,
          Sichern über den Download. Siehe doku/ENTSCHEIDUNGEN.md. -->
     <input type="file" id="datei" accept=".md,.markdown,.txt" hidden>
+    <!-- Mehrere Dateien und die Bilder dazu in einer Auswahl. -->
+    <input type="file" id="zusammen-datei" multiple hidden
+           accept=".md,.markdown,.mdown,.mkd,.txt,image/*">
+
   </div>
 
   <div class="rumpf">
@@ -590,11 +807,29 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
         <textarea id="q" spellcheck="false" aria-label="Markdown-Quelltext"></textarea>
       </div>
     </div>
-    <div class="gliederung" id="gliederung">
-      <div class="gkopf">Gliederung</div>
-      <div class="liste" id="g-liste"></div>
+    <div class="vorschau" id="vorschau">
+      <div class="vkopf">
+        <span id="vname">unbenannt.md</span><span class="sp"></span>
+        <button type="button" id="v-inhalt" aria-pressed="false"
+                title="Inhaltsverzeichnis in der Vorschau">Inhalt</button>
+        <button type="button" id="v-nur" aria-pressed="false"
+                title="Die Schreibfläche ausblenden">Nur Vorschau</button>
+      </div>
+      <!-- Dieselbe Klasse wie im Export: ein Stil, drei Ausgaben. -->
+      <div class="vblatt" id="vblatt"><div class="dok" id="vdok"></div></div>
+    </div>
+    <div class="gliederung" id="gliederung" data-reiter="gliederung">
+      <div class="gkopf" role="tablist">
+        <button type="button" class="gtab" id="g-t-gliederung" aria-pressed="true"
+                >Gliederung</button>
+        <button type="button" class="gtab" id="g-t-noten" aria-pressed="false"
+                >Fußnoten</button>
+      </div>
+      <div class="liste kopfliste" id="g-liste"></div>
+      <div class="liste notenliste" id="n-liste"></div>
       <div class="gfuss">
         <button type="button" id="g-inhalt">Als Inhaltsverzeichnis einfügen</button>
+        <button type="button" id="g-alle-zu">Alle Abschnitte einklappen</button>
       </div>
     </div>
   </div>
@@ -609,6 +844,7 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
   </div>
 </div>
 
+<button type="button" class="ruhe-aus" id="ruhe-aus" hidden>Ablenkungsfrei beenden (Esc)</button>
 <div class="leiste" id="leiste" role="toolbar" aria-label="Auszeichnung"></div>
 <div class="suchen" id="suchen" role="search">
   <input type="search" id="such-feld" placeholder="Im Dokument suchen"
@@ -629,6 +865,158 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
 </div>
 
 <div class="zettel" id="zettel" role="status" aria-live="polite"></div>
+
+<div class="druckrahmen" id="druckrahmen">
+  <div class="druckleiste" id="druckleiste">
+    <span id="druck-griffe" class="dg-alle"></span>
+    <span class="sp"></span>
+    <span class="hin">Die feinen Linien sind eine Näherung. Wo genau die Seite bricht,
+      rechnet der Druckdialog.</span>
+    <button type="button" id="druck-pdf">PDF / Drucken</button>
+    <button type="button" id="druck-zu">Schließen</button>
+  </div>
+  <div class="druckflaeche"><div class="druckblatt" id="druckblatt"></div></div>
+</div>
+
+<div class="ueberzug" id="seite-karte" role="dialog" aria-modal="true"
+     aria-labelledby="seite-titel">
+  <div class="karte breit">
+    <div class="titel" id="seite-titel">Seite einrichten</div>
+    <p class="unter">Gilt für den Druck, das PDF und die Druckvorschau. Wie das Dokument
+      dabei <b>aussieht</b>, steht unter „Stil“ — ein Satz Themen für Vorschau, Druck
+      und Export.</p>
+    <div class="gruppe">
+      <div class="etikett">Seitengröße</div>
+      <div class="wahl" id="seite-format" role="group" aria-label="Seitengröße"></div>
+    </div>
+    <div class="gruppe">
+      <div class="etikett">Ausrichtung</div>
+      <div class="wahl" id="seite-lage" role="group" aria-label="Ausrichtung"></div>
+    </div>
+    <div class="gruppe">
+      <div class="etikett">Seitenränder (mm)</div>
+      <div class="wahl" id="seite-randvorlage" role="group" aria-label="Randvorlage"></div>
+      <div class="felder" style="margin-top:10px">
+        <label>Oben  <input type="number" id="rand-oben"   min="0" max="60" step="1"></label>
+        <label>Rechts<input type="number" id="rand-rechts" min="0" max="60" step="1"></label>
+        <label>Unten <input type="number" id="rand-unten"  min="0" max="60" step="1"></label>
+        <label>Links <input type="number" id="rand-links"  min="0" max="60" step="1"></label>
+      </div>
+    </div>
+    <div class="gruppe">
+      <div class="etikett">Kopfzeile</div>
+      <input type="text" id="seite-kopf"
+             placeholder="{titel} | | {datum}   —   Balken trennt links, Mitte, rechts">
+      <div class="reihe">
+        <button type="button" id="kopfbild-waehlen">Bild wählen</button>
+        <button type="button" id="kopfbild-weg">Bild entfernen</button>
+        <span class="stand" id="kopfbild-stand">kein Bild</span>
+      </div>
+      <input type="file" id="kopfbild-datei" accept="image/*" hidden>
+    </div>
+    <div class="gruppe">
+      <div class="etikett">Fußzeile</div>
+      <input type="text" id="seite-fuss" placeholder="{datei} | | ">
+      <div class="reihe">
+        <button type="button" id="fussbild-waehlen">Bild wählen</button>
+        <button type="button" id="fussbild-weg">Bild entfernen</button>
+        <span class="stand" id="fussbild-stand">kein Bild</span>
+      </div>
+      <input type="file" id="fussbild-datei" accept="image/*" hidden>
+    </div>
+    <div class="gruppe">
+      <div class="etikett">Seitenumbruch</div>
+      <div class="wahl" id="seite-umbruch" role="group" aria-label="Seitenumbruch"></div>
+      <div class="erklaerung" id="seite-umbruch-satz"></div>
+    </div>
+    <div class="erklaerung"><b>Die Seitenzahl setzt der Browser.</b> Sie steht im
+      Druckdialog unter „Kopf- und Fußzeilen“; von hier aus lässt sie sich nicht
+      steuern — Chromium kennt die CSS-Regel dafür nicht. Platzhalter, die hier gehen:
+      <code>{titel}</code>, <code>{datei}</code>, <code>{datum}</code>.</div>
+    <div class="schluss">
+      <button type="button" id="druckvorschau-auf">Druckvorschau</button>
+      <button type="button" id="seite-zu">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<div class="ueberzug" id="zusammen" role="dialog" aria-modal="true"
+     aria-labelledby="zusammen-titel">
+  <div class="karte">
+    <div class="titel" id="zusammen-titel">Dateien zusammenfügen</div>
+    <p class="unter">In dieser Reihenfolge — nach Dateinamen, mit <code>10</code> hinter
+      <code>9</code>. Daraus wird <b>ein</b> Dokument; heraus geht es als eine Datei.</p>
+    <div class="gruppe">
+      <div class="etikett">Reihenfolge</div>
+      <div class="zliste" id="zusammen-liste"></div>
+      <div class="erklaerung" id="zusammen-bilder">keine Bilder in der Auswahl</div>
+    </div>
+    <div class="gruppe">
+      <div class="etikett">Wie</div>
+      <label class="haken"><input type="checkbox" id="zusammen-umbruch" checked>
+        <span>Seitenumbruch zwischen den Dateien</span></label>
+      <label class="haken"><input type="checkbox" id="zusammen-titel">
+        <span>Dateinamen als Überschrift 1 voranstellen</span></label>
+      <label class="haken"><input type="checkbox" id="zusammen-anhaengen">
+        <span>An den jetzigen Text anhängen, statt ihn zu ersetzen</span></label>
+    </div>
+    <div class="schluss">
+      <button type="button" id="zusammen-ab">Abbrechen</button>
+      <button type="button" id="zusammen-los">Zusammenfügen</button>
+    </div>
+  </div>
+</div>
+
+<div class="ueberzug schnell" id="schnell" role="dialog" aria-modal="true"
+     aria-label="Schnellwahl">
+  <div class="schnellkarte">
+    <input type="search" id="schnell-feld" spellcheck="false" autocomplete="off"
+           placeholder="Überschrift, Fußnote oder Befehl" aria-label="Schnellwahl">
+    <div class="liste" id="schnell-liste" role="listbox"></div>
+    <div class="schnellfuss">Pfeiltasten wählen, Enter springt, Esc schließt.</div>
+  </div>
+</div>
+
+<div class="ueberzug" id="stil" role="dialog" aria-modal="true" aria-labelledby="stil-titel">
+  <div class="karte breit">
+    <div class="titel" id="stil-titel">Stil</div>
+    <p class="unter">Das Thema färbt das <b>Dokument</b> — Vorschau, Druck und Export.
+      Es folgt dem Thema der Anwendung nicht: Papier bleibt Papier, auch wenn die
+      Werkbank dunkel steht.</p>
+    <div class="gruppe">
+      <div class="etikett">Vorschau-Thema</div>
+      <div class="wahl" id="stil-themen" role="group" aria-label="Vorschau-Thema"></div>
+      <div class="erklaerung" id="stil-erklaerung"></div>
+    </div>
+    <div class="gruppe">
+      <div class="etikett">Maße</div>
+      <div class="felder">
+        <label>Spaltenbreite
+          <input type="number" id="stil-breite" min="320" max="1400" step="10"> px</label>
+        <label>Schriftgröße
+          <input type="number" id="stil-groesse" min="10" max="32" step=".5"> px</label>
+        <label>Zeilenabstand
+          <input type="number" id="stil-hoehe" min="1.1" max="2.4" step=".02"></label>
+      </div>
+    </div>
+    <div class="gruppe">
+      <div class="etikett">Eigenes CSS</div>
+      <textarea id="stil-css" spellcheck="false" rows="9"
+        placeholder=".dok h1 { color: #1a4f8a; }&#10;.dok p  { text-indent: 1.4em; }"></textarea>
+      <div class="erklaerung">Es steht <b>zuletzt</b> und schlägt damit jedes Thema.
+        Regeln mit <code>.dok</code> davor gelten nur für das Dokument; ohne das
+        verändern sie auch die Oberfläche. Es geht in den <b>HTML-Export</b> mit ein
+        und gilt auch im Druck.</div>
+      <div class="reihe">
+        <button type="button" id="stil-laden">CSS-Datei laden</button>
+        <button type="button" id="stil-sichern">Als .css sichern</button>
+        <button type="button" id="stil-leeren">Leeren</button>
+      </div>
+      <input type="file" id="stil-datei" accept=".css,text/css" hidden>
+    </div>
+    <div class="schluss"><button type="button" id="stil-zu">Schließen</button></div>
+  </div>
+</div>
 
 <div class="ueberzug" id="einstellungen" role="dialog" aria-modal="true"
      aria-labelledby="ein-titel">
@@ -657,10 +1045,32 @@ body{font-family:var(--schrift);font-size:16px;line-height:1.5;
    Markdown. Das ist die tragende Entscheidung dieser Anwendung.
    ============================================================ */
 const SCHLUESSEL = "notion-md-editor";
+/* Was in `Z` steht und gesichert wird. `EINSTELLUNG` ist die Liste
+   der Felder neben dem Text — sie wächst, und drei Stellen (sichern,
+   laden, die Karte) sollen nicht jedes Mal einzeln nachgezogen
+   werden müssen. */
+const EINSTELLUNG = ["stufe","thema","satz","vthema","autoscroll","vinhalt",
+                     "seite","hoch","rand","kopfzeile","fusszeile","kopfbild","fussbild",
+                     "eigenCss","dokBreite","dokGroesse","dokHoehe","umbruchVor"];
 const Z = { name:"unbenannt.md", stufe:"rein", thema:"hell", satz:"links",
-            druck:"schlicht", bloecke:[] };
+            vthema:"editor", autoscroll:"an", vinhalt:"aus",
+            seite:"a4", hoch:"hoch", rand:"18 18 18 18",
+            kopfzeile:"", fusszeile:"", kopfbild:"", fussbild:"",
+            eigenCss:"", dokBreite:"760", dokGroesse:"16.5", dokHoehe:"1.62",
+            umbruchVor:"nie",
+            bloecke:[] };
 
 const $  = (w) => document.querySelector(w);
+/* Vier Stilblöcke füllt das Skript zur Laufzeit: der Stil des
+   Dokuments, das gewählte Vorschau-Thema, das eigene CSS des Nutzers
+   und die Seiteneinrichtung. Sie stehen nicht im `<style>`-Block
+   oben, weil der Export sie wörtlich braucht und zwei gepflegte
+   Fassungen desselben Stils eine zu viel wären. */
+function stilSetzen(id, css){
+  let n = document.getElementById(id);
+  if (!n){ n = document.createElement("style"); n.id = id; document.head.appendChild(n); }
+  n.textContent = css;
+}
 const el = (tag, klasse, html) => {
   const n = document.createElement(tag);
   if (klasse) n.className = klasse;
@@ -682,9 +1092,9 @@ function bewahreSofort(){
   clearTimeout(bewahrUhr);
   merken();
   try {
-    localStorage.setItem(SCHLUESSEL, JSON.stringify(
-      { format:1, name:Z.name, stufe:Z.stufe, thema:Z.thema, satz:Z.satz,
-        druck:Z.druck, text:schreibeMarkdown(Z.bloecke) }));
+    const stand = { format:2, name:Z.name, text:schreibeMarkdown(Z.bloecke) };
+    EINSTELLUNG.forEach(f => { stand[f] = Z[f]; });
+    localStorage.setItem(SCHLUESSEL, JSON.stringify(stand));
     $("#f-stand").textContent = "gespeichert";
   } catch (e) {
     $("#f-stand").textContent = "nicht gespeichert";
@@ -708,7 +1118,8 @@ function lade(){
     const d = JSON.parse(roh);
     Z.name = d.name || "unbenannt.md";
     if (KOENNEN[d.stufe]) Z.stufe = d.stufe;
-    ["thema","satz","druck"].forEach(f => { if (d[f]) Z[f] = d[f]; });
+    EINSTELLUNG.forEach(f => {
+      if (f !== "stufe" && d[f] !== undefined && d[f] !== null) Z[f] = d[f]; });
     ersetze(Z.bloecke, leseMarkdown(d.text || ""));
     return true;
   } catch (e) { melde("Der gespeicherte Stand ließ sich nicht lesen."); return false; }
@@ -792,9 +1203,9 @@ const STUFEN = [
 
 const KOENNEN = {
   rein:     [],
-  github:   ["todo","tabelle","durch","callout","html"],
-  obsidian: ["todo","tabelle","durch","callout","html","marker"],
-  pandoc:   ["tabelle","durch","html"]
+  github:   ["todo","tabelle","durch","callout","html","fussnote"],
+  obsidian: ["todo","tabelle","durch","callout","html","marker","fussnote"],
+  pandoc:   ["tabelle","durch","html","fussnote"]
 };
 
 function kann(merkmal){ return KOENNEN[Z.stufe].indexOf(merkmal) >= 0; }
@@ -806,9 +1217,16 @@ function kann(merkmal){ return KOENNEN[Z.stufe].indexOf(merkmal) >= 0; }
    geändert. Die Regel dazu: **lesen(schreiben(x)) muss x ergeben.**
    Was das nicht erfüllt, gehört nicht in den Umwandler.
    ============================================================ */
-const GRUPPIERT = ["punkt","nummer","todo","zitat"];   /* stehen ohne Leerzeile untereinander */
+const GRUPPIERT = ["punkt","nummer","todo","zitat","fussnote"];  /* ohne Leerzeile untereinander */
 const LISTE     = ["punkt","nummer","todo"];          /* lassen sich einrücken */
-const MEHRZEILIG = ["code","tabelle","callout","toggle"];  /* Enter bricht die Zeile */
+const MEHRZEILIG = ["code","tabelle","callout","toggle","fussnote"];  /* Enter bricht die Zeile */
+/* Blöcke, die ihre **ganze Quelle** im Feld `text` tragen und
+   unverändert wieder herausgehen. Damit hat auch für sie ein Block
+   genau ein Feld, und der Rundlauf braucht keine Sonderbehandlung. */
+const ROHBLOCK  = ["tabelle","callout","toggle","fussnote","umbruch"];
+/* Zwei Arten ohne eigenen Text: Sie zeigen ein Zeichen, keine Zeile.
+   Backspace davor löscht sie ganz, statt in sie hineinzuspringen. */
+const OHNE_TEXT = ["linie","umbruch"];
 
 /* Einrückung in Stufen. **Zwei Leerzeichen sind eine Stufe**, ein
    Tabulator zählt ebenso. Vier Leerzeichen — die andere verbreitete
@@ -871,6 +1289,12 @@ function leseMarkdown(text){
     if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(z)){
       schliesse(); aus.push({art:"linie", text:""}); continue; }
 
+    /* Der Seitenumbruch. Ein HTML-Kommentar: In jedem anderen
+       Werkzeug unsichtbar, hier eine Anweisung an den Export. Er
+       steht **vor** dem Toggle, weil beide mit `<` anfangen. */
+    if (/^<!--\s*seitenumbruch\s*-->\s*$/i.test(z)){
+      schliesse(); aus.push({art:"umbruch", text:z.trim()}); continue; }
+
     /* Toggle. HTML mitten im Text — der Notausgang aus
        doku/ENTSCHEIDUNGEN.md, Punkt 1, und als solcher gekennzeichnet.
        Der ganze Bereich landet als Rohtext in einem Block. */
@@ -905,6 +1329,18 @@ function leseMarkdown(text){
     }
 
     let m;
+
+    /* Fußnote. `[^1]: Text`, dazu jede eingerückte Folgezeile. Der
+       ganze Bereich bleibt Rohtext im Feld `text` — dieselbe
+       Behandlung wie bei Tabelle, Callout und Toggle. */
+    if (/^\[\^[^\]\s]+\]:/.test(z)){
+      schliesse();
+      const teil = [z];
+      while (i + 1 < zeilen.length && /^[ \t]+\S/.test(zeilen[i+1])) teil.push(zeilen[++i]);
+      aus.push({art:"fussnote", text:teil.join("\n")});
+      continue;
+    }
+
     if ((m = z.match(/^(#{1,3})\s+(.*)$/))){
       schliesse(); aus.push({art:"h" + m[1].length, text:m[2]}); continue; }
     if ((m = z.match(/^([ \t]*)[-*]\s+\[([ xX])\]\s*(.*)$/))){
@@ -961,12 +1397,11 @@ function schreibeMarkdown(bloecke){
     const ein = "  ".repeat(tiefe);
 
     if (b.art === "code")        aus.push("```" + (b.sprache || ""), b.text, "```");
-    /* Tabelle, Callout und Toggle tragen ihre ganze Quelle im Feld
-       `text`. Sie geht unverändert wieder heraus — damit ist der
-       Rundlauf für sie ohne weiteres Zutun verlustfrei, und der Block
-       hat weiterhin genau ein Feld (doku/ENTSCHEIDUNGEN.md, Punkt 7). */
-    else if (b.art === "tabelle" || b.art === "callout" || b.art === "toggle")
-                                 aus.push(b.text);
+    /* Die Rohblöcke tragen ihre ganze Quelle im Feld `text`. Sie geht
+       unverändert wieder heraus — damit ist der Rundlauf für sie ohne
+       weiteres Zutun verlustfrei, und der Block hat weiterhin genau
+       ein Feld (doku/ENTSCHEIDUNGEN.md, Punkt 7). */
+    else if (ROHBLOCK.indexOf(b.art) >= 0) aus.push(b.text);
     else if (b.art === "linie")  aus.push("---");
     else if (b.art === "h1")     aus.push("# "   + b.text);
     else if (b.art === "h2")     aus.push("## "  + b.text);
@@ -1001,19 +1436,30 @@ function inlineMalen(t){
   /* Bilder **vor** den Verweisen: `![a](b)` enthält `[a](b)`, sonst
      bliebe das Ausrufezeichen als Text vor einem Verweis stehen. */
   s = s.replace(/!\[([^\]\n]*)\]\(([^)\s]+)\)/g, (_, titel, quelle) => {
+    if (MALART === "dokument") return bildMalen(titel, quelle);
     const q = quelle.replace(/"/g, "%22");
     /* Alles mit Schema ausser file: käme aus dem Netz. */
     if (/^[a-z][a-z0-9+.-]*:/i.test(q) && !/^file:/i.test(q))
       return '<span class="fern">' + esc(q) + "</span>";
     return '<img src="' + q + '" alt="' + titel.replace(/"/g, "&quot;") + '" loading="lazy">';
   });
-  s = s.replace(/\[([^\]\n]+)\]\(([^)\s]+)\)/g, '<span class="verweis">$1</span>');
+  /* Auf der Fläche eine Farbe ohne Ziel, im Dokument ein echtes `<a>` —
+     doku/ENTSCHEIDUNGEN.md, Punkt 19. */
+  s = s.replace(/\[([^\]\n]+)\]\(([^)\s]+)\)/g, (_, wort, ziel) =>
+    MALART === "dokument"
+      ? '<a href="' + ziel.replace(/"/g, "%22") + '">' + wort + "</a>"
+      : '<span class="verweis">' + wort + "</span>");
   s = s.replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>");
   s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<i>$2</i>");
   /* Was die Stufe nicht kann, bleibt als Zeichenfolge stehen — der
      Editor zeigt, was das Zielwerkzeug zeigen würde. */
   if (kann("durch"))  s = s.replace(/~~([^~\n]+)~~/g, "<s>$1</s>");
   if (kann("marker")) s = s.replace(/==([^=\n]+)==/g, "<mark>$1</mark>");
+  /* Das Fußnotenzeichen `[^1]` steht hochgestellt. Es bleibt ein
+     Verweis auf die Erklärung weiter unten — angesprungen wird sie
+     über die Fußnotenleiste, nicht über einen Anker in der Datei. */
+  if (kann("fussnote"))
+    s = s.replace(/\[\^([^\]\s]+)\]/g, '<sup class="fnv" data-fn="$1">$1</sup>');
   return s.replace(/ (\d+) /g, (_, i) => halter[Number(i)]);
 }
 
@@ -1022,10 +1468,11 @@ function inlineMalen(t){
    brauchen mehr, und der Codeblock braucht weniger — in ihm wird
    nichts gedeutet. */
 function blockInhalt(b){
-  if (b.art === "code")    return esc(b.text);
+  if (b.art === "code")    return codeMalen(b.text, b.sprache);
   if (b.art === "tabelle") return tabelleMalen(b.text);
   if (b.art === "callout") return calloutMalen(b.text);
   if (b.art === "toggle")  return toggleMalen(b.text);
+  if (b.art === "fussnote") return fussnoteMalen(b.text);
   return inlineMalen(b.text);
 }
 
@@ -1061,6 +1508,21 @@ function calloutMalen(text){
     + inlineMalen(rumpf.join("\n"));
 }
 
+/* Fußnote. Die Marke steht vorn, der Rest ist gewöhnlicher Text;
+   Folgezeilen werden zum Anzeigen ausgerückt. In der Datei bleibt
+   die Einrückung, die dort steht — hier wird nur gemalt. */
+function fussnoteZerlegen(text){
+  const m = String(text || "").match(/^\[\^([^\]\s]+)\]:[ \t]?([\s\S]*)$/);
+  if (!m) return { marke:"?", text:String(text || "") };
+  return { marke:m[1],
+           text:m[2].split("\n").map(z => z.replace(/^[ \t]+/, "")).join("\n") };
+}
+
+function fussnoteMalen(text){
+  const f = fussnoteZerlegen(text);
+  return '<span class="fnz">' + esc(f.marke) + "</span>" + inlineMalen(f.text);
+}
+
 function toggleMalen(text){
   const zeilen = String(text || "").split("\n");
   let titel = "";
@@ -1091,6 +1553,7 @@ function toggleMalen(text){
    an keiner der drei Stellen anders lauten. Die letzten drei sind
    keine Blockarten, sondern Auszeichnungen im Text. */
 const URTEIL = {todo:"GFM", tabelle:"GFM", callout:"Dialekt", toggle:"HTML",
+                fussnote:"GFM", umbruch:"HTML",
                 durch:"GFM", marker:"Dialekt", wiki:"Dialekt"};
 
 /* „2", „2.", „2)", „1.1", „1.1.3 " — alles, was wie eine
@@ -1122,10 +1585,28 @@ function blockMalen(b, i){
   if (/^h[123]$/.test(b.art) && EIGENE_NUMMER.test(b.text)) n.classList.add("eigen");
 
   const griff = el("span", "griff");
-  const plus = el("button", null, IK_PLUS);
-  plus.type = "button"; plus.title = "Darüber einfügen";
-  plus.setAttribute("aria-label", "Block darüber einfügen");
-  plus.onclick = () => { Z.bloecke.splice(i, 0, {art:"absatz", text:""}); bewahre(); male(i, 0); };
+  /* Eine Überschrift bekommt statt des Pluszeichens den Klappgriff.
+     Drei Knöpfe passten nicht in die 46 Pixel der Griffleiste, und
+     eine breitere Leiste hinge bei schmalem Fenster über den Rand.
+     „Darüber einfügen" steht dafür im Blockmenü — dort ist es für
+     jede Blockart zu haben. */
+  const istKopf = /^h[123]$/.test(b.art);
+  let plus = null;
+  if (istKopf){
+    const zu = EINGEKLAPPT.has(klappSchluessel(b));
+    if (zu) n.classList.add("zugeklappt");
+    plus = el("button", "klapp" + (zu ? " zu" : ""), zu ? IK_ZU : IK_AUF);
+    plus.type = "button";
+    plus.title = zu ? "Abschnitt aufklappen" : "Abschnitt einklappen";
+    plus.setAttribute("aria-expanded", String(!zu));
+    plus.setAttribute("aria-label", (zu ? "Aufklappen: " : "Einklappen: ") + (b.text || ""));
+    plus.onclick = () => klappen(i);
+  } else {
+    plus = el("button", null, IK_PLUS);
+    plus.type = "button"; plus.title = "Darüber einfügen";
+    plus.setAttribute("aria-label", "Block darüber einfügen");
+    plus.onclick = () => { Z.bloecke.splice(i, 0, {art:"absatz", text:""}); bewahre(); male(i, 0); };
+  }
   const fass = el("button", null, IK_GRIFF);
   fass.type = "button"; fass.title = "Ziehen zum Verschieben";
   fass.setAttribute("aria-label", "Block verschieben");
@@ -1150,8 +1631,18 @@ function blockMalen(b, i){
     k.onclick = () => { b.fertig = !b.fertig; bewahre(); male(); };
     m.appendChild(k); n.appendChild(m);
   }
-  if (b.art === "code" && b.sprache) n.appendChild(el("span", "sprache", esc(b.sprache)));
+  if (b.art === "code" && b.sprache)
+    n.appendChild(el("span", "sprache", esc(spracheName(b.sprache))));
   if (b.art === "linie"){ n.appendChild(el("span", "strich")); return n; }
+  /* Der Seitenumbruch hat keinen Text — er ist ein Zeichen, keine
+     Zeile. Deshalb dasselbe frühe Ende wie bei der Trennlinie. */
+  if (b.art === "umbruch"){
+    n.appendChild(el("span", "strich"));
+    n.appendChild(el("span", "umbruchwort", "Seitenumbruch"));
+    n.appendChild(el("span", "strich"));
+    if (URTEIL[b.art]) n.appendChild(el("span", "urteil", URTEIL[b.art]));
+    return n;
+  }
 
   /* Was kein reines Markdown ist, wird gekennzeichnet, nicht
      versteckt — doku/ENTSCHEIDUNGEN.md, Punkt 1. */
@@ -1159,6 +1650,14 @@ function blockMalen(b, i){
   if (b.art === "callout"){
     const sorte = calloutSorte(b.text);
     if (sorte === "WARNING" || sorte === "CAUTION") n.classList.add("warnung");
+  }
+
+  /* Die Zahl am zugeklappten Titel. Ohne sie sieht ein zugeklappter
+     Abschnitt aus wie ein leerer. */
+  if (istKopf && EINGEKLAPPT.has(klappSchluessel(b))){
+    const anzahl = klappZahl(i);
+    n.appendChild(el("span", "klappzahl",
+      anzahl + (anzahl === 1 ? " Block" : " Blöcke")));
   }
 
   const t = el("div", "txt");
@@ -1173,15 +1672,21 @@ function blockMalen(b, i){
 }
 
 function male(fokusIndex, fokusPos){
-  if (fokusIndex !== undefined) aktiv = fokusIndex;
+  if (fokusIndex !== undefined){ aktiv = fokusIndex; letzteStelle = fokusIndex; }
   NUMMERN = nummern(Z.bloecke);
   const s = $("#spalte");
   s.innerHTML = "";
-  Z.bloecke.forEach((b, i) => s.appendChild(blockMalen(b, i)));
+  /* Eingeklappte Abschnitte werden gar nicht erst gebaut. Sie zu
+     bauen und dann zu verstecken hieße, für jeden zugeklappten
+     Abschnitt trotzdem zu zahlen. */
+  const weg = verborgen(Z.bloecke);
+  Z.bloecke.forEach((b, i) => { if (!weg[i]) s.appendChild(blockMalen(b, i)); });
   fundeZeigen();
   gliederungMalen();
+  if ($("#gliederung").dataset.reiter === "noten") notenMalen();
   quelleMalen();
   fussMalen();
+  vorschauAnstossen();
   if (fokusIndex !== undefined) setzeFokus(fokusIndex, fokusPos === undefined ? 0 : fokusPos);
 }
 
@@ -1224,7 +1729,7 @@ function setzePos(n, pos){
    Der Quelltext ist die Datei, und jedes Zeichen muss zeichengenau
    wieder herauskommen. Code steht in der Alternative vorn — sonst
    läsen Sternchen darin als fett. */
-const Q_INLINE = /(`[^`\n]+`)|(!?\[[^\]\n]*\]\([^)\s]*\))|(\*\*[^*\n]+\*\*)|(\*[^*\n]+\*)|(~~[^~\n]+~~)|(==[^=\n]+==)/g;
+const Q_INLINE = /(`[^`\n]+`)|(\[\^[^\]\s]+\])|(!?\[[^\]\n]*\]\([^)\s]*\))|(\*\*[^*\n]+\*\*)|(\*[^*\n]+\*)|(~~[^~\n]+~~)|(==[^=\n]+==)/g;
 
 function qPaar(zeichen, klasse, inhalt){
   return '<span class="mk">' + esc(zeichen) + '</span>'
@@ -1236,6 +1741,10 @@ function qPaar(zeichen, klasse, inhalt){
    Editor zeigt auch hier, was das Zielwerkzeug zeigen würde. */
 function qStueck(t){
   if (t[0] === "`") return qPaar("`", "c", t.slice(1, -1));
+  /* Das Fußnotenzeichen ist ein Verweis, kein Paar aus Zeichen und
+     Inhalt — es wird als Ganzes gefärbt. */
+  if (t[0] === "[" && t[1] === "^")
+    return kann("fussnote") ? '<span class="l">' + esc(t) + "</span>" : esc(t);
   if (t[0] === "[" || t[0] === "!"){
     const m = t.match(/^(!?\[)([^\]\n]*)(\]\()([^)\s]*)(\))$/);
     if (!m) return esc(t);
@@ -1273,7 +1782,10 @@ const BINDUNG = {GFM:1, Dialekt:2, HTML:3};
 function qUrteil(z){
   let aus = null;
   const nimm = (u) => { if (u && (!aus || BINDUNG[u] > BINDUNG[aus])) aus = u; };
-  if (/^\s*<\/?[a-z]/i.test(z))                 nimm(URTEIL.toggle);
+  if (/^\s*<!--\s*seitenumbruch/i.test(z))       nimm(URTEIL.umbruch);
+  else if (/^\s*<\/?[a-z]/i.test(z))            nimm(URTEIL.toggle);
+  if (/^\s*\[\^[^\]\s]+\]:/.test(z))            nimm(URTEIL.fussnote);
+  if (kann("fussnote") && /\[\^[^\]\s]+\]/.test(z)) nimm(URTEIL.fussnote);
   if (/^\s*>\s*\[![A-Za-z]+\]/.test(z))          nimm(URTEIL.callout);
   if (/^\s*[-*+]\s+\[[ xX]\]/.test(z))           nimm(URTEIL.todo);
   if (/^\s*\|.*\|\s*$/.test(z))                 nimm(URTEIL.tabelle);
@@ -1304,6 +1816,10 @@ function quelleFaerben(text){
            + '<span class="h">' + qInline(m[2]) + '</span>');
     if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(z))
       return '<span class="mk">' + esc(z) + '</span>';
+    if ((m = z.match(/^(\[\^[^\]\s]+\]:)(.*)$/)))
+      return warnen('<span class="mk">' + esc(m[1]) + '</span>' + qInline(m[2]));
+    if (/^\s*<!--[\s\S]*-->\s*$/.test(z))
+      return warnen('<span class="mk">' + esc(z) + '</span>');
     if ((m = z.match(/^(\s*>\s?)(\[![A-Za-z]+\])?(.*)$/)))
       return warnen('<span class="mk">' + esc(m[1] + (m[2] || "")) + '</span>' + qInline(m[3]));
     if ((m = z.match(/^(\s*)([-*+] \[[ xX]\]|[-*+]|\d+[.)])(\s)(.*)$/)))
@@ -1446,7 +1962,8 @@ function tasteImBlock(ev, i, n){
     if (i === 0) return;
     ev.preventDefault();
     const vor = Z.bloecke[i-1];
-    if (vor.art === "linie"){ Z.bloecke.splice(i-1, 1); bewahre(); male(i-1, 0); return; }
+    if (OHNE_TEXT.indexOf(vor.art) >= 0){
+      Z.bloecke.splice(i-1, 1); bewahre(); male(i-1, 0); return; }
     const stelle = vor.text.length;
     vor.text += b.text;
     Z.bloecke.splice(i, 1);
@@ -1458,7 +1975,8 @@ function tasteImBlock(ev, i, n){
       && i < Z.bloecke.length - 1){
     ev.preventDefault();
     const nach = Z.bloecke[i+1];
-    if (nach.art === "linie"){ Z.bloecke.splice(i+1, 1); bewahre(); male(i, pos); return; }
+    if (OHNE_TEXT.indexOf(nach.art) >= 0){
+      Z.bloecke.splice(i+1, 1); bewahre(); male(i, pos); return; }
     b.text += nach.text;
     Z.bloecke.splice(i+1, 1);
     bewahre(); male(i, pos);
@@ -1674,6 +2192,19 @@ const ARTEN = [
    merkmal:"callout", urteil:"Dialekt",
    probe:"> [!TIP]\n> Vier davon sind derselbe Export.",
    vorlage:(t) => "> [!NOTE]\n> " + (t || "Hinweis")},
+  {art:"fussnote", name:"Fußnote",          zeichen:"[^]", kuerzel:"[^1]:",
+   merkmal:"fussnote", urteil:"GFM",
+   probe:"Ein Satz mit Beleg.[^1]\n\n[^1]: Woher der Satz stammt.",
+   vorlage:(t) => "[^1]: " + (t || "Woher der Satz stammt.")},
+  /* Kein Inhalt, sondern eine Anweisung an den Export: Ab hier eine
+     neue Seite. Ein HTML-Kommentar — überall gültig, überall
+     unsichtbar, und deshalb der einzige Ort, an dem eine
+     Layoutangabe in der Datei zu verantworten ist
+     (doku/ENTSCHEIDUNGEN.md, Punkt 18). */
+  {art:"umbruch",  name:"Seitenumbruch",    zeichen:"↵",   kuerzel:"<!-- -->",
+   merkmal:"html", urteil:"HTML",
+   probe:"<!-- seitenumbruch -->",
+   vorlage:() => "<!-- seitenumbruch -->"},
   {art:"toggle",  name:"Toggle-Liste",     zeichen:"›",   kuerzel:"<details>",
    merkmal:"html", urteil:"HTML",
    probe:"<details>\n<summary>Entscheidungen</summary>\n\nDer Rumpf.\n\n</details>",
@@ -1746,6 +2277,10 @@ function blockMenue(i, anker){
   const b = Z.bloecke[i];
   if (!b) return;
   const eintraege = [
+    {ic:"+", nm:"Darüber einfügen", ta:"", tue:() => {
+      Z.bloecke.splice(i, 0, {art:"absatz", text:""});
+      bewahre(); male(i, 0);
+    }},
     {ic:"", nm:"Löschen", ta:"Entf", tue:() => {
       Z.bloecke.splice(i, 1);
       if (!Z.bloecke.length) Z.bloecke.push({art:"absatz", text:""});
@@ -1925,12 +2460,14 @@ function verdrahte(){
     const i = Number(t.closest(".blk").dataset.i);
     if (!Z.bloecke[i]) return;
     Z.bloecke[i].text = t.textContent;
+    letzteStelle = i;
     if (hilfePruefen(i, t)) return;
     if (slashOffen()) slashMalen();
     else if (Z.bloecke[i].text === "/"){ slashBlock = i; slashWahl = 0; slashMalen(); }
     bewahre();
     quelleMalen();
     fussMalen();
+    vorschauAnstossen();
   });
 
   spalte.addEventListener("keydown", (ev) => {
@@ -2040,6 +2577,7 @@ function quelltextVerdrahten(){
     bewahre();
     fussMalen();
     quelleFarbeMalen();
+    vorschauAnstossen();
   });
   /* Rollt das Feld, muss die Farbe darunter mitrollen — sonst steht
      sie einen Bildschirm daneben. */
@@ -2047,10 +2585,12 @@ function quelltextVerdrahten(){
   q.addEventListener("blur", () => { if (!q.readOnly) male(); });
 }
 
+const ANSICHTEN = ["schreiben","geteilt","vorschau","quelltext"];
+
 function ansicht(name){
   leisteVerbergen();
   $("#app").dataset.ansicht = name;
-  ["schreiben","geteilt","quelltext"].forEach(n =>
+  ANSICHTEN.forEach(n =>
     $("#w-" + n).setAttribute("aria-current", String(n === name)));
   if (name !== "quelltext") male(); else quelleMalen();
   try { localStorage.setItem(SCHLUESSEL + "-ansicht", name); } catch (e) { /* egal */ }
@@ -2078,11 +2618,7 @@ function gliederungMalen(){
     const z = el("button", "z s" + grad, esc(b.text || "(ohne Text)"));
     z.type = "button";
     z.title = b.text;
-    z.onclick = () => {
-      const knoten = $('.blk[data-i="' + i + '"]');
-      if (knoten) knoten.scrollIntoView({block:"center"});
-      setzeFokus(i, 0);
-    };
+    z.onclick = () => springeZu(i, 0);
     liste.appendChild(z);
   });
 }
@@ -2172,9 +2708,7 @@ function suchSpringen(k){
   if (!suchStellen.length) return;
   suchWahl = (k + suchStellen.length) % suchStellen.length;
   const st = suchStellen[suchWahl];
-  const knoten = $('.blk[data-i="' + st.i + '"]');
-  if (knoten) knoten.scrollIntoView({block:"center"});
-  setzeFokus(st.i, st.pos);
+  springeZu(st.i, st.pos);
   suchZahlMalen();
 }
 
@@ -2229,19 +2763,19 @@ const SATZARTEN = [
    + "<b>In der Datei steht davon nichts.</b>"]
 ];
 
-const DRUCKARTEN = [
-  ["schlicht",   "Schlicht",
-   "Die Vorgabe. Nüchtern, wenig Zierrat, spart Papier."],
-  ["technik",    "Technische Doku",
-   "Enger Satz, gerahmte Codeblöcke, Tabellen mit Linien, jede Überschrift 1 auf einer "
-   + "neuen Seite. <b>Nummeriert die Überschriften selbst</b> — aber nur die, die noch "
-   + "keine Nummer tragen. Steht „1 Bestandsaufnahme“ schon im Text, bleibt es dabei."],
-  ["magazin",    "Magazin",
-   "Serifenschrift, schmale Spalte, große Überschriften, Blocksatz. Für Texte, die "
-   + "gelesen und nicht nachgeschlagen werden."],
-  ["manuskript", "Manuskript",
-   "Weiter Durchschuss und ein breiter Rand zum Hineinschreiben. Für Entwürfe, die auf "
-   + "Papier bearbeitet werden."]
+/* Das Druck-Layout ist **kein eigener Satz Vorlagen mehr.** Es war
+   einer, und daneben stand ein zweiter für die Vorschau — zwei
+   Systeme für dieselbe Frage, und die Vorschau zeigte damit
+   zwangsläufig etwas anderes als das Papier. Jetzt gilt das
+   Vorschau-Thema für Vorschau, Druck und Export.
+   `doku/ENTSCHEIDUNGEN.md`, Punkt 20. */
+const AUTOSCROLL = [
+  ["an",  "An",
+   "Die Vorschau rollt zur zuletzt geänderten Stelle. <b>Ohne das sucht man nach jedem "
+   + "Satz die Stelle wieder.</b>"],
+  ["aus", "Aus",
+   "Die Vorschau bleibt stehen, wo sie steht. Für das Lesen eines langen Abschnitts, "
+   + "während anderswo getippt wird."]
 ];
 
 /* Vier Gruppen, ein Bauplan. `wurzel` heißt: Die Einstellung steht als
@@ -2249,17 +2783,17 @@ const DRUCKARTEN = [
    braucht es kein Neuzeichnen. Die Stufe dagegen ändert, was der
    Editor **anzeigt**, und verlangt eines. */
 const EINSTELLUNGEN = [
-  {feld:"stufe", etikett:"Markdown-Stufe",   werte:STUFEN,     malen:true},
-  {feld:"thema", etikett:"Thema",            werte:THEMEN,     wurzel:true},
-  {feld:"satz",  etikett:"Textausrichtung",  werte:SATZARTEN,  wurzel:true},
-  {feld:"druck", etikett:"Druck-Layout",     werte:DRUCKARTEN, wurzel:true}
+  {feld:"stufe",      etikett:"Markdown-Stufe",  werte:STUFEN,     malen:true},
+  {feld:"thema",      etikett:"Thema",           werte:THEMEN,     wurzel:true},
+  {feld:"satz",       etikett:"Textausrichtung", werte:SATZARTEN,  wurzel:true},
+  {feld:"autoscroll", etikett:"Automatisches Scrollen", werte:AUTOSCROLL, dok:true}
 ];
 
 function wurzelSetzen(){
   const w = document.documentElement;
   w.dataset.thema = Z.thema;
   w.dataset.satz  = Z.satz;
-  w.dataset.druck = Z.druck;
+  w.dataset.umbruch = Z.umbruchVor;
 }
 
 function einstellungenMalen(){
@@ -2282,6 +2816,7 @@ function einstellungenMalen(){
         if (g.wurzel) wurzelSetzen();
         einstellungenMalen();
         if (g.malen) male();
+        if (g.dok || g.wurzel) vorschauMalen();
         melde(g.etikett + ": " + name);
       };
       wahl.appendChild(b);
@@ -2303,7 +2838,14 @@ function einstellungenVerdrahten(){
   ueber.addEventListener("mousedown", (ev) => { if (ev.target === ueber) zu(); });
   document.addEventListener("keydown", (ev) => {
     if (ev.key !== "Escape") return;
-    if (ueber.classList.contains("an")) zu();
+    if ($("#schnell").classList.contains("an")) schnellSchliessen();
+    else if (document.body.dataset.druckvorschau === "ja") druckvorschau(false);
+    else if ($("#seite-karte").classList.contains("an"))
+      $("#seite-karte").classList.remove("an");
+    else if ($("#stil").classList.contains("an")) $("#stil").classList.remove("an");
+    else if (ueber.classList.contains("an")) zu();
+    else if ($("#app").dataset.ruhe === "ja"){
+      ruhe(false); $("#ruhe-auf").setAttribute("aria-pressed", "false"); }
     menueVerbergen(); leisteVerbergen(); slashSchliessen();
   });
 }
@@ -2316,6 +2858,22 @@ function einstellungenVerdrahten(){
    Geöffnet wird über die Dateiauswahl, gesichert über den Download.
    Der Arbeitsstand liegt dazwischen in localStorage.
    ============================================================ */
+/* Ein Ausgang für alles, was den Editor verlässt. Edge erlaubt aus
+   einer lokal geöffneten Datei keinen direkten Dateizugriff — jeder
+   Export geht deshalb über den Download (doku/ENTSCHEIDUNGEN.md,
+   Punkt 2). `inhalt` ist Text oder ein fertiger Blob. */
+function herunterladen(inhalt, name, typ){
+  const blob = inhalt instanceof Blob
+    ? inhalt
+    : new Blob([inhalt], {type:(typ || "text/plain") + ";charset=utf-8"});
+  const a = el("a");
+  const adresse = URL.createObjectURL(blob);
+  a.href = adresse;
+  a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(adresse), 4000);
+}
+
 function dateienVerdrahten(){
   $("#oeffnen").onclick = () => $("#datei").click();
   $("#datei").addEventListener("change", (ev) => {
@@ -2336,14 +2894,9 @@ function dateienVerdrahten(){
 
   $("#sichern").onclick = () => {
     const text = schreibeMarkdown(Z.bloecke);
-    const blob = new Blob([text], {type:"text/markdown;charset=utf-8"});
-    const a = el("a");
-    const adresse = URL.createObjectURL(blob);
-    a.href = adresse;
-    a.download = /\.(md|markdown|txt)$/i.test(Z.name) ? Z.name : Z.name + ".md";
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(adresse), 4000);
-    melde("Gesichert: " + a.download);
+    const name = /\.(md|markdown|txt)$/i.test(Z.name) ? Z.name : Z.name + ".md";
+    herunterladen(text, name, "text/markdown");
+    melde("Gesichert: " + name);
   };
 
   /* Der Browser kann aus jedem Druck ein PDF machen — „Als PDF
@@ -2351,11 +2904,12 @@ function dateienVerdrahten(){
      liefert der Druckstil; ein eigener Erzeuger wäre eine fremde
      Bibliothek und ist ausgeschlossen (doku/ENTSCHEIDUNGEN.md,
      Punkt 10). */
-  $("#pdf").onclick = () => {
-    leisteVerbergen(); menueVerbergen(); slashSchliessen();
-    melde("Im Druckdialog „Als PDF speichern“ wählen.");
-    setTimeout(() => window.print(), 260);
-  };
+  /* Auch Strg+P des Browsers soll drucken, was die Vorschau zeigt —
+     nicht eine leere Seite. */
+  window.addEventListener("beforeprint", () => {
+    seitenStilSetzen();
+    $("#druckblatt").innerHTML = druckDokument();
+  });
 
   $("#neu").onclick = () => {
     if (schreibeMarkdown(Z.bloecke).trim()
@@ -2372,6 +2926,2324 @@ function dateienVerdrahten(){
     Z.name = /\.(md|markdown|txt)$/i.test(n) ? n : n + ".md";
     bewahre(); fussMalen(); quelleMalen();
   };
+}
+
+/* ============================================================
+  12 — FARBE IM CODE
+
+   Syntax-Hervorhebung ohne Bibliothek. Eine fremde wäre hier
+   ausgeschlossen (harte Regel 2) und wöge mehr als diese ganze
+   Datei — die verbreiteten bringen dreihundert Sprachen mit, von
+   denen niemand fünf braucht.
+
+   Der Kern ist **ein** Abtaster. Was eine Sprache von der nächsten
+   unterscheidet, steht als Zeile in `SPRACHEN`: das Zeichen für den
+   Zeilenkommentar, das Paar für den Blockkommentar, die Anführungs-
+   zeichen, die Schlüsselwörter, die eingebauten Namen. Fünf Sprachen
+   bringen mehr mit, als sich so beschreiben lässt — HTML, Markdown,
+   Diff und die beiden Klammersprachen —; sie haben eine eigene
+   Funktion.
+
+   Die Farbe **entscheidet nichts.** Sie deutet, mehr nicht: Ein
+   falsch eingefärbtes Wort steht trotzdem unverändert in der Datei.
+   Dieselbe Regel wie bei der Farbe im Quelltext
+   (doku/ENTSCHEIDUNGEN.md, Punkt 13).
+   ============================================================ */
+/* Kurz gehalten, weil jede Zeile Code die Klasse trägt:
+   k Schlüsselwort · y eingebauter Name · t Zeichenkette · n Zahl ·
+   x Kommentar · f Aufruf. */
+const S_K = "s-k", S_Y = "s-y", S_T = "s-t", S_N = "s-n", S_X = "s-x", S_F = "s-f";
+
+const sfarbe = (klasse, text) => '<span class="' + klasse + '">' + esc(text) + "</span>";
+
+/* `ab` sind die Namen, unter denen die Sprache am Codezaun stehen
+   darf. `z` ist der Zeilenkommentar (mehrere durch Leerzeichen
+   getrennt), `b` das Paar für den Blockkommentar, `t` die
+   Anführungszeichen, `s` die Schlüsselwörter, `y` die eingebauten
+   Namen. `eig` heißt: `name:` am Zeilenanfang ist eine Eigenschaft. */
+const SPRACHEN = [
+{nm:"JavaScript", ab:"javascript js jsx mjs cjs node", z:"//", b:"/* */", t:"\"'`",
+ s:"as async await break case catch class const continue debugger default delete do else export extends finally for function get if in instanceof let new of return set static super switch this throw try typeof var void while with yield",
+ y:"Array Boolean Date Error Infinity JSON Map Math NaN Number Object Promise RegExp Set String Symbol console document false globalThis null true undefined window"},
+{nm:"TypeScript", ab:"typescript ts tsx", z:"//", b:"/* */", t:"\"'`",
+ s:"abstract as async await break case catch class const continue declare default delete do else enum export extends finally for function get if implements in infer instanceof interface is keyof let namespace new of private protected public readonly return satisfies set static super switch this throw try type typeof var void while yield",
+ y:"Array Boolean Date Error JSON Map Number Object Promise Record Set String Symbol any bigint boolean console false never null number object string true undefined unknown void"},
+{nm:"JSON", ab:"json jsonc", z:"//", b:"/* */", t:"\"", eig:true,
+ s:"", y:"true false null"},
+{nm:"Python", ab:"python py python3", z:"#", b:"", t:"\"'",
+ s:"and as assert async await break class continue def del elif else except finally for global if in is lambda nonlocal not or pass raise return try while with yield match case",
+ y:"None True False self cls dict list set tuple str int float bool bytes len print range enumerate zip open super isinstance type object Exception"},
+{nm:"Java", ab:"java", z:"//", b:"/* */", t:"\"'",
+ s:"abstract assert break case catch class const continue default do else enum extends final finally for goto if implements import instanceof interface native new package private protected public return static strictfp super switch synchronized this throw throws transient try var void volatile while yield record sealed permits",
+ y:"String Integer Long Double Float Boolean Object List Map Set System Math Exception boolean byte char double float int long short null true false"},
+{nm:"C", ab:"c h", z:"//", b:"/* */", t:"\"'",
+ s:"auto break case char const continue default do double else enum extern float for goto if inline int long register restrict return short signed sizeof static struct switch typedef union unsigned void volatile while",
+ y:"NULL bool false size_t true uint8_t uint16_t uint32_t uint64_t int8_t int16_t int32_t int64_t FILE printf malloc free memcpy strlen"},
+{nm:"C++", ab:"cpp c++ cc cxx hpp", z:"//", b:"/* */", t:"\"'",
+ s:"alignas alignof auto break case catch class concept const consteval constexpr const_cast continue co_await co_return co_yield decltype default delete do double dynamic_cast else enum explicit export extern false float for friend goto if inline int long mutable namespace new noexcept nullptr operator private protected public register reinterpret_cast requires return short signed sizeof static static_assert static_cast struct switch template this throw true try typedef typeid typename union unsigned using virtual void volatile while",
+ y:"bool char size_t std string vector map set pair shared_ptr unique_ptr cout cin endl uint8_t uint32_t int64_t"},
+{nm:"C#", ab:"csharp cs c#", z:"//", b:"/* */", t:"\"'",
+ s:"abstract as async await base break case catch checked class const continue default delegate do else enum event explicit extern finally fixed for foreach get goto if implicit in interface internal is lock namespace new operator out override params private protected public readonly record ref return sealed set sizeof stackalloc static struct switch this throw try typeof unchecked unsafe using var virtual void volatile where while yield",
+ y:"bool byte char decimal double float int long object short string uint ulong ushort true false null Console List Dictionary Task String Math Exception"},
+{nm:"Go", ab:"go golang", z:"//", b:"/* */", t:"\"'`",
+ s:"break case chan const continue default defer else fallthrough for func go goto if interface map package range return select struct switch type var",
+ y:"append bool byte cap close complex copy delete error false float32 float64 int int8 int16 int32 int64 iota len make new nil panic print println recover rune string true uint uint8 uint32 uint64 fmt"},
+{nm:"Rust", ab:"rust rs", z:"//", b:"/* */", t:"\"'",
+ s:"as async await break const continue crate dyn else enum extern fn for if impl in let loop match mod move mut pub ref return self static struct super trait type unsafe use where while",
+ y:"Box HashMap Option Ok Err Result Some None String Vec bool char f32 f64 i8 i16 i32 i64 isize str true false u8 u16 u32 u64 usize println panic vec"},
+{nm:"PHP", ab:"php", z:"// #", b:"/* */", t:"\"'",
+ s:"abstract and array as break callable case catch class clone const continue declare default do echo else elseif empty enddeclare endfor endforeach endif endswitch endwhile enum extends final finally fn for foreach function global goto if implements include include_once instanceof insteadof interface isset list match namespace new or print private protected public readonly require require_once return static switch throw trait try unset use var while xor yield",
+ y:"true false null this bool int float string array object mixed void self parent count strlen printf sprintf"},
+{nm:"Ruby", ab:"ruby rb", z:"#", b:"=begin =end", t:"\"'",
+ s:"alias and begin break case class def defined do else elsif end ensure for if in module next nil not or redo rescue retry return self super then undef unless until when while yield",
+ y:"true false nil puts print require attr_accessor attr_reader attr_writer new String Integer Array Hash Symbol Proc lambda raise"},
+{nm:"Swift", ab:"swift", z:"//", b:"/* */", t:"\"",
+ s:"associatedtype as break case catch class continue default defer deinit do else enum extension fallthrough fileprivate final for func guard if import in init inout internal is lazy let mutating nil open operator private protocol public repeat rethrows return self static struct subscript super switch throw throws try typealias var weak where while",
+ y:"Any Array Bool Character Dictionary Double Error Float Int Optional Set String UInt Void false true print nil"},
+{nm:"Kotlin", ab:"kotlin kt kts", z:"//", b:"/* */", t:"\"'",
+ s:"abstract actual annotation as break by catch class companion const constructor continue crossinline data delegate do dynamic else enum expect external final finally for fun get if import in infix init inline inner interface internal is lateinit noinline null object open operator out override package private protected public reified return sealed set super suspend tailrec this throw try typealias val var vararg when where while",
+ y:"Any Array Boolean Byte Char Double Float Int List Long Map Nothing Set String Unit false true it listOf mapOf println"},
+{nm:"Dart", ab:"dart", z:"//", b:"/* */", t:"\"'",
+ s:"abstract as assert async await break case catch class const continue covariant default deferred do dynamic else enum export extends extension external factory final finally for get hide if implements import in interface is late library mixin new on operator part required rethrow return sealed set show static super switch sync this throw try typedef var void while with yield",
+ y:"bool double int num String List Map Set Future Stream Object null true false print"},
+{nm:"Scala", ab:"scala sc", z:"//", b:"/* */", t:"\"'",
+ s:"abstract case catch class def do else enum export extends extension final finally for forSome given if implicit import lazy match new object override package private protected return sealed super then this throw trait try type val var while with yield",
+ y:"Any AnyRef Boolean Byte Char Double Float Int List Long Map Nil None Option Seq Set Some String Unit false null true println"},
+{nm:"Groovy", ab:"groovy gradle", z:"//", b:"/* */", t:"\"'",
+ s:"abstract as assert break case catch class const continue def default do else enum extends final finally for goto if implements import in instanceof interface new package return static super switch this throw throws trait try while",
+ y:"boolean byte char double float int long short void true false null String List Map println it"},
+{nm:"SQL", ab:"sql mysql postgres postgresql sqlite plsql", z:"--", b:"/* */", t:"\"'",
+ s:"add all alter and as asc begin between by case cast check column commit constraint create cross database default delete desc distinct drop else end escape except exists foreign from full group having if in index inner insert intersect into is join key left like limit not null offset on or order outer primary references right rollback select set table then union unique update using values view when where with",
+ y:"avg boolean char coalesce count date datetime decimal float int integer max min now numeric real serial substring sum text timestamp trim varchar"},
+{nm:"Shell", ab:"bash sh shell zsh console terminal", z:"#", b:"", t:"\"'",
+ s:"alias break case cd continue do done elif else esac exit export fi for function if in local read return set shift source then time until while",
+ y:"awk cat chmod cp curl cut date echo find git grep head kill ls mkdir mv node npm printf ps pwd rm sed sort ssh sudo tail tar tee touch tr uniq wc which xargs true false"},
+{nm:"PowerShell", ab:"powershell ps1 pwsh", z:"#", b:"<# #>", t:"\"'",
+ s:"begin break catch class continue data do dynamicparam else elseif end enum exit filter finally for foreach from function hidden if in param process return static switch throw trap try until using var while",
+ y:"Write-Host Write-Output Get-ChildItem Get-Content Set-Content Get-Item New-Item Remove-Item Select-Object Where-Object ForEach-Object Test-Path Join-Path true false null"},
+{nm:"Batch", ab:"batch bat cmd", z:"rem ::", b:"", t:"\"",
+ s:"call echo else endlocal exit for goto if in not pause set setlocal shift start",
+ y:"cd copy del dir errorlevel exist md move rd ren type xcopy"},
+{nm:"Lua", ab:"lua", z:"--", b:"--[[ ]]", t:"\"'",
+ s:"and break do else elseif end false for function goto if in local nil not or repeat return then true until while",
+ y:"assert error ipairs next pairs pcall print require select setmetatable string table tonumber tostring type math io os"},
+{nm:"Perl", ab:"perl pl pm", z:"#", b:"", t:"\"'",
+ s:"and cmp continue do else elsif eq for foreach ge gt if le local lt my ne no not or our package print printf redo ref require return sub unless until use wantarray while",
+ y:"defined delete each exists grep join keys length map pop push scalar shift sort splice split sprintf unshift values"},
+{nm:"R", ab:"r", z:"#", b:"", t:"\"'",
+ s:"break else for function if in next repeat return while",
+ y:"NA NULL Inf NaN TRUE FALSE c data.frame factor length library list matrix mean names ncol nrow paste plot print rep seq sum vector"},
+{nm:"Julia", ab:"julia jl", z:"#", b:"#= =#", t:"\"'",
+ s:"abstract baremodule begin break catch const continue do else elseif end export finally for function global if import let local macro module mutable primitive quote return struct try using while",
+ y:"Any Array Bool Char Dict Float64 Int Int64 Nothing String Vector false nothing true length print println push"},
+{nm:"MATLAB", ab:"matlab m octave", z:"%", b:"%{ %}", t:"'\"",
+ s:"break case catch classdef continue else elseif end for function global if otherwise parfor persistent return switch try while",
+ y:"disp error fprintf length numel ones plot size sprintf sum zeros true false NaN Inf"},
+{nm:"Haskell", ab:"haskell hs", z:"--", b:"{- -}", t:"\"'",
+ s:"case class data deriving do else forall foreign if import in infix infixl infixr instance let mdo module newtype of then type where",
+ y:"Bool Char Double Either Float Int Integer IO Just Left Maybe Nothing Right String True False concat filter foldr length map putStrLn return show"},
+{nm:"Elixir", ab:"elixir ex exs", z:"#", b:"", t:"\"'",
+ s:"after alias and case catch cond def defmodule defp defstruct do else end fn for if import in not or quote raise receive require rescue try unless unquote use when with",
+ y:"false nil true Enum IO Kernel List Map String Atom Process GenServer inspect is_atom is_list is_map"},
+{nm:"Erlang", ab:"erlang erl", z:"%", b:"", t:"\"'",
+ s:"after and andalso band begin bnot bor bsl bsr bxor case catch cond div end fun if let not of or orelse receive rem try when xor",
+ y:"true false undefined atom binary integer list io lists maps spawn node self"},
+{nm:"Clojure", ab:"clojure clj cljs edn", z:";", b:"", t:"\"",
+ s:"def defn defmacro defrecord defprotocol do fn if let letfn loop ns quote recur require try catch finally when when-let cond case",
+ y:"true false nil assoc conj cons count filter first get into map println reduce rest str vec vector"},
+{nm:"F#", ab:"fsharp fs f#", z:"//", b:"(* *)", t:"\"'",
+ s:"abstract and as assert base begin class default delegate do done downcast downto elif else end exception extern finally for fun function global if in inherit inline interface internal lazy let match member module mutable namespace new not of open or override private public rec return static struct then to try type upcast use val void when while with yield",
+ y:"bool char float int list option seq string unit true false None Some printfn failwith"},
+{nm:"OCaml", ab:"ocaml ml mli", z:"", b:"(* *)", t:"\"'",
+ s:"and as assert begin class constraint do done downto else end exception external for fun function functor if in include inherit initializer lazy let match method module mutable new object of open private rec sig struct then to try type val virtual when while with",
+ y:"bool char float int list option string unit true false None Some ref print_endline"},
+{nm:"Objective-C", ab:"objectivec objc m mm", z:"//", b:"/* */", t:"\"'",
+ s:"auto break case char const continue default do double else enum extern float for goto if inline int long register return short signed sizeof static struct switch typedef union unsigned void volatile while",
+ y:"BOOL NSString NSArray NSDictionary NSInteger NSLog YES NO nil id self super instancetype"},
+{nm:"Visual Basic", ab:"vb vbnet vba basic", z:"'", b:"", t:"\"",
+ s:"And AndAlso As ByRef ByVal Case Catch Class Const Continue Dim Do Each Else ElseIf End Enum Exit False For Friend Function Get Global GoTo If Implements Imports In Inherits Interface Is Let Loop Me Module New Next Not Nothing Or OrElse Overrides Private Property Protected Public ReadOnly ReDim Return Select Set Shared Static Step Structure Sub Then Throw To True Try Until Using When While With WriteOnly",
+ y:"Boolean Byte Char Date Decimal Double Integer Long Object Short Single String Console MsgBox"},
+{nm:"Pascal", ab:"pascal pas delphi", z:"//", b:"{ }", t:"'",
+ s:"and array begin case const div do downto else end file for function goto if implementation in interface label mod nil not of or packed procedure program record repeat set then to type unit until uses var while with",
+ y:"Boolean Byte Char Integer Longint Real String Text True False write writeln read readln"},
+{nm:"Fortran", ab:"fortran f90 f95 f03", z:"!", b:"", t:"\"'",
+ s:"allocate call case common contains continue cycle deallocate do else elseif end enddo endif function go if implicit integer interface intent module none only parameter pointer print program public private real recursive result return select stop subroutine then type use where while write",
+ y:"character complex dimension double logical precision true false abs len max min mod size sum"},
+{nm:"Nim", ab:"nim nims", z:"#", b:"#[ ]#", t:"\"'",
+ s:"addr and as asm bind block break case cast concept const continue converter defer discard distinct div do elif else end enum except export finally for from func if import include interface is isnot iterator let macro method mixin mod nil not notin object of or out proc ptr raise ref return shl shr static template try tuple type using var when while xor yield",
+ y:"bool char cstring float int seq string uint true false echo len new result"},
+{nm:"Zig", ab:"zig", z:"//", b:"", t:"\"'",
+ s:"align allowzero and anyframe anytype asm async await break catch comptime const continue defer else enum errdefer error export extern fn for if inline noalias nosuspend or orelse packed pub resume return struct suspend switch test threadlocal try union unreachable usingnamespace var volatile while",
+ y:"bool f32 f64 i8 i16 i32 i64 isize u8 u16 u32 u64 usize void null true false undefined std"},
+{nm:"Solidity", ab:"solidity sol", z:"//", b:"/* */", t:"\"'",
+ s:"abstract anonymous as assembly break calldata catch constant constructor continue contract delete do else emit enum event external fallback for function if immutable import indexed interface internal is library mapping memory modifier new override payable pragma private public pure receive require return returns revert storage struct throw try type using view virtual while",
+ y:"address bool bytes bytes32 int256 msg string uint uint8 uint256 true false this now block tx"},
+{nm:"GraphQL", ab:"graphql gql", z:"#", b:"", t:"\"", eig:true,
+ s:"directive enum extend fragment implements input interface mutation on query scalar schema subscription type union",
+ y:"Boolean Float ID Int String true false null"},
+{nm:"YAML", ab:"yaml yml", z:"#", b:"", t:"\"'", eig:true,
+ s:"", y:"true false null yes no on off"},
+{nm:"TOML", ab:"toml", z:"#", b:"", t:"\"'", eig:true,
+ s:"", y:"true false"},
+{nm:"INI", ab:"ini cfg conf properties editorconfig", z:"# ;", b:"", t:"\"'", eig:true,
+ s:"", y:"true false yes no on off"},
+{nm:"Dockerfile", ab:"dockerfile docker containerfile", z:"#", b:"", t:"\"'",
+ s:"ADD ARG CMD COPY ENTRYPOINT ENV EXPOSE FROM HEALTHCHECK LABEL MAINTAINER ONBUILD RUN SHELL STOPSIGNAL USER VOLUME WORKDIR",
+ y:"AS apt-get apk npm pip yarn"},
+{nm:"Makefile", ab:"makefile make mk", z:"#", b:"", t:"\"'", eig:true,
+ s:"ifeq ifneq ifdef ifndef else endif include define endef export unexport override",
+ y:"PHONY DEFAULT SUFFIXES MAKE CC CFLAGS LDFLAGS SHELL"},
+{nm:"NGINX", ab:"nginx", z:"#", b:"", t:"\"'",
+ s:"http server location upstream events include if return rewrite set proxy_pass listen server_name root index",
+ y:"on off default_type worker_processes worker_connections access_log error_log"},
+{nm:"LaTeX", ab:"latex tex bibtex", z:"%", b:"", t:"",
+ s:"", y:""},
+{nm:"Prolog", ab:"prolog pro", z:"%", b:"/* */", t:"\"'",
+ s:"is mod rem div not fail true false halt",
+ y:"assert asserta assertz atom_codes findall length member nl retract write"},
+{nm:"Scheme", ab:"scheme lisp scm el racket", z:";", b:"", t:"\"",
+ s:"and begin case cond define do else if lambda let let* letrec or quote quasiquote set! unless when",
+ y:"append car cdr cons display eq? equal? length list map newline null? number? pair? string? vector"},
+{nm:"Assembler", ab:"asm assembly nasm s", z:"; #", b:"", t:"\"'",
+ s:"add and call cmp dec div hlt inc jmp je jne jg jl jge jle lea mov mul neg nop not or pop push ret shl shr sub test xor syscall int",
+ y:"eax ebx ecx edx esi edi esp ebp rax rbx rcx rdx rsi rdi rsp rbp byte word dword qword section global extern db dw dd dq"},
+{nm:"Verilog", ab:"verilog v sv systemverilog", z:"//", b:"/* */", t:"\"",
+ s:"always assign begin case casex casez default else end endcase endfunction endmodule endtask for function generate if initial input inout module negedge output parameter posedge reg task wait while wire",
+ y:"integer localparam logic bit signed unsigned time real genvar"},
+{nm:"VHDL", ab:"vhdl vhd", z:"--", b:"", t:"\"'",
+ s:"architecture array begin case component constant downto else elsif end entity for function generic if is loop map of others port process return signal then to type use variable when while with",
+ y:"bit boolean integer natural positive std_logic std_logic_vector string true false"},
+{nm:"AWK", ab:"awk gawk", z:"#", b:"", t:"\"'",
+ s:"BEGIN END break continue delete do else exit for function getline if in next print printf return while",
+ y:"ARGC ARGV FILENAME FNR FS NF NR OFS ORS RS gsub index length match split sprintf sub substr tolower toupper"},
+{nm:"Crystal", ab:"crystal cr", z:"#", b:"", t:"\"'",
+ s:"abstract alias as begin break case class def do else elsif end ensure enum extend for fun if in include instance_sizeof is_a lib macro module next nil of out pointerof private protected require rescue return require select self struct super then type union unless until when while with yield",
+ y:"Array Bool Char Float64 Hash Int32 Int64 Nil String Symbol true false nil puts print"}
+];
+
+/* Zwei Nachschlagewerke, einmal gebaut: nach Namen und nach Wort.
+   Ohne das liefe für jedes Wort im Codeblock eine lineare Suche über
+   sechzig Sprachen. */
+const SPRACHE_NACH = {};
+SPRACHEN.forEach(sp => {
+  sp.__s = new Set((sp.s || "").split(/\s+/).filter(Boolean));
+  sp.__y = new Set((sp.y || "").split(/\s+/).filter(Boolean));
+  (sp.ab || "").split(/\s+/).filter(Boolean).forEach(a => { SPRACHE_NACH[a] = sp; });
+});
+
+/* Die Sprachen mit eigener Funktion stehen hier, nicht in der
+   Tabelle: Sie lassen sich nicht auf Kommentarzeichen und eine
+   Wortliste zurückführen. */
+const SPRACHE_EIGEN = {};
+
+function spracheVon(name){
+  const n = String(name || "").trim().toLowerCase();
+  if (!n) return null;
+  return SPRACHE_EIGEN[n] || SPRACHE_NACH[n] || null;
+}
+
+/* Der Name, wie er über dem Block steht. Ist die Sprache unbekannt,
+   bleibt stehen, was am Zaun steht — der Editor erfindet nichts. */
+function spracheName(name){
+  const sp = spracheVon(name);
+  return sp && sp.nm ? sp.nm : String(name || "");
+}
+
+/* ---------- Der Abtaster ----------
+   Ein Durchlauf, Zeichen für Zeichen. Er hält an fünf Stellen an:
+   Zeilenkommentar, Blockkommentar, Zeichenkette, Zahl, Wort. Alles
+   andere wandert unverändert durch — und wird trotzdem maskiert,
+   sonst stünde ein `<` im Code als Element in der Fläche. */
+function codeMalen(text, sprache){
+  const sp = spracheVon(sprache);
+  if (!sp) return esc(text);
+  if (typeof sp.tue === "function") return sp.tue(String(text));
+  const s = String(text);
+  const zeilen = (sp.z || "").split(" ").filter(Boolean);
+  const paar = (sp.b || "").split(" ").filter(Boolean);
+  const auf = paar[0] || "", zu = paar[1] || "";
+  const anfuehrung = sp.t || "";
+  let aus = "", roh = "", i = 0;
+  const spuele = () => { if (roh){ aus += esc(roh); roh = ""; } };
+  const setze = (klasse, stueck) => { spuele(); aus += sfarbe(klasse, stueck); };
+
+  while (i < s.length){
+    const rest = s.slice(i);
+
+    /* Zeilenkommentar. Groß und klein geschrieben, wegen `REM`. */
+    let marke = null;
+    for (let k = 0; k < zeilen.length; k++){
+      if (rest.slice(0, zeilen[k].length).toLowerCase() === zeilen[k].toLowerCase()){
+        marke = zeilen[k]; break; }
+    }
+    if (marke){
+      const e = s.indexOf("\n", i), bis = e < 0 ? s.length : e;
+      setze(S_X, s.slice(i, bis)); i = bis; continue;
+    }
+    if (auf && rest.slice(0, auf.length) === auf){
+      const e = zu ? s.indexOf(zu, i + auf.length) : -1;
+      const bis = e < 0 ? s.length : e + zu.length;
+      setze(S_X, s.slice(i, bis)); i = bis; continue;
+    }
+
+    const c = s[i];
+
+    /* Zeichenkette. Der Rückstrich hebt das nächste Zeichen auf; ein
+       Zeilenende beendet sie, außer beim Schrägstrich-Anführungs-
+       zeichen der Vorlagen. */
+    if (anfuehrung.indexOf(c) >= 0){
+      let k = i + 1;
+      while (k < s.length){
+        if (s[k] === "\\"){ k += 2; continue; }
+        if (s[k] === c){ k++; break; }
+        if (s[k] === "\n" && c !== "`"){ break; }
+        k++;
+      }
+      const bis = Math.min(k, s.length);
+      setze(S_T, s.slice(i, bis)); i = bis; continue;
+    }
+
+    /* Zahl. Nur, wenn davor kein Wortzeichen steht — sonst wäre die
+       `2` in `utf8mb4` eine Zahl. */
+    if (c >= "0" && c <= "9" && !/[A-Za-z0-9_$]/.test(s[i-1] || "")){
+      const m = rest.match(
+        /^(0[xXbBoO][0-9a-fA-F_]+|\d[\d_]*(\.\d[\d_]*)?([eE][+-]?\d+)?)[a-zA-Z]{0,3}/);
+      if (m){ setze(S_N, m[0]); i += m[0].length; continue; }
+    }
+
+    /* Wort. Was in einer der beiden Listen steht, bekommt seine
+       Farbe; was danach eine Klammer öffnet, gilt als Aufruf. */
+    if (/[A-Za-z_$@#\\]/.test(c)){
+      const m = rest.match(/^[A-Za-z_$@#\\][A-Za-z0-9_$.!?-]*/);
+      let w = m[0];
+      /* Der Punkt am Ende gehört zum Satz, nicht zum Namen. */
+      while (w.length > 1 && /[.!?-]$/.test(w)) w = w.slice(0, -1);
+      const danach = s.slice(i + w.length);
+      if (sp.__s.has(w)) setze(S_K, w);
+      else if (sp.__y.has(w)) setze(S_Y, w);
+      else if (/^\s*\(/.test(danach)) setze(S_F, w);
+      else if (sp.eig && /^\s*:/.test(danach)
+               && /(^|\n)[ \t\-]*$/.test(s.slice(0, i))) setze(S_Y, w);
+      else roh += w;
+      i += w.length; continue;
+    }
+
+    roh += c; i++;
+  }
+  spuele();
+  return aus;
+}
+
+/* ---------- HTML und XML ----------
+   Keine Wortliste beschreibt sie. Gefärbt werden Element, Merkmal
+   und Wert — und der Kommentar, der hier anders aussieht als überall
+   sonst. */
+function markupMalen(s){
+  let aus = "", i = 0;
+  while (i < s.length){
+    if (s.slice(i, i + 4) === "<!--"){
+      const e = s.indexOf("-->", i), bis = e < 0 ? s.length : e + 3;
+      aus += sfarbe(S_X, s.slice(i, bis)); i = bis; continue;
+    }
+    if (s[i] === "<"){
+      const e = s.indexOf(">", i), bis = e < 0 ? s.length : e + 1;
+      aus += markeMalen(s.slice(i, bis)); i = bis; continue;
+    }
+    const n = s.indexOf("<", i), bis = n < 0 ? s.length : n;
+    aus += esc(s.slice(i, bis)); i = bis;
+  }
+  return aus;
+}
+
+function markeMalen(t){
+  const m = t.match(/^(<\/?)([A-Za-z][\w:.-]*)([\s\S]*?)(\/?>)$/);
+  if (!m) return sfarbe(S_K, t);
+  let aus = sfarbe(S_K, m[1]) + sfarbe(S_K, m[2]);
+  const rest = m[3];
+  const re = /([\w:.@-]+)(\s*=\s*)("[^"]*"|'[^']*'|[^\s>]+)?|(\s+)|([\s\S])/g;
+  let s;
+  while ((s = re.exec(rest))){
+    if (s[1] !== undefined){
+      aus += sfarbe(S_Y, s[1]) + esc(s[2] || "");
+      if (s[3] !== undefined) aus += sfarbe(S_T, s[3]);
+    } else aus += esc(s[0]);
+  }
+  return aus + sfarbe(S_K, m[4]);
+}
+
+/* ---------- CSS ----------
+   Eigenschaft, Wert, Einheit und die Regel mit dem Klammeraffen —
+   dieselbe Aufteilung, die die Farbschicht im Quelltext benutzt. */
+function cssMalen(s){
+  let aus = "", i = 0;
+  while (i < s.length){
+    if (s.slice(i, i + 2) === "/*"){
+      const e = s.indexOf("*/", i + 2), bis = e < 0 ? s.length : e + 2;
+      aus += sfarbe(S_X, s.slice(i, bis)); i = bis; continue;
+    }
+    const c = s[i];
+    if (c === '"' || c === "'"){
+      let k = i + 1;
+      while (k < s.length && s[k] !== c && s[k] !== "\n"){ k += s[k] === "\\" ? 2 : 1; }
+      const bis = Math.min(k + 1, s.length);
+      aus += sfarbe(S_T, s.slice(i, bis)); i = bis; continue;
+    }
+    let m = s.slice(i).match(/^@[\w-]+/);
+    if (m){ aus += sfarbe(S_K, m[0]); i += m[0].length; continue; }
+    m = s.slice(i).match(/^--[\w-]+/);
+    if (m){ aus += sfarbe(S_Y, m[0]); i += m[0].length; continue; }
+    m = s.slice(i).match(/^([a-zA-Z-]+)(\s*:)/);
+    if (m && /[{;\n]\s*$/.test(s.slice(0, i) || "\n")){
+      aus += sfarbe(S_Y, m[1]) + esc(m[2]); i += m[0].length; continue;
+    }
+    m = s.slice(i).match(/^[-+]?[\d.]+(px|em|rem|%|vh|vw|s|ms|deg|fr|pt|mm|cm|ch|ex|vmin|vmax)?/);
+    if (m && /^[-+]?[\d.]/.test(m[0]) && !/[A-Za-z0-9_-]/.test(s[i-1] || "")){
+      aus += sfarbe(S_N, m[0]); i += m[0].length; continue;
+    }
+    m = s.slice(i).match(/^#[0-9a-fA-F]{3,8}\b/);
+    if (m){ aus += sfarbe(S_N, m[0]); i += m[0].length; continue; }
+    aus += esc(c); i++;
+  }
+  return aus;
+}
+
+/* ---------- Markdown im Codeblock ----------
+   Zeilenweise und schlicht: Was hier steht, ist ein Beispiel, kein
+   Text, der gedeutet werden soll. */
+function markdownMalen(s){
+  return s.split("\n").map(z => {
+    let m;
+    if ((m = z.match(/^(\s*)(#{1,6}\s)(.*)$/)))
+      return esc(m[1]) + sfarbe(S_K, m[2]) + sfarbe(S_K, m[3]);
+    if (/^\s*(-{3,}|\*{3,}|={3,})\s*$/.test(z)) return sfarbe(S_K, z);
+    if (/^\s*```/.test(z)) return sfarbe(S_K, z);
+    if ((m = z.match(/^(\s*)([-*+]|\d+[.)])(\s)(.*)$/)))
+      return esc(m[1]) + sfarbe(S_K, m[2]) + esc(m[3]) + markdownZeile(m[4]);
+    if ((m = z.match(/^(\s*>\s?)(.*)$/)))
+      return sfarbe(S_K, m[1]) + markdownZeile(m[2]);
+    return markdownZeile(z);
+  }).join("\n");
+}
+
+function markdownZeile(z){
+  const re = /(`[^`\n]+`)|(\*\*[^*\n]+\*\*)|(\*[^*\n]+\*)|(!?\[[^\]\n]*\]\([^)\s]*\))|([\s\S])/g;
+  let aus = "", m;
+  while ((m = re.exec(z))){
+    if (m[1]) aus += sfarbe(S_T, m[1]);
+    else if (m[2] || m[3]) aus += sfarbe(S_K, m[0]);
+    else if (m[4]) aus += sfarbe(S_Y, m[0]);
+    else aus += esc(m[0]);
+  }
+  return aus;
+}
+
+/* ---------- Diff ----------
+   Die einzige Sprache, in der die Zeile selbst die Farbe bestimmt. */
+function diffMalen(s){
+  return s.split("\n").map(z => {
+    if (/^\+\+\+|^---/.test(z)) return sfarbe(S_Y, z);
+    if (/^@@/.test(z))          return sfarbe(S_K, z);
+    if (/^\+/.test(z))          return sfarbe(S_T, z);
+    if (/^-/.test(z))           return sfarbe(S_N, z);
+    if (/^ /.test(z) || !z)     return esc(z);
+    return sfarbe(S_X, z);
+  }).join("\n");
+}
+
+[["HTML",     "html htm xhtml xml svg vue svelte", markupMalen],
+ ["CSS",      "css scss less sass stylus",         cssMalen],
+ ["Markdown", "markdown md mdx",                   markdownMalen],
+ ["Diff",     "diff patch",                        diffMalen]
+].forEach(([nm, ab, tue]) => {
+  ab.split(" ").forEach(a => { SPRACHE_EIGEN[a] = {nm:nm, tue:tue}; });
+});
+
+/* ============================================================
+  13 — DAS DOKUMENT
+
+   Bis hierher gab es **eine** Darstellung: die Schreibfläche, aus
+   `.blk`-Zeilen gebaut, damit sich jede anfassen lässt. Für Vorschau,
+   Druck und Export ist das die falsche Form — dort will niemand
+   Blöcke anfassen, dort will man ein Dokument lesen.
+
+   `dokumentHtml()` baut deshalb **richtiges HTML**: `<h1>`, `<p>`,
+   verschachtelte `<ul>`, `<blockquote>`, `<pre><code>`, `<table>`.
+   Dieselbe Zeichenkette geht in die Vorschau, in die Druckseite und
+   in die exportierte Datei — drei Ausgaben, eine Quelle. Liefen sie
+   auseinander, wäre die Vorschau eine Behauptung statt einer Anzeige.
+
+   Der Stil dazu steht als `DOK_CSS` in einer Zeichenkette und nicht
+   im `<style>`-Block: Der Export braucht ihn wörtlich, und zwei
+   gepflegte Fassungen desselben Stils wären eine zu viel.
+   ============================================================ */
+/* Womit gemalt wird. Auf der Fläche bleibt ein Verweis eine Farbe
+   ohne Ziel — die Anwendung geht zu keinem Zeitpunkt ins Netz (harte
+   Regel 2), und ein Klick mitten im Schreiben soll nichts öffnen. Im
+   Dokument ist ein Verweis ohne Ziel wertlos, dort steht ein echtes
+   `<a>`. Ein Schalter statt eines zweiten Umwandlers: Zwei Fassungen
+   derselben Auszeichnung liefen unweigerlich auseinander. */
+let MALART = "flaeche";
+
+/* Bilder, die beim Zusammenführen mitgewählt wurden — Dateiname auf
+   Daten-Adresse. Ohne Eintrag bleibt der Pfad stehen, wie er in der
+   Datei steht. */
+const BILDER = {};
+
+function bildAdresse(quelle){
+  const nur = String(quelle).split(/[\\/]/).pop();
+  return BILDER[quelle] || BILDER[nur] || null;
+}
+
+/* ---------- Der Stil des Dokuments ----------
+   Alle Werte kommen aus den Tokens in Abschnitt 1. Was hier hart
+   stünde, ließe sich weder umschalten noch nachrechnen. */
+const DOK_CSS = `
+.dok{background:var(--grund);color:var(--tinte);font-family:var(--dok-schrift,var(--schrift));
+  font-size:var(--dok-groesse,16.5px);line-height:var(--dok-hoehe,1.62);
+  max-width:var(--dok-breite,760px);margin:0 auto;padding:0 34px 8vh;
+  word-wrap:break-word;-webkit-font-smoothing:antialiased}
+.dok>:first-child{margin-top:0}
+.dok h1,.dok h2,.dok h3{font-family:var(--dok-titel,inherit);font-weight:600;
+  line-height:1.25;margin:1.6em 0 .5em;color:var(--tinte)}
+.dok h1{font-size:2em;letter-spacing:-.015em;margin-top:1.1em}
+.dok h2{font-size:1.5em}
+.dok h3{font-size:1.18em}
+.dok p{margin:0 0 .95em}
+.dok ul,.dok ol{margin:0 0 .95em;padding-left:1.6em}
+.dok li{margin:.18em 0}
+.dok li>ul,.dok li>ol{margin:.18em 0}
+.dok li.todo{list-style:none;margin-left:-1.35em}
+.dok li.todo input{margin-right:.5em;vertical-align:-1px}
+.dok li.todo.fertig{color:var(--tinte3);text-decoration:line-through}
+.dok blockquote{margin:0 0 .95em;padding:.1em 0 .1em 1.1em;
+  border-left:3px solid var(--linie);color:var(--tinte2)}
+.dok hr{border:0;border-top:1px solid var(--linie);margin:2em 0}
+.dok pre{background:var(--code-g);border-radius:var(--rad);padding:1.9em 1.1em 1.1em;
+  margin:0 0 1.1em;overflow-x:auto;position:relative}
+.dok pre code{font-family:var(--fest);font-size:.84em;line-height:1.62;
+  white-space:pre;color:var(--tinte)}
+.dok pre[data-sprache]::before{content:attr(data-sprache);position:absolute;
+  left:1.15em;top:.55em;font-family:var(--fest);font-size:.7em;color:var(--tinte3)}
+.dok :not(pre)>code{background:rgba(135,131,120,.15);color:var(--code-t);border-radius:3px;
+  padding:1px 5px;font-family:var(--fest);font-size:.86em}
+.dok a{color:var(--blau);text-decoration:none;border-bottom:1px solid var(--blau-s)}
+.dok mark{background:var(--marker);color:var(--tinte);border-radius:2px;padding:0 2px}
+.dok img{display:block;max-width:100%;height:auto;margin:1.1em 0;border-radius:var(--rad)}
+.dok .fern{display:inline-flex;align-items:center;gap:6px;font-size:.8em;
+  color:var(--tinte2);background:var(--rand);border:1px dashed var(--linie);
+  border-radius:var(--rad);padding:3px 8px;font-family:var(--fest)}
+.dok table{border-collapse:collapse;width:100%;margin:0 0 1.1em;font-size:.92em}
+.dok th,.dok td{border:1px solid var(--linie);padding:7px 11px;text-align:left;
+  vertical-align:top}
+.dok th{background:var(--rand);font-weight:600}
+.dok .callout{background:var(--rand);border-left:3px solid var(--blau);
+  border-radius:var(--rad);padding:.85em 1.1em;margin:0 0 1.1em}
+.dok .callout.warnung{border-left-color:var(--rot)}
+.dok .callout .sorte{display:block;font-size:.78em;font-weight:600;letter-spacing:.03em;
+  color:var(--blau);margin-bottom:.25em;text-transform:uppercase}
+.dok .callout.warnung .sorte{color:var(--rot)}
+.dok details{border:1px solid var(--linie);border-radius:var(--rad);
+  padding:.7em .95em;margin:0 0 1.1em}
+.dok details summary{font-weight:600;cursor:pointer}
+.dok details>*+*{margin-top:.6em}
+.dok sup.fnv{font-size:.72em;line-height:0;vertical-align:super;color:var(--blau)}
+.dok .umbruch{height:0;margin:0;border:0}
+.dok .fussnoten{margin-top:3em;padding-top:1.1em;border-top:1px solid var(--linie);
+  font-size:.88em;color:var(--tinte2)}
+.dok .fussnoten .k{font-size:.85em;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--tinte3);margin-bottom:.7em}
+.dok .fussnoten ol{padding-left:1.4em}
+.dok .fussnoten li{margin:.35em 0}
+.dok .inhalt{margin:0 0 2em;padding:.9em 1.1em;background:var(--rand);
+  border-radius:var(--rad-gr)}
+.dok .inhalt .k{font-size:.78em;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--tinte3);margin-bottom:.5em}
+.dok .inhalt ul{list-style:none;padding-left:0;margin:0}
+.dok .inhalt li{margin:.2em 0}
+.dok .inhalt .s2{padding-left:1.2em}
+.dok .inhalt .s3{padding-left:2.4em}
+.dok .teilname{margin:2.4em 0 1.1em;font-size:.72em;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--tinte3);border-top:1px solid var(--linie2);
+  padding-top:.7em}
+.dok[data-satz="blocksatz"] p,
+.dok[data-satz="blocksatz"] blockquote,
+.dok[data-satz="blocksatz"] li{text-align:justify;hyphens:auto}
+.dok .s-k{color:var(--s-schl)}
+.dok .s-y{color:var(--s-name)}
+.dok .s-t{color:var(--s-text)}
+.dok .s-n{color:var(--s-zahl)}
+.dok .s-x{color:var(--s-komm);font-style:italic}
+.dok .s-f{color:var(--s-fkt)}
+`;
+
+/* ---------- Ein Bild ins Dokument ----------
+   Steht ein Verweis ins Netz, wird er benannt und **nicht** geladen
+   (harte Regel 2). Ein mitgewähltes Bild steht als Daten-Adresse in
+   `BILDER` und geht damit auch in die exportierte Datei mit. */
+function bildMalen(titel, quelle){
+  const q = String(quelle).replace(/"/g, "%22");
+  const daten = bildAdresse(quelle);
+  if (daten)
+    return '<img src="' + daten + '" alt="' + titel.replace(/"/g, "&quot;") + '">';
+  if (/^[a-z][a-z0-9+.-]*:/i.test(q) && !/^file:/i.test(q))
+    return '<span class="fern">' + esc(q) + "</span>";
+  return '<img src="' + q + '" alt="' + titel.replace(/"/g, "&quot;") + '" loading="lazy">';
+}
+
+/* ---------- Listen ----------
+   Aus einer flachen Folge von Blöcken mit `tiefe` wird ein Baum aus
+   `<ul>` und `<ol>`. Die Einrückung steht im Modell, nicht im
+   Aufbau — hier wird sie zum ersten Mal zu einem. */
+function listenBauer(aus){
+  const offen = [];            /* je Ebene {tag} */
+  const liOffen = [];
+  const schliesse = (bis) => {
+    while (offen.length > bis){
+      if (liOffen[offen.length - 1]) aus.push("</li>");
+      liOffen.pop();
+      aus.push("</" + offen.pop().tag + ">");
+    }
+  };
+  return {
+    zu: () => schliesse(0),
+    punkt: (b, nummer) => {
+      const tiefe = b.tiefe || 0;
+      const tag = b.art === "nummer" ? "ol" : "ul";
+      schliesse(tiefe + 1);
+      if (offen.length === tiefe + 1 && offen[tiefe].tag !== tag) schliesse(tiefe);
+      while (offen.length < tiefe + 1){
+        aus.push("<" + tag + (tag === "ol" && offen.length === tiefe && nummer > 1
+                 ? ' start="' + nummer + '"' : "") + ">");
+        offen.push({tag:tag}); liOffen.push(false);
+      }
+      if (liOffen[tiefe]){ aus.push("</li>"); liOffen[tiefe] = false; }
+      const klasse = b.art === "todo" ? ' class="todo' + (b.fertig ? " fertig" : "") + '"' : "";
+      const kasten = b.art === "todo"
+        ? '<input type="checkbox" disabled' + (b.fertig ? " checked" : "") + "> " : "";
+      aus.push("<li" + klasse + ">" + kasten + zeilenMalen(b.text));
+      liOffen[tiefe] = true;
+    }
+  };
+}
+
+/* Mehrzeiliger Text in einem Absatz oder Listenpunkt: Der weiche
+   Umbruch bleibt einer. */
+function zeilenMalen(text){
+  return inlineMalen(text).split("\n").join("<br>");
+}
+
+/* ---------- Das Dokument ----------
+   `opt.inhalt` stellt ein Inhaltsverzeichnis voran, `opt.fussnoten`
+   sammelt die Erklärungen ans Ende. Beides ist eine Frage der
+   Ausgabe und steht deshalb nicht in der Datei. */
+function dokumentHtml(opt){
+  opt = opt || {};
+  const vorher = MALART;
+  MALART = "dokument";
+  try {
+    const b = Z.bloecke, nr = nummern(b), aus = [];
+    const liste = listenBauer(aus);
+    const noten = [];
+    b.forEach((x, i) => {
+      if (LISTE.indexOf(x.art) >= 0){ liste.punkt(x, nr[i]); return; }
+      liste.zu();
+      if (x.art === "fussnote"){ noten.push(fussnoteZerlegen(x.text)); return; }
+      aus.push(blockDokument(x, i));
+    });
+    liste.zu();
+    let kopf = "";
+    if (opt.inhalt) kopf = inhaltHtml();
+    let schluss = "";
+    if (noten.length){
+      schluss = '<div class="fussnoten"><div class="k">Fußnoten</div><ol>'
+        + noten.map(n => '<li id="fn-' + esc(anker(n.marke)) + '">'
+            + zeilenMalen(n.text) + "</li>").join("")
+        + "</ol></div>";
+    }
+    return kopf + aus.join("\n") + schluss;
+  } finally { MALART = vorher; }
+}
+
+function blockDokument(x, i){
+  const t = x.text;
+  switch (x.art){
+    case "h1": case "h2": case "h3": {
+      const grad = x.art.slice(1);
+      /* Trägt die Überschrift schon eine Nummer, nummeriert das
+         Thema „Technische Doku" sie nicht noch einmal — dieselbe
+         Regel wie im Druck (doku/ENTSCHEIDUNGEN.md, Punkt 10). */
+      const eigen = EIGENE_NUMMER.test(t) ? ' class="eigen"' : "";
+      return "<h" + grad + eigen + ' id="' + esc(anker(t)) + '" data-i="' + i + '">'
+           + inlineMalen(t) + "</h" + grad + ">";
+    }
+    case "zitat":  return "<blockquote data-i=\"" + i + "\"><p>" + zeilenMalen(t) + "</p></blockquote>";
+    case "code":   return '<pre data-i="' + i + '"'
+                        + (x.sprache ? ' data-sprache="' + esc(spracheName(x.sprache)) + '"' : "")
+                        + "><code>" + codeMalen(t, x.sprache) + "</code></pre>";
+    case "linie":  return '<hr data-i="' + i + '">';
+    case "umbruch": return '<div class="umbruch" data-i="' + i + '"></div>';
+    case "tabelle": return '<div data-i="' + i + '">' + tabelleMalen(t) + "</div>";
+    case "callout": {
+      const sorte = calloutSorte(t);
+      const warn = (sorte === "WARNING" || sorte === "CAUTION") ? " warnung" : "";
+      const rumpf = t.split("\n").slice(1).map(z => z.replace(/^>\s?/, "")).join("\n");
+      return '<div class="callout' + warn + '" data-i="' + i + '">'
+           + '<span class="sorte">' + esc(CALLOUT[sorte] || sorte) + "</span>"
+           + zeilenMalen(rumpf) + "</div>";
+    }
+    case "toggle": {
+      const zeilen = t.split("\n");
+      let titel = "";
+      const rumpf = [];
+      zeilen.forEach(z => {
+        if (/^<\/?details>\s*$/.test(z)) return;
+        const m = z.match(/^<summary>(.*)<\/summary>\s*$/);
+        if (m && !titel){ titel = m[1]; return; }
+        rumpf.push(z);
+      });
+      return '<details data-i="' + i + '" open><summary>' + inlineMalen(titel || "Ohne Titel")
+           + "</summary><div>" + zeilenMalen(rumpf.join("\n").replace(/^\n+|\n+$/g, ""))
+           + "</div></details>";
+    }
+    default:
+      return t.trim()
+        ? '<p data-i="' + i + '">' + zeilenMalen(t) + "</p>"
+        : '<p data-i="' + i + '"><br></p>';
+  }
+}
+
+/* Das Inhaltsverzeichnis der Ausgabe. Es steht **nicht** in der
+   Datei — wer es dort haben will, drückt den Knopf in der
+   Gliederung; der schreibt gewöhnliche Markdown-Verweise. */
+function inhaltHtml(){
+  const kopf = Z.bloecke.filter(b => /^h[123]$/.test(b.art) && b.text);
+  if (!kopf.length) return "";
+  return '<nav class="inhalt"><div class="k">Inhalt</div><ul>'
+    + kopf.map(b => '<li class="s' + b.art.slice(1) + '"><a href="#' + esc(anker(b.text))
+        + '">' + esc(b.text) + "</a></li>").join("")
+    + "</ul></nav>";
+}
+
+/* ============================================================
+  14 — DIE VORSCHAU
+
+   Die Schreibfläche zeigt schon fast das Ergebnis — aber eben nur
+   fast: Der Block unter der Schreibmarke steht als Rohtext da, die
+   Blöcke haben Griffe, und die Spalte ist Notions 708 Pixel breit.
+   Wer wissen will, wie das Dokument **aussieht**, braucht daneben
+   eine Fläche ohne Griffe.
+
+   Sie wird bei jeder Änderung neu gebaut. Das klingt teuer und ist
+   es nicht: Es ist derselbe Handel wie bei `male()`
+   (doku/ENTSCHEIDUNGEN.md, Punkt 6) — eine Zeichenkette bauen und
+   einmal setzen ist schneller als herauszufinden, was sich geändert
+   hat.
+
+   **Automatisches Scrollen:** Die Vorschau folgt der letzten
+   Änderung. Ohne das sucht man nach jedem Satz die Stelle wieder,
+   und die Vorschau wird zu einem Bild, das man nicht benutzt.
+   ============================================================ */
+/* Der Block, in dem zuletzt etwas geschah. Die Vorschau rollt
+   dorthin, die Schnellwahl zeigt ihn an. */
+let letzteStelle = -1;
+
+let vorschauUhr = null;
+function vorschauAnstossen(){
+  if ($("#app").dataset.ansicht !== "vorschau") return;
+  cancelAnimationFrame(vorschauUhr);
+  vorschauUhr = requestAnimationFrame(vorschauMalen);
+}
+
+function vorschauMalen(){
+  const d = $("#vdok");
+  if (!d) return;
+  d.dataset.satz = Z.satz;
+  d.dataset.vthema = Z.vthema;
+  d.innerHTML = dokumentHtml({ inhalt: Z.vinhalt === "an" });
+  $("#vname").textContent = Z.name;
+  if (Z.autoscroll === "an") vorschauRollen();
+}
+
+/* Zur letzten Änderung rollen. Getroffen wird der Block mit derselben
+   Nummer; fehlt er — eine Fußnote etwa steht am Ende, nicht an ihrer
+   Stelle —, wird der nächste davor genommen. */
+function vorschauRollen(){
+  if (letzteStelle < 0) return;
+  const d = $("#vdok");
+  let ziel = null;
+  for (let i = letzteStelle; i >= 0 && !ziel; i--)
+    ziel = d.querySelector('[data-i="' + i + '"]');
+  if (!ziel) return;
+  const kasten = $("#vblatt");
+  const oben = ziel.offsetTop - kasten.clientHeight * 0.38;
+  kasten.scrollTo({ top: Math.max(0, oben), behavior: "auto" });
+}
+
+/* Ein Klick in der Vorschau springt an dieselbe Stelle auf der
+   Fläche. Das ist der einzige Griff, den die Vorschau hat — sie ist
+   eine Anzeige, kein zweiter Editor (doku/ENTSCHEIDUNGEN.md,
+   Punkt 3). */
+function vorschauVerdrahten(){
+  $("#vblatt").addEventListener("dblclick", (ev) => {
+    const n = ev.target.closest("[data-i]");
+    if (!n) return;
+    springeZu(Number(n.dataset.i), 0);
+  });
+  $("#v-nur").onclick = () => {
+    const app = $("#app");
+    const an = app.dataset.nur === "ja";
+    app.dataset.nur = an ? "nein" : "ja";
+    $("#v-nur").setAttribute("aria-pressed", String(!an));
+    melde(an ? "Fläche und Vorschau" : "Nur die Vorschau");
+  };
+  $("#v-inhalt").onclick = () => {
+    Z.vinhalt = Z.vinhalt === "an" ? "aus" : "an";
+    $("#v-inhalt").setAttribute("aria-pressed", String(Z.vinhalt === "an"));
+    bewahreSofort(); vorschauMalen();
+  };
+}
+
+/* ---------- Vollbild und Ruhe ----------
+   Zwei verschiedene Dinge, die oft verwechselt werden: **Vollbild**
+   nimmt dem Browser seine Leisten, **Ruhe** nimmt dieser Anwendung
+   ihre. Man kann beides einzeln haben und beides zusammen. */
+function vollbild(){
+  const w = document.documentElement;
+  if (document.fullscreenElement){
+    document.exitFullscreen();
+    return;
+  }
+  if (!w.requestFullscreen){ melde("Der Browser gibt kein Vollbild her."); return; }
+  const versprechen = w.requestFullscreen();
+  if (versprechen && versprechen.catch)
+    versprechen.catch(() => melde("Das Vollbild ließ sich nicht öffnen."));
+}
+
+function ruhe(an){
+  const app = $("#app");
+  const jetzt = an === undefined ? app.dataset.ruhe !== "ja" : an;
+  app.dataset.ruhe = jetzt ? "ja" : "nein";
+  $("#ruhe-aus").hidden = !jetzt;
+  if (jetzt) melde("Ablenkungsfrei — Esc beendet");
+  try { localStorage.setItem(SCHLUESSEL + "-ruhe", app.dataset.ruhe); } catch (e) { /* egal */ }
+}
+
+/* ============================================================
+  15 — THEMEN UND DER STIL-VERWALTER
+
+   Zwei Dinge, die auseinandergehalten gehören:
+
+   * **Das Thema der Anwendung** (`hell`/`dunkel`) färbt die
+     Werkbank — Kopfleiste, Fußleiste, Menüs.
+   * **Das Thema der Vorschau** färbt das **Dokument**. Es gilt in
+     der Vorschau, im Druck und in der exportierten Datei, und es
+     folgt dem Thema der Anwendung **nicht**: Papier bleibt Papier,
+     auch wenn die Werkbank dunkel steht.
+
+   Darüber liegt das eigene CSS. Es kommt zuletzt und schlägt damit
+   alles andere — das ist der Sinn: Wer eigene Regeln schreibt, will
+   sie durchsetzen, nicht mit dem Editor verhandeln.
+   ============================================================ */
+const VTHEMEN = [
+  ["editor",   "Wie der Editor",
+   "Dieselben Schriften und Farben wie die Schreibfläche. Folgt dem Thema der Anwendung "
+   + "— hell und dunkel."],
+  ["papier",   "Papier",
+   "Warmweißer Grund, Serifenschrift. Für Texte, die gelesen und nicht nachgeschlagen "
+   + "werden. <b>Bleibt hell, auch im dunklen Thema.</b>"],
+  ["buch",     "Buchsatz",
+   "Serifen, schmale Spalte, Blocksatz, große Überschriften. Das Layout eines Buches — "
+   + "rund 70 Zeichen je Zeile."],
+  ["technik",  "Technische Doku",
+   "Enger Satz, gerahmte Codeblöcke, Tabellen mit Linien, <b>nummerierte "
+   + "Überschriften</b> — aber nur die, die noch keine Nummer tragen."],
+  ["zeitung",  "Zeitung",
+   "Serifen-Überschriften über einem Fließtext ohne Serifen, feine Linien, viel Raum "
+   + "zwischen den Abschnitten."],
+  ["kontrast", "Hoher Kontrast",
+   "Reines Schwarz auf Weiß, größere Schrift, kräftigere Linien. Für Bildschirme, "
+   + "Ausdrucke und Augen, denen die feinen Grauwerte nicht genügen."],
+  ["manuskript", "Manuskript",
+   "Weiter Durchschuss und ein breiter Rand zum Hineinschreiben. Für Entwürfe, die auf "
+   + "Papier bearbeitet werden."],
+  ["maschine", "Schreibmaschine",
+   "Alles in fester Breite. Für Entwürfe, Protokolle und alles, wo die Spalte zählt."]
+];
+
+/* Die Themen als Stil. Jeder Wert kommt aus einem Token in
+   Abschnitt 1 — was hier hart stünde, ließe sich weder umschalten
+   noch nachrechnen (CLAUDE.md, Gestaltung). */
+const VTHEMA_CSS = `
+.dok[data-vthema="papier"]{background:var(--pap-g);color:var(--pap-t);
+  --dok-schrift:var(--serif)}
+.dok[data-vthema="papier"] h1,.dok[data-vthema="papier"] h2,
+.dok[data-vthema="papier"] h3{color:var(--pap-t)}
+.dok[data-vthema="papier"] blockquote{color:var(--pap-t);opacity:.82}
+
+.dok[data-vthema="buch"]{background:var(--pap-g);color:var(--pap-t);
+  --dok-schrift:var(--serif);--dok-breite:640px;--dok-hoehe:1.72;--dok-groesse:17.5px;
+  text-align:justify;hyphens:auto}
+.dok[data-vthema="buch"] h1,.dok[data-vthema="buch"] h2,
+.dok[data-vthema="buch"] h3{color:var(--pap-t);text-align:left}
+.dok[data-vthema="buch"] h1{font-size:2.4em;text-align:center;margin-bottom:1.2em}
+.dok[data-vthema="buch"] pre,.dok[data-vthema="buch"] table{text-align:left}
+
+.dok[data-vthema="technik"]{--dok-hoehe:1.5;--dok-groesse:15.5px;--dok-breite:820px}
+.dok[data-vthema="technik"] pre{border:1px solid var(--linie);background:none}
+.dok[data-vthema="technik"] th,.dok[data-vthema="technik"] td{border-color:var(--tinte3)}
+.dok[data-vthema="technik"] h1{counter-increment:k1;counter-reset:k2 k3}
+.dok[data-vthema="technik"] h2{counter-increment:k2;counter-reset:k3}
+.dok[data-vthema="technik"] h3{counter-increment:k3}
+.dok[data-vthema="technik"]{counter-reset:k1}
+/* Nummeriert wird nur, was noch keine Nummer trägt — dieselbe Regel
+   wie im Druck-Layout (doku/ENTSCHEIDUNGEN.md, Punkt 10). */
+.dok[data-vthema="technik"] h1:not(.eigen)::before{content:counter(k1) "\\00a0\\00a0"}
+.dok[data-vthema="technik"] h2:not(.eigen)::before{
+  content:counter(k1) "." counter(k2) "\\00a0\\00a0"}
+.dok[data-vthema="technik"] h3:not(.eigen)::before{
+  content:counter(k1) "." counter(k2) "." counter(k3) "\\00a0\\00a0"}
+
+.dok[data-vthema="zeitung"]{--dok-hoehe:1.66}
+.dok[data-vthema="zeitung"] h1,.dok[data-vthema="zeitung"] h2,
+.dok[data-vthema="zeitung"] h3{font-family:var(--serif);letter-spacing:-.01em}
+.dok[data-vthema="zeitung"] h1{font-size:2.6em;line-height:1.08}
+.dok[data-vthema="zeitung"] h2{border-bottom:1px solid var(--linie);padding-bottom:.22em}
+.dok[data-vthema="zeitung"] p{margin-bottom:1.15em}
+
+.dok[data-vthema="kontrast"]{background:var(--kon-g);color:var(--kon-t);
+  --dok-groesse:18px;--dok-hoehe:1.7}
+.dok[data-vthema="kontrast"] h1,.dok[data-vthema="kontrast"] h2,
+.dok[data-vthema="kontrast"] h3,.dok[data-vthema="kontrast"] blockquote{color:var(--kon-t)}
+.dok[data-vthema="kontrast"] blockquote{border-left-width:5px;border-left-color:var(--kon-t)}
+.dok[data-vthema="kontrast"] th,.dok[data-vthema="kontrast"] td{border-color:var(--kon-t)}
+.dok[data-vthema="kontrast"] hr{border-top-width:2px;border-top-color:var(--kon-t)}
+
+.dok[data-vthema="manuskript"]{--dok-hoehe:2;--dok-groesse:17px;--dok-breite:620px;
+  padding-right:110px}
+.dok[data-vthema="manuskript"] h1{font-size:1.45em}
+.dok[data-vthema="manuskript"] h2{font-size:1.25em}
+.dok[data-vthema="manuskript"] h3{font-size:1.1em}
+
+.dok[data-vthema="maschine"]{background:var(--masch-g);color:var(--masch-t);
+  --dok-schrift:var(--fest);--dok-groesse:14.5px;--dok-hoehe:1.7}
+.dok[data-vthema="maschine"] h1,.dok[data-vthema="maschine"] h2,
+.dok[data-vthema="maschine"] h3{color:var(--masch-t);font-family:var(--fest);
+  text-transform:uppercase;letter-spacing:.04em}
+.dok[data-vthema="maschine"] h1{font-size:1.5em}
+.dok[data-vthema="maschine"] h2{font-size:1.25em}
+.dok[data-vthema="maschine"] h3{font-size:1.08em}
+.dok[data-vthema="maschine"] pre{border:1px dashed var(--linie);background:none}
+`;
+
+/* Was der Nutzer selbst einstellt: Breite, Größe, Durchschuss. Sie
+   stehen als Tokens am Dokument und nicht im Thema — sonst müsste
+   jedes Thema alles drei mitbringen. */
+function dokMasse(){
+  return ".dok{--dok-breite:" + Number(Z.dokBreite || 760) + "px;"
+       + "--dok-groesse:" + Number(Z.dokGroesse || 16.5) + "px;"
+       + "--dok-hoehe:" + Number(Z.dokHoehe || 1.62) + "}\n";
+}
+
+/* Vier Stilblöcke, eine Reihenfolge: Grundstil, Thema, eigene Maße,
+   eigenes CSS. Wer zuletzt kommt, gewinnt. */
+function dokStilSetzen(){
+  stilSetzen("dokstil", DOK_CSS + VTHEMA_CSS + dokMasse());
+  stilSetzen("eigenstil", String(Z.eigenCss || ""));
+}
+
+/* ---------- Der Stil-Verwalter ----------
+   Eine eigene Karte, nicht noch eine Gruppe in den Einstellungen:
+   Hier steht ein Textfeld, und ein Textfeld in einer Reihe von
+   Knopfgruppen sieht aus wie ein Versehen. */
+function stilVerdrahten(){
+  const ueber = $("#stil");
+  const feld = $("#stil-css");
+  const zu = () => ueber.classList.remove("an");
+
+  const themenMalen = () => {
+    const wahl = $("#stil-themen");
+    wahl.innerHTML = "";
+    VTHEMEN.forEach(([schluessel, name]) => {
+      const b = el("button", null, esc(name));
+      b.type = "button";
+      b.setAttribute("aria-pressed", String(schluessel === Z.vthema));
+      b.onclick = () => {
+        Z.vthema = schluessel;
+        bewahreSofort(); themenMalen(); vorschauMalen(); druckvorschauMalen();
+        $("#stil-erklaerung").innerHTML =
+          (VTHEMEN.find(x => x[0] === schluessel) || [,,""])[2];
+      };
+      wahl.appendChild(b);
+    });
+    $("#stil-erklaerung").innerHTML = (VTHEMEN.find(x => x[0] === Z.vthema) || [,,""])[2];
+  };
+
+  const masse = [
+    ["stil-breite", "dokBreite",  "px",  (v) => Math.max(320, Math.min(1400, v))],
+    ["stil-groesse","dokGroesse", "px",  (v) => Math.max(10,  Math.min(32, v))],
+    ["stil-hoehe",  "dokHoehe",   "",    (v) => Math.max(1.1, Math.min(2.4, v))]
+  ];
+
+  $("#stil-auf").onclick = () => {
+    themenMalen();
+    masse.forEach(([id, feldname]) => { $("#" + id).value = String(Z[feldname]); });
+    feld.value = String(Z.eigenCss || "");
+    ueber.classList.add("an");
+    $("#stil-zu").focus();
+  };
+  $("#stil-zu").onclick = zu;
+  ueber.addEventListener("mousedown", (ev) => { if (ev.target === ueber) zu(); });
+
+  masse.forEach(([id, feldname, , grenze]) => {
+    $("#" + id).addEventListener("input", () => {
+      const v = parseFloat($("#" + id).value);
+      if (!isFinite(v)) return;
+      Z[feldname] = String(grenze(v));
+      bewahreSofort(); dokStilSetzen(); druckvorschauMalen();
+    });
+  });
+
+  /* Das eigene CSS wirkt sofort. Ein Knopf „Anwenden" wäre eine
+     Rückfrage, auf die niemand mit Nein antwortet. */
+  let cssUhr = null;
+  feld.addEventListener("input", () => {
+    clearTimeout(cssUhr);
+    cssUhr = setTimeout(() => {
+      Z.eigenCss = feld.value;
+      bewahreSofort(); dokStilSetzen(); druckvorschauMalen();
+    }, 260);
+  });
+
+  $("#stil-laden").onclick = () => $("#stil-datei").click();
+  $("#stil-datei").addEventListener("change", (ev) => {
+    const f = ev.target.files && ev.target.files[0];
+    if (!f) return;
+    const leser = new FileReader();
+    leser.onload = () => {
+      feld.value = String(leser.result);
+      Z.eigenCss = feld.value;
+      bewahreSofort(); dokStilSetzen(); druckvorschauMalen();
+      melde("CSS geladen: " + f.name);
+    };
+    leser.onerror = () => melde("Die CSS-Datei ließ sich nicht lesen.");
+    leser.readAsText(f, "utf-8");
+    ev.target.value = "";
+  });
+
+  $("#stil-sichern").onclick = () => {
+    if (!String(Z.eigenCss || "").trim()){ melde("Noch kein eigenes CSS."); return; }
+    herunterladen(Z.eigenCss, Z.name.replace(/\.[^.]+$/, "") + ".css", "text/css");
+  };
+
+  $("#stil-leeren").onclick = () => {
+    if (!String(Z.eigenCss || "").trim()) return;
+    if (!confirm("Das eigene CSS wird gelöscht.\n\nOK = löschen, Abbrechen = zurück")) return;
+    feld.value = ""; Z.eigenCss = "";
+    bewahreSofort(); dokStilSetzen(); druckvorschauMalen();
+    melde("Eigenes CSS gelöscht");
+  };
+}
+
+/* ============================================================
+  16 — DIE SEITE
+
+   Bis August 2026 stand hier ein Satz: Seitenzahlen und Kopfzeilen
+   setzt der Browser, nicht die Seite (doku/ENTSCHEIDUNGEN.md,
+   Punkt 10). Für die **Seitenzahl** gilt er weiter — `counter(page)`
+   in einem Randkasten kennt Chromium nicht. Für alles andere gilt er
+   nicht mehr: Größe, Ausrichtung, Ränder und eine mitlaufende
+   Kopf- und Fußzeile lassen sich sehr wohl setzen.
+
+   Die mitlaufende Zeile geht über `<thead>` und `<tfoot>` einer
+   Tabelle. Das ist der einzige Weg, den Chromium verlässlich auf
+   jeder Seite wiederholt; `position:fixed` säße im Satzspiegel und
+   liefe in den Text. Gebaut wird die Tabelle **nur**, wenn eine
+   Kopf- oder Fußzeile eingetragen ist — ohne sie bleibt das Dokument
+   ein gewöhnlicher Fluss, und der bricht sauberer um.
+
+   Gedruckt wird **nicht** die Schreibfläche, sondern dasselbe
+   Dokument, das die Vorschau zeigt. Sonst wäre die Vorschau eine
+   Behauptung.
+   ============================================================ */
+const SEITEN = [
+  ["a4",     "A4",     210, 297],
+  ["a5",     "A5",     148, 210],
+  ["a3",     "A3",     297, 420],
+  ["letter", "Letter", 216, 279],
+  ["legal",  "Legal",  216, 356]
+];
+
+const RANDVORLAGE = [
+  ["eng",    "Eng",    "12 12 12 12"],
+  ["normal", "Normal", "18 18 18 18"],
+  ["weit",   "Weit",   "25 25 25 25"],
+  ["binden", "Zum Binden", "20 15 20 30"]
+];
+
+const UMBRUCHVOR = [
+  ["nie", "Nie",             "Nur dort, wo ein <b>Seitenumbruch</b> im Text steht."],
+  ["h1",  "Vor Überschrift 1", "Jedes Kapitel beginnt auf einer neuen Seite."],
+  ["h2",  "Vor Überschrift 2", "Auch jeder Abschnitt. Für kurze, gegliederte Texte."]
+];
+
+function seiteVon(){ return SEITEN.find(x => x[0] === Z.seite) || SEITEN[0]; }
+
+/* Die vier Ränder in Millimetern: oben, rechts, unten, links. Sie
+   stehen als eine Zeichenkette in `Z.rand` — vier Felder wären vier
+   Gelegenheiten, drei davon zu vergessen. */
+function raender(){
+  const t = String(Z.rand || "18 18 18 18").trim().split(/\s+/).map(Number);
+  const aus = [0,1,2,3].map(i => isFinite(t[i]) ? Math.max(0, Math.min(60, t[i])) : 18);
+  return aus;
+}
+
+const heute = () => {
+  const d = new Date();
+  const zwei = (n) => (n < 10 ? "0" : "") + n;
+  return zwei(d.getDate()) + "." + zwei(d.getMonth() + 1) + "." + d.getFullYear();
+};
+
+/* Der Titel des Dokuments: die erste Überschrift 1, sonst der
+   Dateiname ohne Endung. */
+function dokTitel(){
+  const h = Z.bloecke.find(b => b.art === "h1" && b.text);
+  return h ? h.text : String(Z.name).replace(/\.[^.]+$/, "");
+}
+
+/* Platzhalter in Kopf- und Fußzeile. Die **Seitenzahl fehlt
+   absichtlich**: Chromium setzt sie im Druckdialog, und eine, die
+   der Editor selbst schriebe, stünde auf jeder Seite gleich. */
+function zeileFuellen(text){
+  return String(text || "")
+    .replace(/\{titel\}/g, dokTitel())
+    .replace(/\{datei\}/g, Z.name)
+    .replace(/\{datum\}/g, heute());
+}
+
+/* Ein Balken mit bis zu drei Feldern: links | mitte | rechts. */
+function laufzeile(text, bild, klasse){
+  const roh = String(text || "").trim();
+  if (!roh && !bild) return "";
+  const teile = roh ? roh.split("|") : [""];
+  while (teile.length < 3) teile.push("");
+  const bildHtml = bild ? '<img src="' + bild + '" alt="">' : "";
+  return '<div class="' + klasse + '">' + bildHtml
+    + teile.slice(0, 3).map((t, i) =>
+        '<span class="f' + i + '">' + esc(zeileFuellen(t.trim())) + "</span>").join("")
+    + "</div>";
+}
+
+/* ---------- Der Stil der Seite ----------
+   Er hängt an den Einstellungen und wird deshalb zur Laufzeit
+   geschrieben: `@page` kennt keine Variablen. */
+function seitenStilSetzen(){
+  const [, , breit, hoch] = seiteVon();
+  const quer = Z.hoch === "quer";
+  const b = quer ? hoch : breit, h = quer ? breit : hoch;
+  const r = raender();
+  const satzBreite = b - r[1] - r[3];
+  document.documentElement.dataset.umbruch = Z.umbruchVor;
+  stilSetzen("seitenstil",
+    "@page{size:" + b + "mm " + h + "mm;margin:"
+      + r[0] + "mm " + r[1] + "mm " + r[2] + "mm " + r[3] + "mm}\n"
+    /* Dieselben Maße auf dem Bildschirm. CSS rechnet Millimeter mit
+       96 dpi um — die Vorschau ist deshalb maßhaltig, solange der
+       Druckdialog nicht skaliert. */
+    + ".druckblatt{width:" + b + "mm;padding:"
+      + r[0] + "mm " + r[1] + "mm " + r[2] + "mm " + r[3] + "mm;"
+      + "min-height:" + h + "mm;--satz:" + satzBreite + "mm;"
+      /* Eine feine Linie je Seitenhöhe. Eine Näherung, keine
+         Auszählung — der Druckdialog rechnet genauer, und das steht
+         auch in der Leiste. */
+      + "background-image:repeating-linear-gradient(to bottom,"
+      + "transparent 0," + "transparent calc(" + h + "mm - 1px),"
+      + "var(--linie) calc(" + h + "mm - 1px),var(--linie) " + h + "mm)}\n"
+    + ".druckblatt .dok{max-width:" + satzBreite + "mm}\n");
+}
+
+/* ---------- Das Druckdokument ----------
+   Dieselbe Zeichenkette wie in der Vorschau, dazu — wenn nötig — die
+   Tabelle mit der mitlaufenden Zeile. */
+function druckDokument(){
+  const kopf = laufzeile(Z.kopfzeile, Z.kopfbild, "dkopf");
+  const fuss = laufzeile(Z.fusszeile, Z.fussbild, "dfuss");
+  const dok = '<div class="dok" data-vthema="' + esc(Z.vthema) + '" data-satz="'
+            + esc(Z.satz) + '">' + dokumentHtml({ inhalt: Z.vinhalt === "an" }) + "</div>";
+  if (!kopf && !fuss) return dok;
+  return '<table class="dseite"><thead><tr><td>' + kopf + "</td></tr></thead>"
+    + (fuss ? "<tfoot><tr><td>" + fuss + "</td></tr></tfoot>" : "")
+    + "<tbody><tr><td>" + dok + "</td></tr></tbody></table>";
+}
+
+function druckvorschauMalen(){
+  const n = $("#druckblatt");
+  if (!n) return;
+  if (document.body.dataset.druckvorschau !== "ja") return;
+  n.innerHTML = druckDokument();
+}
+
+function druckvorschau(an){
+  const jetzt = an === undefined ? document.body.dataset.druckvorschau !== "ja" : an;
+  document.body.dataset.druckvorschau = jetzt ? "ja" : "nein";
+  if (jetzt){
+    leisteVerbergen(); menueVerbergen(); slashSchliessen();
+    /* Die Karten liegen über der Vorschau. Wer sie aus einer Karte
+       heraus öffnet, will die Seite sehen und nicht die Karte. */
+    document.querySelectorAll(".ueberzug.an").forEach(n => n.classList.remove("an"));
+    seitenStilSetzen();
+    $("#druckblatt").innerHTML = druckDokument();
+    druckLeisteMalen();
+  }
+}
+
+/* Die Leiste über der Vorschau: Format, Ausrichtung, Layout — die
+   drei Griffe, die man beim Ansehen ändern will, ohne dafür in die
+   Einstellungen zu gehen. */
+function druckLeisteMalen(){
+  const wo = $("#druck-griffe");
+  wo.innerHTML = "";
+  const gruppe = (etikett, werte, jetzt, tue) => {
+    const k = el("span", "dg");
+    k.appendChild(el("span", "dgn", esc(etikett)));
+    werte.forEach(([schluessel, name]) => {
+      const b = el("button", null, esc(name));
+      b.type = "button";
+      b.setAttribute("aria-pressed", String(schluessel === jetzt));
+      b.onclick = () => { tue(schluessel); seitenStilSetzen(); druckvorschauMalen();
+                          druckLeisteMalen(); bewahreSofort(); };
+      k.appendChild(b);
+    });
+    wo.appendChild(k);
+  };
+  gruppe("Format", SEITEN.map(x => [x[0], x[1]]), Z.seite, (v) => { Z.seite = v; });
+  gruppe("Ausrichtung", [["hoch","Hoch"],["quer","Quer"]], Z.hoch, (v) => { Z.hoch = v; });
+  gruppe("Rand", RANDVORLAGE.map(x => [x[2], x[1]]), String(Z.rand), (v) => { Z.rand = v; });
+  gruppe("Thema", VTHEMEN.map(x => [x[0], x[1]]), Z.vthema, (v) => { Z.vthema = v; });
+}
+
+/* ---------- Die Karte „Seite einrichten" ---------- */
+function seiteVerdrahten(){
+  const ueber = $("#seite-karte");
+  const zu = () => ueber.classList.remove("an");
+
+  const malen = () => {
+    const wahl = (id, werte, jetzt, tue) => {
+      const k = $("#" + id);
+      k.innerHTML = "";
+      werte.forEach(([schluessel, name]) => {
+        const b = el("button", null, esc(name));
+        b.type = "button";
+        b.setAttribute("aria-pressed", String(String(schluessel) === String(jetzt)));
+        b.onclick = () => { tue(schluessel); bewahreSofort(); seitenStilSetzen();
+                            malen(); druckvorschauMalen(); };
+        k.appendChild(b);
+      });
+    };
+    wahl("seite-format", SEITEN.map(x => [x[0], x[1]]), Z.seite, (v) => { Z.seite = v; });
+    wahl("seite-lage", [["hoch","Hochformat"],["quer","Querformat"]], Z.hoch,
+         (v) => { Z.hoch = v; });
+    wahl("seite-randvorlage", RANDVORLAGE.map(x => [x[2], x[1]]), String(Z.rand),
+         (v) => { Z.rand = v; });
+    wahl("seite-umbruch", UMBRUCHVOR.map(x => [x[0], x[1]]), Z.umbruchVor,
+         (v) => { Z.umbruchVor = v; });
+    $("#seite-umbruch-satz").innerHTML =
+      (UMBRUCHVOR.find(x => x[0] === Z.umbruchVor) || [,,""])[2];
+    const r = raender();
+    ["oben","rechts","unten","links"].forEach((n, i) => { $("#rand-" + n).value = String(r[i]); });
+    $("#seite-kopf").value = String(Z.kopfzeile || "");
+    $("#seite-fuss").value = String(Z.fusszeile || "");
+    $("#kopfbild-stand").textContent = Z.kopfbild ? "Bild gewählt" : "kein Bild";
+    $("#fussbild-stand").textContent = Z.fussbild ? "Bild gewählt" : "kein Bild";
+  };
+
+  $("#seite-auf").onclick = () => { seitenStilSetzen(); malen();
+                                    ueber.classList.add("an"); $("#seite-zu").focus(); };
+  $("#seite-zu").onclick = zu;
+  ueber.addEventListener("mousedown", (ev) => { if (ev.target === ueber) zu(); });
+
+  ["oben","rechts","unten","links"].forEach((n, i) => {
+    $("#rand-" + n).addEventListener("input", () => {
+      const r = raender();
+      const v = parseFloat($("#rand-" + n).value);
+      if (!isFinite(v)) return;
+      r[i] = Math.max(0, Math.min(60, v));
+      Z.rand = r.join(" ");
+      bewahreSofort(); seitenStilSetzen(); druckvorschauMalen();
+    });
+  });
+
+  const zeile = (id, feld) => {
+    $("#" + id).addEventListener("input", () => {
+      Z[feld] = $("#" + id).value;
+      bewahreSofort(); druckvorschauMalen();
+    });
+  };
+  zeile("seite-kopf", "kopfzeile");
+  zeile("seite-fuss", "fusszeile");
+
+  /* Bilder in Kopf- und Fußzeile. Sie liegen als Daten-Adresse in
+     der Einstellung und gehen damit auch in den HTML-Export mit —
+     dafür ist die Grenze eng: `localStorage` fasst wenige Megabyte,
+     und ein Logo braucht keine hundert Kilobyte. */
+  const BILDGRENZE = 400 * 1024;
+  [["kopfbild", "kopfbild"], ["fussbild", "fussbild"]].forEach(([id, feld]) => {
+    $("#" + id + "-waehlen").onclick = () => $("#" + id + "-datei").click();
+    $("#" + id + "-weg").onclick = () => {
+      Z[feld] = ""; bewahreSofort(); malen(); druckvorschauMalen(); };
+    $("#" + id + "-datei").addEventListener("change", (ev) => {
+      const f = ev.target.files && ev.target.files[0];
+      ev.target.value = "";
+      if (!f) return;
+      if (f.size > BILDGRENZE){
+        melde("Das Bild ist größer als 400 KB. Ein Logo in der Kopfzeile braucht das nicht.");
+        return;
+      }
+      const leser = new FileReader();
+      leser.onload = () => {
+        Z[feld] = String(leser.result);
+        bewahreSofort(); malen(); druckvorschauMalen();
+        melde("Bild übernommen: " + f.name);
+      };
+      leser.onerror = () => melde("Das Bild ließ sich nicht lesen.");
+      leser.readAsDataURL(f);
+    });
+  });
+
+  $("#druck-zu").onclick = () => druckvorschau(false);
+  $("#druck-pdf").onclick = () => pdfOeffnen();
+  $("#druckvorschau-auf").onclick = () => druckvorschau(true);
+}
+
+/* Der Druckdialog. Vorher wird das Druckdokument gebaut — ohne das
+   stünde die Seite leer da, weil auf dem Bildschirm nur die
+   Schreibfläche gefüllt ist. */
+function pdfOeffnen(){
+  leisteVerbergen(); menueVerbergen(); slashSchliessen();
+  seitenStilSetzen();
+  $("#druckblatt").innerHTML = druckDokument();
+  melde("Im Druckdialog „Als PDF speichern“ wählen.");
+  setTimeout(() => window.print(), 280);
+}
+
+/* ============================================================
+  17 — AUSGEBEN
+
+   Fünf Formate, ein Dokument. Alle fünf entstehen **von Hand** —
+   eine Bibliothek für DOCX oder RTF wäre nach harter Regel 2
+   ausgeschlossen und brächte fremden Code in eine Datei, die per
+   Doppelklick laufen soll.
+
+   * **Markdown** — die Datei selbst. Der einzige verlustfreie Weg.
+   * **HTML** — eine eigenständige Seite: Stil, eigenes CSS und
+     mitgewählte Bilder stehen darin. Keine zweite Datei daneben.
+   * **DOCX** — ein ZIP mit vier XML-Teilen, von Hand gepackt.
+   * **RTF** — reiner Text mit Steuerwörtern. Öffnet überall.
+   * **PDF** — über den Druckdialog, Abschnitt 16.
+
+   **Was DOCX und RTF nicht können:** Bilder. Beide Formate legen sie
+   binär im Dokument ab, und das wäre ein eigener Schritt. Sie stehen
+   dort als `[Bild: Titel]`. Wer Bilder braucht, nimmt HTML oder PDF —
+   und das steht auch im Menü.
+   ============================================================ */
+const xesc = (s) => String(s).replace(/[&<>"]/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const ohneEndung = (n) => String(n).replace(/\.[^.]+$/, "") || "dokument";
+
+/* ---------- Die Tokens für die ausgegebene Datei ----------
+   Gelesen wird die Regel `:root` aus dem Stilblock, nicht der
+   berechnete Stand: Der trüge das gerade eingestellte Thema der
+   **Anwendung** in ein Dokument, das Papier sein soll. */
+function wurzelTokens(){
+  try {
+    for (const blatt of document.styleSheets){
+      let regeln = null;
+      try { regeln = blatt.cssRules; } catch (e) { continue; }
+      if (!regeln) continue;
+      for (let i = 0; i < regeln.length; i++){
+        if (regeln[i].selectorText === ":root") return regeln[i].style.cssText;
+      }
+    }
+  } catch (e) { /* dann eben ohne */ }
+  return "";
+}
+
+function ausgabeCss(){
+  const [, , breit, hoch] = seiteVon();
+  const quer = Z.hoch === "quer";
+  const b = quer ? hoch : breit, h = quer ? breit : hoch;
+  const r = raender();
+  return ":root{" + wurzelTokens() + "}\n"
+    + "*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}\n"
+    + "body{background:var(--grund);color:var(--tinte);padding:44px 0 12vh}\n"
+    + DOK_CSS + VTHEMA_CSS + dokMasse()
+    + "@media print{\n"
+    + "  @page{size:" + b + "mm " + h + "mm;margin:"
+      + r[0] + "mm " + r[1] + "mm " + r[2] + "mm " + r[3] + "mm}\n"
+    + "  body{padding:0;background:#fff}\n"
+    + "  .dok{max-width:none;padding:0;background:none}\n"
+    + "  .dok pre,.dok table,.dok .callout,.dok details{break-inside:avoid}\n"
+    + "  .dok h1,.dok h2,.dok h3{break-after:avoid}\n"
+    + "  .dok .umbruch{break-after:page}\n"
+    + "}\n"
+    + String(Z.eigenCss || "");
+}
+
+function htmlAusgeben(){
+  const titel = dokTitel();
+  const kopf = laufzeile(Z.kopfzeile, Z.kopfbild, "dkopf");
+  const fuss = laufzeile(Z.fusszeile, Z.fussbild, "dfuss");
+  const teile = [
+    "<!DOCTYPE html>",
+    '<html lang="de">',
+    "<head>",
+    '<meta charset="UTF-8">',
+    '<meta name="viewport" content="width=device-width,initial-scale=1.0">',
+    "<title>" + xesc(titel) + "</title>",
+    "<sty" + "le>",
+    ausgabeCss(),
+    "</sty" + "le>",
+    "</head>",
+    "<body>",
+    '<div class="dok" data-vthema="' + xesc(Z.vthema) + '" data-satz="' + xesc(Z.satz) + '">',
+    (kopf || "") ,
+    dokumentHtml({ inhalt: Z.vinhalt === "an" }),
+    (fuss || ""),
+    "</div>",
+    "</body>",
+    "</html>",
+    ""
+  ];
+  return teile.join("\n");
+}
+
+/* ---------- RTF ----------
+   Reiner Text mit Steuerwörtern. Was nicht in ASCII passt, wird als
+   `\\uNNNN?` geschrieben — mit dem Fragezeichen als Ersatzzeichen für
+   Programme, die die Zahl nicht lesen. */
+function rtfText(s){
+  let aus = "";
+  const t = String(s);
+  for (let i = 0; i < t.length; i++){
+    const c = t[i], p = t.charCodeAt(i);
+    if (c === "\\" || c === "{" || c === "}") aus += "\\" + c;
+    else if (c === "\n") aus += "\\line ";
+    else if (p < 128) aus += c;
+    else aus += "\\u" + (p > 32767 ? p - 65536 : p) + "?";
+  }
+  return aus;
+}
+
+/* Die Auszeichnung im Text. Dieselbe Aufteilung wie `qInline` — eine
+   Alternative, ein Durchlauf, Code zuerst. */
+const RTF_INLINE =
+  /(`[^`\n]+`)|(!\[[^\]\n]*\]\([^)\s]*\))|(\[[^\]\n]+\]\([^)\s]*\))|(\*\*[^*\n]+\*\*)|(\*[^*\n]+\*)|(~~[^~\n]+~~)|(==[^=\n]+==)|(\[\^[^\]\s]+\])/g;
+
+function inlineRtf(t){
+  let aus = "", letzte = 0, m;
+  RTF_INLINE.lastIndex = 0;
+  while ((m = RTF_INLINE.exec(t))){
+    aus += rtfText(t.slice(letzte, m.index));
+    const st = m[0];
+    if (st[0] === "`")            aus += "{\\f1 " + rtfText(st.slice(1, -1)) + "}";
+    else if (st.slice(0,2) === "![")
+      aus += "{\\i [Bild: " + rtfText((st.match(/^!\[([^\]\n]*)\]/) || [,""])[1]) + "]}";
+    else if (st[0] === "[" && st[1] === "^")
+      aus += "{\\super " + rtfText(st.slice(2, -1)) + "}";
+    else if (st[0] === "[")       aus += rtfText((st.match(/^\[([^\]\n]+)\]/) || [,""])[1]);
+    else if (st.slice(0,2) === "**") aus += "{\\b " + rtfText(st.slice(2, -2)) + "}";
+    else if (st.slice(0,2) === "~~") aus += "{\\strike " + rtfText(st.slice(2, -2)) + "}";
+    else if (st.slice(0,2) === "==") aus += "{\\highlight7 " + rtfText(st.slice(2, -2)) + "}";
+    else                             aus += "{\\i " + rtfText(st.slice(1, -1)) + "}";
+    letzte = m.index + st.length;
+  }
+  return aus + rtfText(t.slice(letzte));
+}
+
+function rtfAusgeben(){
+  const nr = nummern(Z.bloecke);
+  const aus = [];
+  const noten = [];
+  const absatz = (steuer, inhalt) => aus.push("\\pard" + steuer + " " + inhalt + "\\par");
+  Z.bloecke.forEach((b, i) => {
+    const ein = 567 * ((b.tiefe || 0) + 1);
+    switch (b.art){
+      case "h1": absatz("\\sb340\\sa160\\keepn\\b\\fs40", inlineRtf(b.text) + "\\b0\\fs22"); break;
+      case "h2": absatz("\\sb280\\sa140\\keepn\\b\\fs32", inlineRtf(b.text) + "\\b0\\fs22"); break;
+      case "h3": absatz("\\sb220\\sa120\\keepn\\b\\fs26", inlineRtf(b.text) + "\\b0\\fs22"); break;
+      case "punkt":
+        absatz("\\fi-284\\li" + ein + "\\sa60", "\\'95\\tab " + inlineRtf(b.text)); break;
+      case "nummer":
+        absatz("\\fi-284\\li" + ein + "\\sa60", nr[i] + ".\\tab " + inlineRtf(b.text)); break;
+      case "todo":
+        absatz("\\fi-284\\li" + ein + "\\sa60",
+               (b.fertig ? "[x]" : "[ ]") + "\\tab " + inlineRtf(b.text)); break;
+      case "zitat": absatz("\\li567\\sa120\\i", inlineRtf(b.text) + "\\i0"); break;
+      case "code":
+        absatz("\\li284\\sa120\\f1\\fs18",
+               rtfText(b.text) + "\\f0\\fs22"); break;
+      case "linie": absatz("\\brdrb\\brdrs\\brdrw10\\sa160", ""); break;
+      case "umbruch": aus.push("\\page"); break;
+      case "fussnote": noten.push(fussnoteZerlegen(b.text)); break;
+      case "tabelle": aus.push(rtfTabelle(b.text)); break;
+      case "callout": {
+        const sorte = calloutSorte(b.text);
+        const rumpf = b.text.split("\n").slice(1).map(z => z.replace(/^>\s?/, "")).join("\n");
+        absatz("\\li284\\sa120\\box\\brdrs\\brdrw10",
+               "{\\b " + rtfText(CALLOUT[sorte] || sorte) + "}\\line " + inlineRtf(rumpf));
+        break;
+      }
+      case "toggle": {
+        const zeilen = b.text.split("\n");
+        let titel = "";
+        const rumpf = [];
+        zeilen.forEach(z => {
+          if (/^<\/?details>\s*$/.test(z)) return;
+          const m = z.match(/^<summary>(.*)<\/summary>\s*$/);
+          if (m && !titel){ titel = m[1]; return; }
+          rumpf.push(z);
+        });
+        absatz("\\sa60\\b", inlineRtf(titel || "Ohne Titel") + "\\b0");
+        absatz("\\li284\\sa120", inlineRtf(rumpf.join("\n").replace(/^\n+|\n+$/g, "")));
+        break;
+      }
+      default: if (b.text.trim()) absatz("\\sa120", inlineRtf(b.text));
+    }
+  });
+  if (noten.length){
+    absatz("\\sb340\\sa120\\b\\fs26", "Fußnoten\\b0\\fs22");
+    noten.forEach(n => absatz("\\fi-284\\li567\\sa60",
+      "{\\super " + rtfText(n.marke) + "}\\tab " + inlineRtf(n.text)));
+  }
+  const [, , breit, hoch] = seiteVon();
+  const quer = Z.hoch === "quer";
+  const tw = (mm) => Math.round(mm * 56.6929);
+  const r = raender();
+  return "{\\rtf1\\ansi\\ansicpg1252\\deff0\\uc1"
+    + "{\\fonttbl{\\f0\\fswiss\\fcharset0 Segoe UI;}{\\f1\\fmodern\\fcharset0 Consolas;}}"
+    + "{\\colortbl;\\red0\\green0\\blue0;\\red255\\green255\\blue255;\\red128\\green128\\blue128;"
+    + "\\red35\\green131\\blue226;\\red180\\green50\\blue44;\\red247\\green246\\blue243;"
+    + "\\red251\\green243\\blue196;}"
+    + "\\paperw" + tw(quer ? hoch : breit) + "\\paperh" + tw(quer ? breit : hoch)
+    + (quer ? "\\landscape" : "")
+    + "\\margt" + tw(r[0]) + "\\margr" + tw(r[1])
+    + "\\margb" + tw(r[2]) + "\\margl" + tw(r[3])
+    + "\\viewkind4\\fs22\\f0\n"
+    + aus.join("\n") + "\n}";
+}
+
+function rtfTabelle(text){
+  const zeilen = String(text).split("\n").filter(z => z.trim());
+  if (!zeilen.length) return "";
+  const zellen = (z) => z.replace(/^\s*\|/, "").replace(/\|\s*$/, "").split("|").map(x => x.trim());
+  const kopf = zellen(zeilen[0]);
+  const rumpf = zeilen.slice(2).map(zellen);
+  const breite = Math.floor(9070 / Math.max(1, kopf.length));
+  const reihe = (werte, fett) => {
+    let aus = "\\trowd\\trgaph80";
+    for (let k = 1; k <= werte.length; k++) aus += "\\cellx" + (breite * k);
+    werte.forEach(w => {
+      aus += "\\pard\\intbl" + (fett ? "\\b" : "") + " " + inlineRtf(w)
+           + (fett ? "\\b0" : "") + "\\cell";
+    });
+    return aus + "\\row";
+  };
+  return [reihe(kopf, true)].concat(rumpf.map(r => reihe(r, false))).join("\n")
+       + "\n\\pard\\sa120";
+}
+
+/* ---------- DOCX ----------
+   Ein ZIP mit vier XML-Teilen. Gepackt wird **ohne Komprimierung**
+   (Verfahren 0): Ein Packer wäre der nächste fremde Code, und Word
+   liest gespeicherte Einträge genauso. Die Datei ist damit etwa so
+   groß wie ihr Inhalt — für ein Textdokument sind das Kilobyte. */
+const KREBS = (() => {
+  const t = new Int32Array(256);
+  for (let i = 0; i < 256; i++){
+    let c = i;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[i] = c;
+  }
+  return t;
+})();
+
+function crc32(daten){
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < daten.length; i++) c = KREBS[(c ^ daten[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+function zipBauen(teile){
+  const enc = new TextEncoder();
+  const stuecke = [], verzeichnis = [];
+  let stelle = 0;
+  const zahl = (n, breit) => {
+    const a = new Uint8Array(breit);
+    for (let i = 0; i < breit; i++) a[i] = (n >>> (8 * i)) & 0xFF;
+    return a;
+  };
+  const zusammen = (liste) => {
+    const laenge = liste.reduce((a, x) => a + x.length, 0);
+    const aus = new Uint8Array(laenge);
+    let k = 0;
+    liste.forEach(x => { aus.set(x, k); k += x.length; });
+    return aus;
+  };
+  teile.forEach(({name, text}) => {
+    const namB = enc.encode(name), daten = enc.encode(text);
+    const summe = crc32(daten);
+    const kopf = zusammen([zahl(0x04034b50,4), zahl(20,2), zahl(0,2), zahl(0,2),
+      zahl(0,2), zahl(0,2), zahl(summe,4), zahl(daten.length,4), zahl(daten.length,4),
+      zahl(namB.length,2), zahl(0,2), namB]);
+    stuecke.push(kopf, daten);
+    verzeichnis.push(zusammen([zahl(0x02014b50,4), zahl(20,2), zahl(20,2), zahl(0,2),
+      zahl(0,2), zahl(0,2), zahl(0,2), zahl(summe,4), zahl(daten.length,4),
+      zahl(daten.length,4), zahl(namB.length,2), zahl(0,2), zahl(0,2), zahl(0,2),
+      zahl(0,2), zahl(0,4), zahl(stelle,4), namB]));
+    stelle += kopf.length + daten.length;
+  });
+  const vz = zusammen(verzeichnis);
+  const ende = zusammen([zahl(0x06054b50,4), zahl(0,2), zahl(0,2),
+    zahl(teile.length,2), zahl(teile.length,2), zahl(vz.length,4), zahl(stelle,4), zahl(0,2)]);
+  return new Blob([zusammen(stuecke), vz, ende],
+                  {type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+}
+
+const W_NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+
+function docxLauf(text, art){
+  const eig = [];
+  if (art.indexOf("b") >= 0) eig.push("<w:b/>");
+  if (art.indexOf("i") >= 0) eig.push("<w:i/>");
+  if (art.indexOf("s") >= 0) eig.push("<w:strike/>");
+  if (art.indexOf("m") >= 0) eig.push('<w:highlight w:val="yellow"/>');
+  if (art.indexOf("c") >= 0) eig.push('<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/>');
+  if (art.indexOf("h") >= 0) eig.push('<w:vertAlign w:val="superscript"/>');
+  const stueck = text.split("\n");
+  const inhalt = stueck.map((z, i) =>
+    (i ? "<w:br/>" : "") + '<w:t xml:space="preserve">' + xesc(z) + "</w:t>").join("");
+  return "<w:r>" + (eig.length ? "<w:rPr>" + eig.join("") + "</w:rPr>" : "") + inhalt + "</w:r>";
+}
+
+function inlineDocx(t){
+  let aus = "", letzte = 0, m;
+  RTF_INLINE.lastIndex = 0;
+  while ((m = RTF_INLINE.exec(t))){
+    if (m.index > letzte) aus += docxLauf(t.slice(letzte, m.index), "");
+    const st = m[0];
+    if (st[0] === "`")               aus += docxLauf(st.slice(1, -1), "c");
+    else if (st.slice(0,2) === "![") aus += docxLauf("[Bild: "
+      + (st.match(/^!\[([^\]\n]*)\]/) || [,""])[1] + "]", "i");
+    else if (st[0] === "[" && st[1] === "^") aus += docxLauf(st.slice(2, -1), "h");
+    else if (st[0] === "[")          aus += docxLauf((st.match(/^\[([^\]\n]+)\]/) || [,""])[1], "");
+    else if (st.slice(0,2) === "**") aus += docxLauf(st.slice(2, -2), "b");
+    else if (st.slice(0,2) === "~~") aus += docxLauf(st.slice(2, -2), "s");
+    else if (st.slice(0,2) === "==") aus += docxLauf(st.slice(2, -2), "m");
+    else                             aus += docxLauf(st.slice(1, -1), "i");
+    letzte = m.index + st.length;
+  }
+  if (letzte < t.length) aus += docxLauf(t.slice(letzte), "");
+  return aus;
+}
+
+function docxAbsatz(stil, inhalt, extra){
+  return "<w:p><w:pPr>" + (stil ? '<w:pStyle w:val="' + stil + '"/>' : "")
+       + (extra || "") + "</w:pPr>" + inhalt + "</w:p>";
+}
+
+function docxAusgeben(){
+  const nr = nummern(Z.bloecke);
+  const aus = [];
+  const noten = [];
+  Z.bloecke.forEach((b, i) => {
+    const stufe = Math.min(5, b.tiefe || 0);
+    switch (b.art){
+      case "h1": case "h2": case "h3":
+        aus.push(docxAbsatz("berschrift" + b.art.slice(1), inlineDocx(b.text))); break;
+      case "punkt": case "todo":
+        aus.push(docxAbsatz("Listenabsatz",
+          inlineDocx(b.art === "todo" ? (b.fertig ? "[x] " : "[ ] ") + b.text : b.text),
+          '<w:numPr><w:ilvl w:val="' + stufe + '"/><w:numId w:val="1"/></w:numPr>')); break;
+      case "nummer":
+        aus.push(docxAbsatz("Listenabsatz", inlineDocx(b.text),
+          '<w:numPr><w:ilvl w:val="' + stufe + '"/><w:numId w:val="2"/></w:numPr>')); break;
+      case "zitat": aus.push(docxAbsatz("Zitat", inlineDocx(b.text))); break;
+      case "code":  aus.push(docxAbsatz("Quelltext", docxLauf(b.text, "c"))); break;
+      case "linie":
+        aus.push('<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" '
+          + 'w:color="999999"/></w:pBdr></w:pPr></w:p>'); break;
+      case "umbruch":
+        aus.push("<w:p><w:r><w:br w:type=\"page\"/></w:r></w:p>"); break;
+      case "fussnote": noten.push(fussnoteZerlegen(b.text)); break;
+      case "tabelle":  aus.push(docxTabelle(b.text)); break;
+      case "callout": {
+        const sorte = calloutSorte(b.text);
+        const rumpf = b.text.split("\n").slice(1).map(z => z.replace(/^>\s?/, "")).join("\n");
+        aus.push(docxAbsatz("Zitat", docxLauf((CALLOUT[sorte] || sorte) + " — ", "b")
+          + inlineDocx(rumpf)));
+        break;
+      }
+      case "toggle": {
+        let titel = "";
+        const rumpf = [];
+        b.text.split("\n").forEach(z => {
+          if (/^<\/?details>\s*$/.test(z)) return;
+          const m = z.match(/^<summary>(.*)<\/summary>\s*$/);
+          if (m && !titel){ titel = m[1]; return; }
+          rumpf.push(z);
+        });
+        aus.push(docxAbsatz("", docxLauf(titel || "Ohne Titel", "b")));
+        aus.push(docxAbsatz("", inlineDocx(rumpf.join("\n").replace(/^\n+|\n+$/g, ""))));
+        break;
+      }
+      default: if (b.text.trim()) aus.push(docxAbsatz("", inlineDocx(b.text)));
+    }
+  });
+  if (noten.length){
+    aus.push(docxAbsatz("berschrift2", docxLauf("Fußnoten", "")));
+    noten.forEach(n => aus.push(docxAbsatz("",
+      docxLauf(n.marke + "  ", "h") + inlineDocx(n.text))));
+  }
+  const [, , breit, hoch] = seiteVon();
+  const quer = Z.hoch === "quer";
+  const tw = (mm) => Math.round(mm * 56.6929);
+  const r = raender();
+  const sect = "<w:sectPr><w:pgSz w:w=\"" + tw(quer ? hoch : breit)
+    + '" w:h="' + tw(quer ? breit : hoch) + '" w:orient="'
+    + (quer ? "landscape" : "portrait") + '"/>'
+    + '<w:pgMar w:top="' + tw(r[0]) + '" w:right="' + tw(r[1]) + '" w:bottom="' + tw(r[2])
+    + '" w:left="' + tw(r[3]) + '" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>';
+  const dokument = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+    + "<w:document " + W_NS + "><w:body>" + aus.join("") + sect + "</w:body></w:document>";
+  return zipBauen([
+    {name:"[Content_Types].xml", text:DOCX_TYPEN},
+    {name:"_rels/.rels",          text:DOCX_RELS},
+    {name:"word/_rels/document.xml.rels", text:DOCX_DRELS},
+    {name:"word/styles.xml",      text:DOCX_STILE},
+    {name:"word/numbering.xml",   text:DOCX_NUMMERN},
+    {name:"word/document.xml",    text:dokument}
+  ]);
+}
+
+function docxTabelle(text){
+  const zeilen = String(text).split("\n").filter(z => z.trim());
+  if (!zeilen.length) return "";
+  const zellen = (z) => z.replace(/^\s*\|/, "").replace(/\|\s*$/, "").split("|").map(x => x.trim());
+  const kopf = zellen(zeilen[0]);
+  const rumpf = zeilen.slice(2).map(zellen);
+  const breite = Math.floor(9070 / Math.max(1, kopf.length));
+  const reihe = (werte, fett) => "<w:tr>" + werte.map(w =>
+    '<w:tc><w:tcPr><w:tcW w:w="' + breite + '" w:type="dxa"/></w:tcPr>'
+    + "<w:p>" + (fett ? docxLauf(w, "b") : inlineDocx(w)) + "</w:p></w:tc>").join("") + "</w:tr>";
+  return "<w:tbl><w:tblPr><w:tblStyle w:val=\"Tabellengitter\"/>"
+    + '<w:tblW w:w="0" w:type="auto"/><w:tblBorders>'
+    + ["top","left","bottom","right","insideH","insideV"].map(k =>
+        "<w:" + k + ' w:val="single" w:sz="4" w:space="0" w:color="999999"/>').join("")
+    + "</w:tblBorders></w:tblPr><w:tblGrid>"
+    + kopf.map(() => '<w:gridCol w:w="' + breite + '"/>').join("") + "</w:tblGrid>"
+    + [reihe(kopf, true)].concat(rumpf.map(r => reihe(r, false))).join("") + "</w:tbl>";
+}
+
+const DOCX_TYPEN = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+  + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+  + '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+  + '<Default Extension="xml" ContentType="application/xml"/>'
+  + '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'
+  + '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>'
+  + '<Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/>'
+  + "</Types>";
+
+const DOCX_RELS = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+  + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+  + '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>'
+  + "</Relationships>";
+
+const DOCX_DRELS = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+  + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+  + '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+  + '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/>'
+  + "</Relationships>";
+
+const DOCX_STILE = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+  + "<w:styles " + W_NS + ">"
+  + "<w:docDefaults><w:rPrDefault><w:rPr>"
+  + '<w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI"/><w:sz w:val="22"/>'
+  + "</w:rPr></w:rPrDefault><w:pPrDefault><w:pPr>"
+  + '<w:spacing w:after="140" w:line="276" w:lineRule="auto"/>'
+  + "</w:pPr></w:pPrDefault></w:docDefaults>"
+  + ["1,40,340,160", "2,32,280,140", "3,26,220,120"].map(x => {
+      const [grad, groesse, vor, nach] = x.split(",");
+      return '<w:style w:type="paragraph" w:styleId="berschrift' + grad + '">'
+        + '<w:name w:val="heading ' + grad + '"/><w:basedOn w:val="Standard"/>'
+        + '<w:pPr><w:keepNext/><w:spacing w:before="' + vor + '" w:after="' + nach + '"/>'
+        + "<w:outlineLvl w:val=\"" + (Number(grad) - 1) + "\"/></w:pPr>"
+        + '<w:rPr><w:b/><w:sz w:val="' + groesse + '"/></w:rPr></w:style>';
+    }).join("")
+  + '<w:style w:type="paragraph" w:styleId="Standard" w:default="1">'
+  + '<w:name w:val="Normal"/></w:style>'
+  + '<w:style w:type="paragraph" w:styleId="Zitat"><w:name w:val="Quote"/>'
+  + '<w:basedOn w:val="Standard"/><w:pPr><w:ind w:left="567"/>'
+  + '<w:pBdr><w:left w:val="single" w:sz="12" w:space="8" w:color="AAAAAA"/></w:pBdr>'
+  + "</w:pPr><w:rPr><w:i/></w:rPr></w:style>"
+  + '<w:style w:type="paragraph" w:styleId="Quelltext"><w:name w:val="HTML Preformatted"/>'
+  + '<w:basedOn w:val="Standard"/><w:pPr><w:ind w:left="284"/>'
+  + '<w:shd w:val="clear" w:fill="F5F4F1"/></w:pPr>'
+  + '<w:rPr><w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/><w:sz w:val="18"/>'
+  + "</w:rPr></w:style>"
+  + '<w:style w:type="paragraph" w:styleId="Listenabsatz">'
+  + '<w:name w:val="List Paragraph"/><w:basedOn w:val="Standard"/>'
+  + '<w:pPr><w:spacing w:after="60"/></w:pPr></w:style>'
+  + '<w:style w:type="table" w:styleId="Tabellengitter"><w:name w:val="Table Grid"/>'
+  + "</w:style>"
+  + "</w:styles>";
+
+/* Sechs Ebenen, zweimal: Punkte und Zahlen. Ohne das wäre eine Liste
+   in Word eine Folge von Absätzen mit einem Strich davor. */
+const DOCX_NUMMERN = (() => {
+  const ebene = (i, art, zeichen) =>
+    '<w:lvl w:ilvl="' + i + '"><w:start w:val="1"/><w:numFmt w:val="' + art + '"/>'
+    + '<w:lvlText w:val="' + zeichen + '"/><w:lvlJc w:val="left"/><w:pPr>'
+    + '<w:ind w:left="' + (400 + i * 340) + '" w:hanging="340"/></w:pPr>'
+    + (art === "bullet"
+        ? '<w:rPr><w:rFonts w:ascii="Segoe UI Symbol" w:hAnsi="Segoe UI Symbol"/></w:rPr>'
+        : "")
+    + "</w:lvl>";
+  const punkte = [], zahlen = [];
+  for (let i = 0; i < 6; i++){
+    punkte.push(ebene(i, "bullet", ["•","o","–"][i % 3]));
+    zahlen.push(ebene(i, ["decimal","lowerLetter","lowerRoman"][i % 3],
+                      "%" + (i + 1) + "."));
+  }
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+    + "<w:numbering " + W_NS + ">"
+    + '<w:abstractNum w:abstractNumId="0">' + punkte.join("") + "</w:abstractNum>"
+    + '<w:abstractNum w:abstractNumId="1">' + zahlen.join("") + "</w:abstractNum>"
+    + '<w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>'
+    + '<w:num w:numId="2"><w:abstractNumId w:val="1"/></w:num>'
+    + "</w:numbering>";
+})();
+
+/* ---------- Die Zwischenablage ----------
+   Über das `copy`-Ereignis, nicht über die Zwischenablage-API: Die
+   verlangt eine Berechtigung, die aus einer lokal geöffneten Datei
+   nicht sicher zu haben ist. `execCommand` braucht dafür eine
+   Auswahl — die stellt das versteckte Feld. */
+function inZwischenablage(formate){
+  const feld = el("textarea");
+  feld.value = formate["text/plain"] || "";
+  feld.setAttribute("aria-hidden", "true");
+  feld.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0";
+  document.body.appendChild(feld);
+  feld.select();
+  const beim = (ev) => {
+    Object.keys(formate).forEach(t => {
+      try { ev.clipboardData.setData(t, formate[t]); } catch (e) { /* Format nicht erlaubt */ }
+    });
+    ev.preventDefault();
+  };
+  document.addEventListener("copy", beim, true);
+  let gut = false;
+  try { gut = document.execCommand("copy"); } catch (e) { gut = false; }
+  document.removeEventListener("copy", beim, true);
+  feld.remove();
+  return gut;
+}
+
+function kopieren(art){
+  const md = schreibeMarkdown(Z.bloecke);
+  const formate = { "text/plain": md };
+  if (art === "html"){
+    const vorher = MALART;
+    MALART = "dokument";
+    const html = '<div class="dok">' + dokumentHtml({}) + "</div>";
+    MALART = vorher;
+    formate["text/html"] = html;
+    formate["text/plain"] = md;
+  }
+  if (art === "rtf"){
+    formate["text/rtf"] = rtfAusgeben();
+    formate["application/rtf"] = formate["text/rtf"];
+  }
+  const gut = inZwischenablage(formate);
+  melde(gut
+    ? (art === "html" ? "Als HTML in der Zwischenablage"
+      : art === "rtf" ? "Als RTF in der Zwischenablage — nicht jedes Programm nimmt es an"
+      : "Als Markdown in der Zwischenablage")
+    : "Die Zwischenablage ließ sich nicht beschreiben.");
+}
+
+/* ---------- Das Menü ---------- */
+function ausgebenVerdrahten(){
+  $("#ausgeben").onclick = () => {
+    const eintraege = [
+      "k:Als Datei",
+      {ic:"md",   nm:"Markdown (.md)",  ta:"Strg S", tue:() => $("#sichern").click()},
+      {ic:"htm",  nm:"HTML (.html)",    ta:"",       tue:() => {
+        herunterladen(htmlAusgeben(), ohneEndung(Z.name) + ".html", "text/html");
+        melde("Ausgegeben: " + ohneEndung(Z.name) + ".html");
+      }},
+      {ic:"doc",  nm:"Word (.docx)",    ta:"",       tue:() => {
+        try {
+          herunterladen(docxAusgeben(), ohneEndung(Z.name) + ".docx");
+          melde("Ausgegeben: " + ohneEndung(Z.name) + ".docx — Bilder bleiben außen vor");
+        } catch (e) { melde("Der DOCX-Export ging nicht: " + e.message); }
+      }},
+      {ic:"rtf",  nm:"RTF (.rtf)",      ta:"",       tue:() => {
+        herunterladen(rtfAusgeben(), ohneEndung(Z.name) + ".rtf", "application/rtf");
+        melde("Ausgegeben: " + ohneEndung(Z.name) + ".rtf — Bilder bleiben außen vor");
+      }},
+      "tr", "k:Über den Druckdialog",
+      {ic:"pdf",  nm:"PDF / Drucken",   ta:"Strg P", tue:pdfOeffnen},
+      {ic:"vor",  nm:"Druckvorschau",   ta:"",       tue:() => druckvorschau(true)},
+      {ic:"",     nm:"Seite einrichten …", ta:"",    tue:() => $("#seite-auf").click()},
+      "tr", "k:In die Zwischenablage",
+      {ic:"htm",  nm:"Als HTML",        ta:"",       tue:() => kopieren("html")},
+      {ic:"rtf",  nm:"Als RTF",         ta:"",       tue:() => kopieren("rtf")},
+      {ic:"md",   nm:"Als Markdown",    ta:"",       tue:() => kopieren("md")}
+    ];
+    menueZeigen(eintraege, $("#ausgeben"));
+  };
+}
+
+/* ============================================================
+  18 — LANGE DOKUMENTE
+
+   Zwei Griffe für Texte, die nicht mehr auf einen Bildschirm passen.
+
+   **Einklappen.** Eine Überschrift verbirgt, was zu ihr gehört — bis
+   zur nächsten Überschrift gleichen oder höheren Grades. Das ist
+   eine **Anzeige**, kein Merkmal des Textes: In der Datei steht
+   davon nichts (doku/ENTSCHEIDUNGEN.md, Punkt 9), und der Export
+   enthält jeden Block.
+
+   Gemerkt wird die Überschrift an ihrem Text, nicht an ihrer Nummer.
+   Nummern verschieben sich bei jedem Enter; ein Text nicht. Zwei
+   gleichlautende Überschriften klappen dann zusammen — das ist der
+   Preis, und er ist kleiner als der einer Faltung, die bei jedem
+   Absatz verrutscht.
+
+   **Die Fußnotenleiste.** Sie sammelt, was im Text verstreut steht.
+   Was sie **nicht** ist: eine Kommentarleiste. Kommentare am Text
+   bleiben draußen — ein Kommentar, der beim Kopieren der Datei
+   verschwindet, ist schlimmer als keiner (Punkt 8). Eine Fußnote
+   verschwindet nicht: Sie steht in der Datei und in jedem Werkzeug,
+   das GFM oder Pandoc kennt.
+   ============================================================ */
+const EINGEKLAPPT = new Set();
+
+/* Art und Text, getrennt durch ein Zeichen, das in keinem Text
+   vorkommt. */
+const klappSchluessel = (b) => b.art + "\u0001" + String(b.text || "");
+
+const grad = (art) => (/^h[123]$/.test(art) ? Number(art.slice(1)) : 0);
+
+/* Welche Blöcke sind gerade verborgen? Einmal je Anstrich gerechnet,
+   nicht je Block — sonst liefe die Schleife für jede Zeile über das
+   ganze Dokument. */
+function verborgen(bloecke){
+  const aus = new Array(bloecke.length).fill(false);
+  for (let i = 0; i < bloecke.length; i++){
+    const g = grad(bloecke[i].art);
+    if (!g || !EINGEKLAPPT.has(klappSchluessel(bloecke[i]))) continue;
+    for (let k = i + 1; k < bloecke.length; k++){
+      const gk = grad(bloecke[k].art);
+      if (gk && gk <= g) break;
+      aus[k] = true;
+    }
+  }
+  return aus;
+}
+
+/* Wie viele Blöcke hängen an dieser Überschrift? Die Zahl steht am
+   eingeklappten Titel — ohne sie sieht ein zugeklappter Abschnitt
+   aus wie ein leerer. */
+function klappZahl(i){
+  const g = grad(Z.bloecke[i].art);
+  let n = 0;
+  for (let k = i + 1; k < Z.bloecke.length; k++){
+    const gk = grad(Z.bloecke[k].art);
+    if (gk && gk <= g) break;
+    n++;
+  }
+  return n;
+}
+
+function klappen(i){
+  const b = Z.bloecke[i];
+  const s = klappSchluessel(b);
+  if (EINGEKLAPPT.has(s)) EINGEKLAPPT.delete(s); else EINGEKLAPPT.add(s);
+  male();
+}
+
+/* Vor jedem Sprung: die Abschnitte darüber aufklappen. Ein Sprung
+   auf einen verborgenen Block liefe sonst ins Leere. */
+function aufdecken(i){
+  const versteckt = verborgen(Z.bloecke);
+  if (!versteckt[i]) return false;
+  let geaendert = false;
+  for (let k = i; k >= 0; k--){
+    const g = grad(Z.bloecke[k].art);
+    if (!g) continue;
+    const s = klappSchluessel(Z.bloecke[k]);
+    if (EINGEKLAPPT.has(s)){ EINGEKLAPPT.delete(s); geaendert = true; }
+    if (g === 1) break;
+  }
+  if (geaendert) male();
+  return geaendert;
+}
+
+/* Zu einem Block springen — von der Gliederung, der Suche, der
+   Fußnotenleiste und der Schnellwahl aus. Ein Weg, nicht vier. */
+function springeZu(i, pos){
+  if (!Z.bloecke[i]) return;
+  aufdecken(i);
+  const knoten = $('.blk[data-i="' + i + '"]');
+  if (knoten) knoten.scrollIntoView({block:"center"});
+  letzteStelle = i;
+  if (OHNE_TEXT.indexOf(Z.bloecke[i].art) >= 0) return;
+  setzeFokus(i, pos === undefined ? 0 : pos);
+}
+
+const IK_ZU  = SVG('<path d="M8 5.5 12.5 10 8 14.5"/>');
+const IK_AUF = SVG('<path d="M5.5 8 10 12.5 14.5 8"/>');
+
+/* ---------- Die Fußnotenleiste ---------- */
+function notenSammeln(){
+  const aus = [];
+  Z.bloecke.forEach((b, i) => {
+    if (b.art !== "fussnote") return;
+    const f = fussnoteZerlegen(b.text);
+    aus.push({ marke:f.marke, text:f.text, i:i, mal:0 });
+  });
+  /* Wie oft steht die Marke im Text? Eine Fußnote ohne Verweis ist
+     eine, die niemand findet — und die soll man sehen. */
+  const zahl = {};
+  Z.bloecke.forEach(b => {
+    if (b.art === "fussnote") return;
+    const treffer = String(b.text || "").match(/\[\^[^\]\s]+\]/g) || [];
+    treffer.forEach(t => {
+      const m = t.slice(2, -1);
+      zahl[m] = (zahl[m] || 0) + 1;
+    });
+  });
+  aus.forEach(n => { n.mal = zahl[n.marke] || 0; });
+  return aus;
+}
+
+function notenMalen(){
+  const liste = $("#n-liste");
+  liste.innerHTML = "";
+  if (!kann("fussnote")){
+    liste.appendChild(el("div", "leer",
+      "Fußnoten sind eine Erweiterung. Sie stehen ab der Stufe "
+      + "<b>GitHub</b> zur Verfügung — in den Einstellungen."));
+    return;
+  }
+  const noten = notenSammeln();
+  if (!noten.length){
+    liste.appendChild(el("div", "leer",
+      "Noch keine Fußnoten. Tippe <code>[^1]</code> im Text und "
+      + "<code>[^1]: Erklärung</code> in eine eigene Zeile."));
+    return;
+  }
+  noten.forEach(n => {
+    const z = el("button", "note");
+    z.type = "button";
+    z.innerHTML = '<span class="nm">' + esc(n.marke) + "</span>"
+      + '<span class="nt">' + esc(n.text || "(ohne Text)") + "</span>"
+      + (n.mal ? "" : '<span class="nw">ohne Verweis</span>');
+    z.title = n.text;
+    z.onclick = () => springeZu(n.i, 0);
+    liste.appendChild(z);
+  });
+}
+
+function reiterSetzen(name){
+  $("#gliederung").dataset.reiter = name;
+  ["gliederung","noten"].forEach(n =>
+    $("#g-t-" + n).setAttribute("aria-pressed", String(n === name)));
+  if (name === "noten") notenMalen();
+  try { localStorage.setItem(SCHLUESSEL + "-reiter", name); } catch (e) { /* egal */ }
+}
+
+function reiterVerdrahten(){
+  ["gliederung","noten"].forEach(n => { $("#g-t-" + n).onclick = () => reiterSetzen(n); });
+  let gemerkt = "gliederung";
+  try { gemerkt = localStorage.getItem(SCHLUESSEL + "-reiter") || "gliederung"; }
+  catch (e) { /* egal */ }
+  reiterSetzen(gemerkt === "noten" ? "noten" : "gliederung");
+}
+
+/* ============================================================
+  19 — MEHRERE DATEIEN, EIN DOKUMENT
+
+   Ein Buch liegt selten in einer Datei:
+
+       buch/
+       ├── 01-einleitung.md
+       ├── 02-kapitel.md
+       ├── 03-kapitel.md
+       ├── 04-anhang.md
+       └── bilder/
+
+   Der Editor fügt sie zu **einem** Dokument zusammen — der Reihe
+   nach, nach Dateinamen sortiert, mit `10` hinter `9` und nicht
+   davor. Danach ist es ein gewöhnlicher Text: Er lässt sich
+   ansehen, ändern, ausgeben.
+
+   **Was daraus nicht wird: ein Ordnerbaum.** Der bleibt gestrichen
+   (doku/ENTSCHEIDUNGEN.md, Punkt 2). Zusammenfügen ist eine
+   Einbahnstraße: Was hier hereinkommt, geht als **eine** Datei
+   wieder heraus. Ein Baum, der so täte, als schriebe er die
+   Einzeldateien zurück, verspräche mehr, als er hält.
+
+   **Bilder.** Wer sie in derselben Auswahl mitnimmt, bekommt sie in
+   Vorschau, Druck und HTML-Export zu sehen: Sie liegen dann als
+   Daten-Adresse in `BILDER`, und `![](bilder/raster.png)` findet
+   sie über den Dateinamen. Ohne das bleibt der Pfad stehen, wie er
+   dasteht — geladen wird nichts, schon gar nicht aus dem Netz
+   (harte Regel 2).
+   ============================================================ */
+const TEXTDATEI  = /\.(md|markdown|mdown|mkd|txt)$/i;
+const BILDDATEI  = /\.(png|jpe?g|gif|webp|svg|avif|bmp)$/i;
+
+/* Nach Namen, aber mit Zahlen als Zahlen: `10-anhang` gehört hinter
+   `9-schluss` und nicht zwischen `1-` und `2-`. */
+const nachNamen = (a, b) => String(a).localeCompare(String(b), "de", {numeric:true});
+
+/* Was die Auswahl hergibt, aufgeteilt und in Reihe gebracht. */
+let zusammenWarten = null;
+
+function dateienEinlesen(dateien, fertig){
+  const texte = [], bilder = [];
+  Array.prototype.slice.call(dateien).forEach(f => {
+    if (BILDDATEI.test(f.name)) bilder.push(f); else texte.push(f);
+  });
+  texte.sort((a, b) => nachNamen(a.name, b.name));
+  const stand = { texte:[], bilder:0 };
+  let offen = texte.length + bilder.length;
+  if (!offen){ fertig(stand); return; }
+  const fertigWenn = () => { if (--offen === 0) fertig(stand); };
+  texte.forEach((f, k) => {
+    const leser = new FileReader();
+    leser.onload = () => { stand.texte[k] = { name:f.name, text:String(leser.result) };
+                           fertigWenn(); };
+    leser.onerror = () => { stand.texte[k] = { name:f.name, text:"" }; fertigWenn(); };
+    leser.readAsText(f, "utf-8");
+  });
+  bilder.forEach(f => {
+    const leser = new FileReader();
+    leser.onload = () => {
+      BILDER[f.name] = String(leser.result);
+      stand.bilder++;
+      fertigWenn();
+    };
+    leser.onerror = fertigWenn;
+    leser.readAsDataURL(f);
+  });
+}
+
+function zusammenVerdrahten(){
+  const ueber = $("#zusammen");
+  const zu = () => { ueber.classList.remove("an"); zusammenWarten = null; };
+
+  $("#zusammen-auf").onclick = () => $("#zusammen-datei").click();
+  $("#zusammen-datei").addEventListener("change", (ev) => {
+    const dateien = ev.target.files;
+    ev.target.value = "";
+    if (!dateien || !dateien.length) return;
+    dateienEinlesen(dateien, (stand) => {
+      const texte = stand.texte.filter(Boolean);
+      if (!texte.length){
+        melde(stand.bilder
+          ? stand.bilder + " Bild(er) übernommen — aber keine Textdatei dabei."
+          : "Keine Textdatei in der Auswahl.");
+        if (stand.bilder){ male(); }
+        return;
+      }
+      zusammenWarten = stand;
+      const liste = $("#zusammen-liste");
+      liste.innerHTML = "";
+      texte.forEach((t, i) => {
+        const z = el("div", "zz");
+        z.innerHTML = '<span class="nr">' + (i + 1) + "</span>"
+          + '<span class="nm">' + esc(t.name) + "</span>"
+          + '<span class="gr">' + t.text.split("\n").length + " Zeilen</span>";
+        liste.appendChild(z);
+      });
+      $("#zusammen-bilder").textContent = stand.bilder
+        ? stand.bilder + (stand.bilder === 1 ? " Bild" : " Bilder") + " mitgenommen"
+        : "keine Bilder in der Auswahl";
+      ueber.classList.add("an");
+      $("#zusammen-los").focus();
+    });
+  });
+
+  $("#zusammen-ab").onclick = zu;
+  ueber.addEventListener("mousedown", (ev) => { if (ev.target === ueber) zu(); });
+
+  $("#zusammen-los").onclick = () => {
+    if (!zusammenWarten) return;
+    const texte = zusammenWarten.texte.filter(Boolean);
+    const trenner = $("#zusammen-umbruch").checked;
+    const titel = $("#zusammen-titel").checked;
+    const anhaengen = $("#zusammen-anhaengen").checked;
+    const stuecke = [];
+    texte.forEach(t => {
+      const rein = t.text.replace(/\r\n?/g, "\n").replace(/^\n+|\n+$/g, "");
+      const kopf = titel
+        ? "# " + t.name.replace(TEXTDATEI, "").replace(/^[\d]+[-_. ]*/, "").replace(/[-_]+/g, " ")
+        : "";
+      stuecke.push([kopf, rein].filter(Boolean).join("\n\n"));
+    });
+    const naht = trenner ? "\n\n<!-- seitenumbruch -->\n\n" : "\n\n";
+    let ganz = stuecke.join(naht);
+    if (anhaengen){
+      const bisher = schreibeMarkdown(Z.bloecke).replace(/\n+$/, "");
+      if (bisher.trim()) ganz = bisher + naht + ganz;
+    }
+    ersetze(Z.bloecke, leseMarkdown(ganz));
+    if (!anhaengen) Z.name = texte.length === 1
+      ? texte[0].name
+      : (texte[0].name.replace(TEXTDATEI, "") + "-gesamt.md");
+    aktiv = -1; letzteStelle = 0;
+    EINGEKLAPPT.clear();
+    zu();
+    bewahre(); male();
+    melde(texte.length + " Dateien zu " + Z.bloecke.length + " Blöcken zusammengefügt"
+      + (zusammenWarten && zusammenWarten.bilder ? " — Bilder inbegriffen" : ""));
+  };
+}
+
+/* ============================================================
+  20 — SCHNELLWAHL
+
+   Ein Feld, eine Liste, Enter. Sie kennt drei Sorten Einträge:
+   **Überschriften** (dorthin springen), **Fußnoten** (dorthin
+   springen) und **Befehle** (das tun). Getippt wird, was man
+   sucht — nicht, wo es steht.
+
+   Sie ersetzt die Suche nicht: Die Suche findet jedes Wort im Text,
+   die Schnellwahl findet die Stelle. `Strg+F` sucht, `Strg+K`
+   springt.
+
+   **Nicht `Strg+P`.** Das ist der Druckbefehl des Browsers, und ein
+   Editor, der ihn wegnimmt, nimmt dem Nutzer den Weg zum PDF.
+   ============================================================ */
+let schnellTreffer = [], schnellWahl = 0;
+
+function schnellEintraege(){
+  const aus = [];
+  Z.bloecke.forEach((b, i) => {
+    if (/^h[123]$/.test(b.art) && b.text)
+      aus.push({ art:"Überschrift " + b.art.slice(1), nm:b.text,
+                 ic:b.art.toUpperCase(), tue:() => springeZu(i, 0) });
+  });
+  if (kann("fussnote")) notenSammeln().forEach(n =>
+    aus.push({ art:"Fußnote", nm:"[" + n.marke + "] " + n.text, ic:"[^]",
+               tue:() => springeZu(n.i, 0) }));
+  BEFEHLE.forEach(b => aus.push({ art:"Befehl", nm:b[0], ic:b[2] || "", ta:b[3] || "",
+                                  tue:b[1] }));
+  return aus;
+}
+
+/* Die Befehle stehen an **einer** Stelle — die Schnellwahl zeigt
+   sie, die Tastatur löst dieselben aus. Zwei Listen liefen
+   auseinander. */
+const BEFEHLE = [
+  ["Ansicht: Schreiben",        () => ansicht("schreiben"),         "", "Strg E"],
+  ["Ansicht: Geteilt",          () => ansicht("geteilt"),           "", "Strg E"],
+  ["Ansicht: Vorschau",         () => ansicht("vorschau"),          "", "Strg Umsch P"],
+  ["Ansicht: Quelltext",        () => ansicht("quelltext"),         "", ""],
+  ["Ablenkungsfrei",            () => ruhe(),                       "", "Strg Umsch R"],
+  ["Vollbild",                  () => vollbild(),                   "", "Strg Umsch V"],
+  ["Druckvorschau",             () => druckvorschau(true),          "", ""],
+  ["PDF / Drucken",             () => pdfOeffnen(),                 "", "Strg P"],
+  ["Seite einrichten …",        () => $("#seite-auf").click(),      "", ""],
+  ["Stil …",                    () => $("#stil-auf").click(),       "", ""],
+  ["Einstellungen …",           () => $("#ein-auf").click(),        "", ""],
+  ["Dateien zusammenfügen …",   () => $("#zusammen-auf").click(),   "", ""],
+  ["Als HTML ausgeben",         () => { herunterladen(htmlAusgeben(),
+      ohneEndung(Z.name) + ".html", "text/html"); melde("Ausgegeben als HTML"); }, "", ""],
+  ["Als DOCX ausgeben",         () => { herunterladen(docxAusgeben(),
+      ohneEndung(Z.name) + ".docx"); melde("Ausgegeben als DOCX"); }, "", ""],
+  ["Als RTF ausgeben",          () => { herunterladen(rtfAusgeben(),
+      ohneEndung(Z.name) + ".rtf", "application/rtf"); melde("Ausgegeben als RTF"); }, "", ""],
+  ["Als Markdown sichern",      () => $("#sichern").click(),        "", "Strg S"],
+  ["In die Zwischenablage: HTML", () => kopieren("html"),           "", ""],
+  ["In die Zwischenablage: RTF",  () => kopieren("rtf"),            "", ""],
+  ["In die Zwischenablage: Markdown", () => kopieren("md"),         "", ""],
+  ["Inhaltsverzeichnis einfügen", () => inhaltEinfuegen(),          "", ""],
+  ["Alle Abschnitte einklappen",  () => $("#g-alle-zu").click(),    "", ""],
+  ["Fußnoten anzeigen",         () => reiterSetzen("noten"),        "", ""],
+  ["Gliederung anzeigen",       () => reiterSetzen("gliederung"),   "", ""],
+  ["Neu",                       () => $("#neu").click(),            "", ""],
+  ["Öffnen …",                  () => $("#oeffnen").click(),        "", "Strg O"]
+];
+
+function schnellMalen(){
+  const feld = $("#schnell-feld");
+  const suche = feld.value.trim().toLowerCase();
+  const alle = schnellEintraege();
+  schnellTreffer = !suche ? alle.slice(0, 40)
+    : alle.filter(e => (e.nm + " " + e.art).toLowerCase().indexOf(suche) >= 0).slice(0, 40);
+  if (schnellWahl >= schnellTreffer.length) schnellWahl = 0;
+  const liste = $("#schnell-liste");
+  liste.innerHTML = "";
+  if (!schnellTreffer.length){
+    liste.appendChild(el("div", "leer", "Nichts gefunden."));
+    return;
+  }
+  schnellTreffer.forEach((e, k) => {
+    const b = el("button", k === schnellWahl ? "zeig" : null,
+      '<span class="ic">' + esc(e.ic || "") + "</span>"
+      + '<span class="nm">' + esc(e.nm) + "</span>"
+      + '<span class="ta">' + esc(e.ta || e.art) + "</span>");
+    b.type = "button";
+    b.setAttribute("role", "option");
+    b.setAttribute("aria-selected", String(k === schnellWahl));
+    b.addEventListener("mousedown", (ev) => { ev.preventDefault(); schnellWaehlen(k); });
+    b.addEventListener("mousemove", () => {
+      if (schnellWahl === k) return;
+      schnellWahl = k; schnellMalen();
+    });
+    liste.appendChild(b);
+  });
+}
+
+function schnellWaehlen(k){
+  const e = schnellTreffer[k];
+  schnellSchliessen();
+  if (e && e.tue) e.tue();
+}
+
+function schnellSchliessen(){ $("#schnell").classList.remove("an"); }
+
+function schnellOeffnen(){
+  const ueber = $("#schnell");
+  const feld = $("#schnell-feld");
+  feld.value = ""; schnellWahl = 0;
+  ueber.classList.add("an");
+  schnellMalen();
+  feld.focus();
+}
+
+function schnellVerdrahten(){
+  const ueber = $("#schnell"), feld = $("#schnell-feld");
+  feld.addEventListener("input", () => { schnellWahl = 0; schnellMalen(); });
+  feld.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape"){ ev.preventDefault(); schnellSchliessen(); return; }
+    if (ev.key === "ArrowDown" || ev.key === "ArrowUp"){
+      ev.preventDefault();
+      if (!schnellTreffer.length) return;
+      schnellWahl = (schnellWahl + (ev.key === "ArrowDown" ? 1 : -1) + schnellTreffer.length)
+                  % schnellTreffer.length;
+      schnellMalen();
+      return;
+    }
+    if (ev.key === "Enter"){ ev.preventDefault(); schnellWaehlen(schnellWahl); }
+  });
+  ueber.addEventListener("mousedown", (ev) => { if (ev.target === ueber) schnellSchliessen(); });
 }
 
 /* ============================================================
@@ -2404,6 +5276,16 @@ document.addEventListener("keydown", (ev) => {
     ev.preventDefault();
     ansicht($("#app").dataset.ansicht === "schreiben" ? "geteilt" : "schreiben");
   }
+  /* Umschalt dazu: die drei Modi, die nichts am Text ändern. */
+  if (ev.shiftKey && k === "v"){ ev.preventDefault(); vollbild(); }
+  if (ev.shiftKey && k === "r"){
+    ev.preventDefault(); ruhe();
+    $("#ruhe-auf").setAttribute("aria-pressed", String($("#app").dataset.ruhe === "ja"));
+  }
+  if (ev.shiftKey && k === "p"){ ev.preventDefault(); ansicht("vorschau"); }
+  /* Nicht Strg P: Das ist der Druckbefehl des Browsers, und ein
+     Editor, der ihn wegnimmt, nimmt den Weg zum PDF. */
+  if (k === "k"){ ev.preventDefault(); schnellOeffnen(); }
 });
 
 const START = "# Willkommen\n\n"
@@ -2420,16 +5302,30 @@ const START = "# Willkommen\n\n"
   + "- Eingabehilfen: `# `, `- `, `1. `, `> `, ` ``` ` und `---`\n"
   + "- `Tab` rückt Listen ein, `Umschalt+Tab` wieder aus\n"
   + "- `Strg+F` sucht im Dokument, `Strg+Z` nimmt auch ganze Blöcke zurück\n"
-  + "- Rechts die Gliederung; darunter ein Knopf für das Inhaltsverzeichnis\n"
-  + "- Der Knopf **PDF** öffnet den Druckdialog — vier Layouts in den Einstellungen\n\n"
+  + "- `Strg+K` öffnet die **Schnellwahl**: Überschrift, Fußnote oder Befehl\n"
+  + "- Rechts die Gliederung und die Fußnoten; das Inhaltsverzeichnis auf Knopfdruck\n"
+  + "- Der Griff an einer Überschrift **klappt den Abschnitt ein**\n\n"
   + "```javascript\n"
   + "const bloecke = leseMarkdown(text);\n"
   + "console.assert(schreibeMarkdown(bloecke) === text);\n"
   + "```\n\n"
+  + "## Ansehen und ausgeben\n\n"
+  + "**Vorschau** zeigt das fertige Dokument neben der Schreibfläche und folgt der\n"
+  + "letzten Änderung. Dieselbe Darstellung geht ins PDF und in die Datei — die\n"
+  + "Vorschau ist keine Behauptung, sondern die Ausgabe selbst.\n\n"
+  + "- **Stil** — acht Themen für das Dokument, dazu Breite, Größe, Zeilenabstand\n"
+  + "  und ein Feld für **eigenes CSS**\n"
+  + "- **Seite einrichten** — Format, Hoch- und Querformat, Ränder, Kopf- und\n"
+  + "  Fußzeile mit Bild, Umbruch vor jeder Überschrift\n"
+  + "- **Ausgeben** — `.md`, `.html`, `.docx`, `.rtf` und PDF über den Druckdialog;\n"
+  + "  dazu die Zwischenablage als HTML, RTF oder Markdown\n"
+  + "- **Zusammenfügen** — mehrere Dateien werden zu einem Dokument, nach Namen\n"
+  + "  sortiert, Bilder inbegriffen\n\n"
+  + "> `Strg+Umschalt+R` schaltet alles weg außer dem Text. `Esc` bringt es zurück.\n\n"
   + "---\n\n"
   + "In den **Einstellungen** steht die Markdown-Stufe. Auf `Rein` bietet der\n"
-  + "Editor nur an, was in jedem Werkzeug der Welt läuft — Tabellen, To-dos und\n"
-  + "Hinweiskästen kommen erst ab `GitHub` dazu.\n";
+  + "Editor nur an, was in jedem Werkzeug der Welt läuft — Tabellen, To-dos,\n"
+  + "Fußnoten und Hinweiskästen kommen erst ab `GitHub` dazu.\n";
 
 function start(){
   if (!lade()) ersetze(Z.bloecke, leseMarkdown(START));
@@ -2437,8 +5333,36 @@ function start(){
   quelltextVerdrahten();
   dateienVerdrahten();
   einstellungenVerdrahten();
+  dokStilSetzen();
+  seitenStilSetzen();
+  ausgebenVerdrahten();
+  seiteVerdrahten();
+  vorschauVerdrahten();
+  stilVerdrahten();
   const suchenOeffnen = suchenVerdrahten();
+  $("#vollbild").onclick = vollbild;
+  $("#ruhe-auf").onclick = () => {
+    ruhe();
+    $("#ruhe-auf").setAttribute("aria-pressed",
+      String($("#app").dataset.ruhe === "ja"));
+  };
+  $("#ruhe-aus").onclick = () => { ruhe(false); $("#ruhe-auf").setAttribute("aria-pressed","false"); };
+  try { if (localStorage.getItem(SCHLUESSEL + "-ruhe") === "ja") ruhe(true); }
+  catch (e) { /* egal */ }
   $("#g-inhalt").onclick = inhaltEinfuegen;
+  reiterVerdrahten();
+  zusammenVerdrahten();
+  schnellVerdrahten();
+  $("#g-alle-zu").onclick = () => {
+    const kopf = Z.bloecke.filter(b => /^h[123]$/.test(b.art));
+    if (!kopf.length){ melde("Keine Überschriften — nichts einzuklappen."); return; }
+    const alleZu = kopf.every(b => EINGEKLAPPT.has(klappSchluessel(b)));
+    EINGEKLAPPT.clear();
+    if (!alleZu) kopf.forEach(b => EINGEKLAPPT.add(klappSchluessel(b)));
+    $("#g-alle-zu").textContent = alleZu
+      ? "Alle Abschnitte einklappen" : "Alle Abschnitte aufklappen";
+    male();
+  };
   $("#g-auf").onclick = () => {
     const app = $("#app");
     const aus = app.dataset.gliederung === "aus";
@@ -2457,11 +5381,11 @@ function start(){
       ev.preventDefault(); suchenOeffnen();
     }
   });
-  ["schreiben","geteilt","quelltext"].forEach(n => {
-    $("#w-" + n).onclick = () => ansicht(n); });
+  ANSICHTEN.forEach(n => { $("#w-" + n).onclick = () => ansicht(n); });
   let gemerkt = "schreiben";
   try { gemerkt = localStorage.getItem(SCHLUESSEL + "-ansicht") || "schreiben"; }
   catch (e) { /* egal */ }
+  if (ANSICHTEN.indexOf(gemerkt) < 0) gemerkt = "schreiben";
   wurzelSetzen();
   ansicht(gemerkt);
   merken();                 /* der Anfangsstand, sonst führt das erste Rückgängig ins Leere */

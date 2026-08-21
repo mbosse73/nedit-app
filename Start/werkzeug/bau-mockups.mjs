@@ -1008,6 +1008,22 @@ const KATALOG = [
    '<div class="b-tog" style="font-size:15px"><span class="dre zu">'+IK.chevU+'</span>'
    +'<span>Entscheidungen</span></div>',
    "&lt;details&gt;\n&lt;summary&gt;Entscheidungen&lt;/summary&gt;\n\n…\n\n&lt;/details&gt;","html"],
+  /* Zwei, die im August 2026 dazugekommen sind. Die Fussnote ist die
+     ehrliche Antwort auf den Kommentar am Text: Sie steht in der
+     Datei und ueberlebt das Kopieren (doku/ENTSCHEIDUNGEN.md,
+     Punkt 8 und 18). Der Seitenumbruch ist ein Kommentar — ueberall
+     gueltig, ueberall unsichtbar, und nur der Export liest ihn
+     (Punkt 18). */
+  ["Fussnote","[^1]:",
+   '<span style="font-size:15px">Ein Satz mit Beleg.'
+   +'<sup style="font-size:10px;color:#2383e2;vertical-align:super">1</sup></span>',
+   "Ein Satz mit Beleg.[^1]\n\n[^1]: Woher der Satz stammt.","gfm"],
+  ["Seitenumbruch","<!-- -->",
+   '<div style="display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.06em;'
+   +'text-transform:uppercase;color:rgba(55,53,47,.55)">'
+   +'<span style="flex:1;border-top:2px dashed rgba(55,53,47,.15)"></span>Seitenumbruch'
+   +'<span style="flex:1;border-top:2px dashed rgba(55,53,47,.15)"></span></div>',
+   "&lt;!-- seitenumbruch --&gt;","html"],
   ["Markierter Text","==",
    '<span style="font-size:15px"><span class="b-marker">elf Jahre</span></span>',
    "==elf Jahre==","dial"],
@@ -1362,7 +1378,7 @@ const URTEIL_TEXT = { ok:"rein", gfm:"GFM", html:"HTML", dial:"Dialekt", nein:"g
 const GEBAUT = ["Text","Überschrift 1–3","Aufzählung","Nummerierte Liste","To-do-Liste",
   "Zitat","Trennlinie","Codeblock","Text in Code","Fett, kursiv","Durchgestrichen",
   "Markierter Text","Link","Tabelle","Callout","Toggle-Liste",
-  "Inhaltsverzeichnis","Bild"];
+  "Inhaltsverzeichnis","Bild","Fussnote","Seitenumbruch"];
 
 /* Bewusst gestrichen. Sie bleiben in der Tabelle stehen, damit die
    Frage nicht alle drei Monate neu gestellt wird — die Begründungen

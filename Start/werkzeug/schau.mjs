@@ -41,7 +41,7 @@ const breit  = Number(arg("--breit", "1400"));
 if (!existsSync(datei)) { console.error("Nicht gefunden: " + datei); process.exit(1); }
 mkdirSync(ablage, { recursive: true });
 
-const ANSICHTEN = ["schreiben", "geteilt", "quelltext"];
+const ANSICHTEN = ["schreiben", "geteilt", "vorschau", "quelltext"];
 let fehler = 0;
 
 const browser = await pw.chromium.launch();
@@ -60,7 +60,7 @@ for (const a of ANSICHTEN) {
   const mass = await seite.evaluate(() => ({
     quer: document.documentElement.scrollWidth > window.innerWidth + 1,
     /* Eine Flaeche, die im Dunkelmodus schwarz bliebe, faellt hier auf. */
-    dunkel: [...document.querySelectorAll(".app,.kopf,.blatt,.quelle,.fuss")]
+    dunkel: [...document.querySelectorAll(".app,.kopf,.blatt,.quelle,.fuss,.vorschau,.vblatt")]
       .filter((n) => {
         const m = getComputedStyle(n).backgroundColor.match(/[\d.]+/g);
         if (!m) return false;
@@ -91,6 +91,23 @@ for (const a of ANSICHTEN) {
 
   await seite.screenshot({ path: ablage + "/" + a + ".png", fullPage: false });
 }
+
+/* Die Druckvorschau ist keine Ansicht, sondern ein eigener Rahmen —
+   und sie muss dasselbe zeigen wie das Papier. */
+await seite.evaluate(() => { druckvorschau(true); });
+await seite.waitForTimeout(220);
+const seitenmass = await seite.evaluate(() => {
+  const n = document.querySelector("#druckblatt");
+  return { breite: Math.round(n.getBoundingClientRect().width),
+           dok: n.querySelectorAll(".dok").length };
+});
+if (seitenmass.dok !== 1 || seitenmass.breite < 700 || seitenmass.breite > 800){
+  console.log("  x druckvorschau  " + JSON.stringify(seitenmass)); fehler++;
+} else console.log("  + druckvorschau in Ordnung ("
+  + seitenmass.breite + " px = A4-Breite)");
+await seite.screenshot({ path: ablage + "/druckvorschau.png", fullPage: false });
+await seite.evaluate(() => { druckvorschau(false); });
+await seite.waitForTimeout(150);
 
 /* Tippen: Was sich nicht bedienen laesst, nuetzt kein schoenes Bild. */
 await seite.evaluate(() => document.querySelector("#w-schreiben").click());

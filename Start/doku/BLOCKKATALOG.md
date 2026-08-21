@@ -23,6 +23,8 @@ Für jeden Block, den Notion kann, muss dieser Editor entscheiden: weglassen, in
 | Tabelle | ` \| ` | ` \| Name \| Format \| `<br>` \| --- \| --- \| `<br>` \| Export \| CSV \| ` | GFM | gebaut |
 | Callout | ` 💡 ` | ` > [!TIP] `<br>` > Vier davon sind derselbe Export. ` | Dialekt | gebaut |
 | Toggle-Liste | ` › ` | ` <details> `<br>` <summary>Entscheidungen</summary> `<br><br>` … `<br><br>` </details> ` | HTML | gebaut |
+| Fussnote | ` [^1]: ` | ` Ein Satz mit Beleg.[^1] `<br><br>` [^1]: Woher der Satz stammt. ` | GFM | gebaut |
+| Seitenumbruch | ` <!-- --> ` | ` <!-- seitenumbruch --> ` | HTML | gebaut |
 | Markierter Text | ` == ` | ` ==elf Jahre== ` | Dialekt | gebaut |
 | Farbiger Text | — | ` <span style="color:#c0392b">dringend</span> ` | HTML | gestrichen |
 | Erwähnung | ` @ [[ ]] ` | ` [[Kai Richter]] ` | Dialekt | gestrichen |
@@ -37,13 +39,13 @@ Für jeden Block, den Notion kann, muss dieser Editor entscheiden: weglassen, in
 ## Was die Urteile bedeuten
 
 * **rein** — läuft in jedem Werkzeug der Welt. 13 Blöcke.
-* **GFM** — GitHub-Markdown, sehr verbreitet, aber eine Erweiterung. 3 Blöcke.
-* **HTML** — gültiges Markdown, im nächsten Editor aber rohes HTML statt eines Blocks. 3 Blöcke.
+* **GFM** — GitHub-Markdown, sehr verbreitet, aber eine Erweiterung. 4 Blöcke.
+* **HTML** — gültiges Markdown, im nächsten Editor aber rohes HTML statt eines Blocks. 4 Blöcke.
 * **Dialekt** — bindet die Datei an das Werkzeug, das ihn kennt. 4 Blöcke.
 * **geht nicht** — ohne eine zweite Datei nicht zu haben. 4 Blöcke. Siehe `doku/ENTSCHEIDUNGEN.md`, Punkt 1.
 
 ## Stand
 
-**18 von 27 Blöcken sind gebaut.** 7 sind gestrichen, 1 ist vertagt — übrig bleiben 1 offene.
+**20 von 29 Blöcken sind gebaut.** 7 sind gestrichen, 1 ist vertagt — übrig bleiben 1 offene.
 
 Welcher Schritt welchen bringt, steht in `doku/ROADMAP.md`. Was **gestrichen** heißt und warum, steht in `doku/ENTSCHEIDUNGEN.md`, Punkt 1 und 11; **vertagt** in Punkt 12.
